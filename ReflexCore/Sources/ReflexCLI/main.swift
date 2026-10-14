@@ -9,7 +9,7 @@ struct ReflexCLI {
         let args = CommandLine.arguments
         if args.count >= 4, args[1] == "--mel" {
             do {
-                let samples = try loadSamples(url: URL(fileURLWithPath: args[2]))
+                let samples = try AudioFileLoader.loadSamples16kMono(url: URL(fileURLWithPath: args[2]))
                 let mel = try WhisperMel(nMel: args.count > 4 ? Int(args[4]) ?? 80 : 80)
                 let values = mel.logMel(samples: samples)
                 try Data(bytes: values, count: values.count * MemoryLayout<Float>.size)
@@ -51,7 +51,7 @@ struct ReflexCLI {
         if args.count >= 3, args[1] == "--laya" {
             let transcript = args[2...].joined(separator: " ")
             do {
-                let router = try LayaRouter(modelDirectory: defaultModelsDirectory())
+                let router = try makeLayaRouter()
                 let routing = try await router.route(transcript: transcript)
                 printRouting(routing)
             } catch {
@@ -107,7 +107,7 @@ struct ReflexCLI {
             let variant = positionals.count >= 1 ? positionals[0] : "base"
             let modelsDir = positionals.count >= 2 ? URL(fileURLWithPath: positionals[1]) : defaultModelsDirectory()
             do {
-                let samples = try loadSamples(url: URL(fileURLWithPath: args[2]))
+                let samples = try AudioFileLoader.loadSamples16kMono(url: URL(fileURLWithPath: args[2]))
                 guard let kind = ReflexModelKind(rawValue: "whisper-\(variant)") else {
                     print("unknown variant"); return
                 }
@@ -383,7 +383,7 @@ struct ReflexCLI {
         }
 
         do {
-            let samples = try loadSamples(url: audioURL)
+            let samples = try AudioFileLoader.loadSamples16kMono(url: audioURL)
             print("audio: \(samples.count) samples (\(String(format: "%.2f", Double(samples.count) / 16000))s), model: \(kind.displayName)")
 
             let transcriber = try WhisperTranscriber(modelDirectory: modelsDir)
@@ -740,7 +740,7 @@ struct ReflexCLI {
         let tolerance = 0.02  // fp16 CoreML vs fp32 PyTorch ground truth
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let file = try JSONDecoder().decode(LayaReferenceFile.self, from: data)
-        let router = try LayaRouter(modelDirectory: defaultModelsDirectory())
+        let router = try makeLayaRouter()
         let tokenizer = try LayaTokenizer()
 
         var checks = 0
