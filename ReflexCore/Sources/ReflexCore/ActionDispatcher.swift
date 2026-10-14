@@ -463,23 +463,46 @@ public struct ActionDispatcher: Sendable {
         return .screenshotTaken(path: path)
     }
 
-    private func systemControl(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
-        if lower.contains("lock") {
-            try ShortcutController.press(name: "lock_screen")
-            return .systemControlOpened(operation: "Locked screen")
-        }
-        if lower.contains("sleep") {
-            _ = try Self.runTool("/usr/bin/pmset", arguments: ["displaysleepnow"])
-            return .systemControlOpened(operation: "Display sleeping")
-        }
-        if lower.contains("show desktop") || lower.contains("reveal the desktop") {
-            try ShortcutController.press(name: "show_desktop")
-            return .systemControlOpened(operation: "Showed desktop")
-        }
+    /// What a transcript asks `system_control` to do. Pure and separate from
+    /// execution so the routing contract tests can assert that every phrase the
+    /// router sends here is actually handleable (docs/audit-2026-10-14.md, M3).
+    enum SystemOperation: Equatable {
+        case lockScreen
+        case sleepDisplay
+        case showDesktop
+        case darkMode(Bool)
+        case emptyTrash
+    }
+
+    /// Phrase to operation, in the original if-chain's order.
+    static func systemOperation(for transcript: String) -> SystemOperation? {
+        let lower = transcript.lowercased()
+        if lower.contains("lock") { return .lockScreen }
+        if lower.contains("sleep") { return .sleepDisplay }
+        if lower.contains("show desktop") || lower.contains("reveal the desktop") { return .showDesktop }
         if lower.contains("dark mode") || lower.contains("light mode") || lower.contains("dark theme")
             || lower.contains("light theme") {
-            let dark = lower.contains("dark")
+            return .darkMode(lower.contains("dark"))
+        }
+        if lower.contains("trash") || lower.contains("bin") { return .emptyTrash }
+        return nil
+    }
+
+    private func systemControl(plan: CommandPlan) throws -> ReflexActionResult {
+        guard let operation = Self.systemOperation(for: plan.transcript) else {
+            throw ActionExecutionError.parseFailure
+        }
+        switch operation {
+        case .lockScreen:
+            try ShortcutController.press(name: "lock_screen")
+            return .systemControlOpened(operation: "Locked screen")
+        case .sleepDisplay:
+            _ = try Self.runTool("/usr/bin/pmset", arguments: ["displaysleepnow"])
+            return .systemControlOpened(operation: "Display sleeping")
+        case .showDesktop:
+            try ShortcutController.press(name: "show_desktop")
+            return .systemControlOpened(operation: "Showed desktop")
+        case .darkMode(let dark):
             let script = """
             tell application "System Events"
                 tell appearance preferences
@@ -489,8 +512,7 @@ public struct ActionDispatcher: Sendable {
             """
             _ = try Self.runTool("/usr/bin/osascript", arguments: ["-e", script])
             return .systemControlOpened(operation: dark ? "Set dark mode" : "Set light mode")
-        }
-        if lower.contains("trash") || lower.contains("bin") {
+        case .emptyTrash:
             let script = """
             tell application "Finder"
                 empty trash
@@ -499,7 +521,6 @@ public struct ActionDispatcher: Sendable {
             _ = try Self.runTool("/usr/bin/osascript", arguments: ["-e", script])
             return .systemControlOpened(operation: "Emptied trash")
         }
-        throw ActionExecutionError.parseFailure
     }
 
     /// Quits a named app ("quit calculator") via NSRunningApplication so it
