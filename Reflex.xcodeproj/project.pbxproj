@@ -1,0 +1,472 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0008569A1C9609F516392758 /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */; };
+		0261CDDEC0159935B1EDBC8D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF2B369C18B6A73CBDAA7587 /* AppModel.swift */; };
+		0CF55452DD8971EDB78AFE5B /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67404D2736683A88670F345A /* SessionLog.swift */; };
+		16E72162D8A1A114B5A2B5CF /* ReflexCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8AE0A4426F0A96C36825F18 /* ReflexCore */; };
+		3BA555589AB7603C3C1961F4 /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67404D2736683A88670F345A /* SessionLog.swift */; };
+		51D3CE1A55F9A1FFFBC20314 /* ReflexCore in Frameworks */ = {isa = PBXBuildFile; productRef = D144CA98C1552F65476B63F2 /* ReflexCore */; };
+		596179215A53469A986C57DE /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */; };
+		8067998BDFBBA36304A43779 /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */; };
+		886294F689EB2FA91FB80363 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF2B369C18B6A73CBDAA7587 /* AppModel.swift */; };
+		9366A5DF86677F788D6CDD3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C73340D38CC6C717F3EFE6 /* ContentView.swift */; };
+		9E0FD6819D383A4B9759C337 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C73340D38CC6C717F3EFE6 /* ContentView.swift */; };
+		9FEA7C11471DC8286F0F4CD2 /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */; };
+		E6822020510821177014A53C /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */; };
+		FC789E2C485F0EBF15EE5C84 /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		31C9A3F2858C998067993DFE /* ReflexCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReflexCore; path = ReflexCore; sourceTree = SOURCE_ROOT; };
+		67404D2736683A88670F345A /* SessionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLog.swift; sourceTree = "<group>"; };
+		845BEAD085C0EEED6DC4E897 /* Reflex.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Reflex.entitlements; sourceTree = "<group>"; };
+		96A27403E9509850B535AC34 /* Reflex-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Reflex-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyCenter.swift; sourceTree = "<group>"; };
+		B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflexApp.swift; sourceTree = "<group>"; };
+		CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Reflex-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownDocument.swift; sourceTree = "<group>"; };
+		EF2B369C18B6A73CBDAA7587 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		F4C73340D38CC6C717F3EFE6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		798B1EE6A1756714E92A3BB9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				16E72162D8A1A114B5A2B5CF /* ReflexCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DE63A4D2D880F06615D9EF83 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51D3CE1A55F9A1FFFBC20314 /* ReflexCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		11F375B3A7F3C7815287CCC3 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				31C9A3F2858C998067993DFE /* ReflexCore */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		4772A2EC6CC2B2C08ED4BFE2 = {
+			isa = PBXGroup;
+			children = (
+				11F375B3A7F3C7815287CCC3 /* Packages */,
+				B4C9D59B29766C3CA0232DF3 /* Reflex */,
+				7350B4F4BC6D09093F775456 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		7350B4F4BC6D09093F775456 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */,
+				96A27403E9509850B535AC34 /* Reflex-macOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B4C9D59B29766C3CA0232DF3 /* Reflex */ = {
+			isa = PBXGroup;
+			children = (
+				EF2B369C18B6A73CBDAA7587 /* AppModel.swift */,
+				F4C73340D38CC6C717F3EFE6 /* ContentView.swift */,
+				98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */,
+				DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */,
+				845BEAD085C0EEED6DC4E897 /* Reflex.entitlements */,
+				B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */,
+				67404D2736683A88670F345A /* SessionLog.swift */,
+			);
+			path = Reflex;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3684CEB7D12F534F7ED92B2B /* Reflex-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1EB37EB379AE47275171EAFF /* Build configuration list for PBXNativeTarget "Reflex-macOS" */;
+			buildPhases = (
+				1FEDDE3863AB22F4D39430BB /* Sources */,
+				798B1EE6A1756714E92A3BB9 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Reflex-macOS";
+			packageProductDependencies = (
+				E8AE0A4426F0A96C36825F18 /* ReflexCore */,
+			);
+			productName = "Reflex-macOS";
+			productReference = 96A27403E9509850B535AC34 /* Reflex-macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		A16C16C5C294EBD54B9E4E70 /* Reflex-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E4DCA60DEDDF056D58DFDAA3 /* Build configuration list for PBXNativeTarget "Reflex-iOS" */;
+			buildPhases = (
+				83A52C74EC43A178D45CB91D /* Sources */,
+				DE63A4D2D880F06615D9EF83 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "Reflex-iOS";
+			packageProductDependencies = (
+				D144CA98C1552F65476B63F2 /* ReflexCore */,
+			);
+			productName = "Reflex-iOS";
+			productReference = CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		1A5388A64CF148C546F840C8 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					3684CEB7D12F534F7ED92B2B = {
+						DevelopmentTeam = 6L6C77HZXN;
+						ProvisioningStyle = Automatic;
+					};
+					A16C16C5C294EBD54B9E4E70 = {
+						DevelopmentTeam = 6L6C77HZXN;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 354728B56DEF4A8E1A3CBB61 /* Build configuration list for PBXProject "Reflex" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 4772A2EC6CC2B2C08ED4BFE2;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				0C361B78A47C2A5ACEAA20B7 /* XCLocalSwiftPackageReference "ReflexCore" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 7350B4F4BC6D09093F775456 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3684CEB7D12F534F7ED92B2B /* Reflex-macOS */,
+				A16C16C5C294EBD54B9E4E70 /* Reflex-iOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1FEDDE3863AB22F4D39430BB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				886294F689EB2FA91FB80363 /* AppModel.swift in Sources */,
+				9366A5DF86677F788D6CDD3F /* ContentView.swift in Sources */,
+				596179215A53469A986C57DE /* HotKeyCenter.swift in Sources */,
+				0008569A1C9609F516392758 /* MarkdownDocument.swift in Sources */,
+				FC789E2C485F0EBF15EE5C84 /* ReflexApp.swift in Sources */,
+				3BA555589AB7603C3C1961F4 /* SessionLog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		83A52C74EC43A178D45CB91D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0261CDDEC0159935B1EDBC8D /* AppModel.swift in Sources */,
+				9E0FD6819D383A4B9759C337 /* ContentView.swift in Sources */,
+				8067998BDFBBA36304A43779 /* HotKeyCenter.swift in Sources */,
+				E6822020510821177014A53C /* MarkdownDocument.swift in Sources */,
+				9FEA7C11471DC8286F0F4CD2 /* ReflexApp.swift in Sources */,
+				0CF55452DD8971EDB78AFE5B /* SessionLog.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		113E705451E5E19A5AED48E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Reflex/Reflex.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media).";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reflex.app.mac;
+				PRODUCT_NAME = Reflex;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		3161197D70CACCEA5F3DF1E1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 6L6C77HZXN;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		7C0BDA11119CE684CE080FA4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 6L6C77HZXN;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
+		8F80AA6CF87C32C9DA2F8303 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reflex.app.ios;
+				PRODUCT_NAME = Reflex;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B3B10621850B9CF76DACD11D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Reflex/Reflex.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media).";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reflex.app.mac;
+				PRODUCT_NAME = Reflex;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B428B0ED0463EECB07FB9A3B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.reflex.app.ios;
+				PRODUCT_NAME = Reflex;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1EB37EB379AE47275171EAFF /* Build configuration list for PBXNativeTarget "Reflex-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3B10621850B9CF76DACD11D /* Debug */,
+				113E705451E5E19A5AED48E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		354728B56DEF4A8E1A3CBB61 /* Build configuration list for PBXProject "Reflex" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3161197D70CACCEA5F3DF1E1 /* Debug */,
+				7C0BDA11119CE684CE080FA4 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		E4DCA60DEDDF056D58DFDAA3 /* Build configuration list for PBXNativeTarget "Reflex-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8F80AA6CF87C32C9DA2F8303 /* Debug */,
+				B428B0ED0463EECB07FB9A3B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		0C361B78A47C2A5ACEAA20B7 /* XCLocalSwiftPackageReference "ReflexCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ReflexCore;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		D144CA98C1552F65476B63F2 /* ReflexCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReflexCore;
+		};
+		E8AE0A4426F0A96C36825F18 /* ReflexCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = ReflexCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 1A5388A64CF148C546F840C8 /* Project object */;
+}
