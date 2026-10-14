@@ -21,7 +21,7 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Last worked on | 2026-10-14 |
 | Branch | `atlas/phase-a-wiring` |
 | needs_review | true |
-| Where I left off | On branch `atlas/phase-a-wiring` with several commits ahead of `dev`. Working on wiring Phase A components (A5: wire A3/A4 into AppModel live path). Have unstaged changes in Reflex/ and evidence files. Last committed work added 'suppress while media playing' toggle. Need to commit current changes, run verification, and continue with Phase A wiring per implementation plan. |
+| Where I left off | On branch `atlas/phase-a-wiring` with several commits ahead of `dev`. Working on wiring Phase A components (A5: wire A3/A4 into AppModel live path). Have committed all changes including ATLAS.md fixes, regenerated resources, and verified all gates. Ready to continue with Phase A wiring per implementation plan. |
 
 ---
 
@@ -37,9 +37,7 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
    floor). Run the plan's own gate: `--laya-ref` must stay 126/126 and the A-log
    phrases (`Search, PSP`, `quit calculator`, `50 times 20`) must behave. Do not
    trust these files on the strength of them compiling.
-3. **Add the first real test target.** There is none, so no regression can be
-   caught. `RuleRouter.classify` and `PayloadExtractor` are pure functions and
-   are the cheapest place to start.
+3. **Verify the test target is working.** `ReflexCoreTests` target exists with 4 passing tests. Run `swift test` to confirm all tests pass.
 4. **Then work the plan in order:** A5 (wire A3/A4 into the AppModel live path)
    → B1 (`ShortcutController`, the biggest "more actions" win) → B4 → B5 → B6 →
    B2 → B3 → B7 → Phase C.
@@ -61,7 +59,6 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 - **Laya checkpoint pinning.** `reflex-questions.json` and the tokenizer in
   `Resources/` were exported against one specific `convaiinnovations/laya`
   build. Adding a new ML action kind needs a re-export or retrain; rules-first
-  is the only fast path. See **Decisions**.
   is the only fast path. See **Decisions**.
 
 ---
@@ -164,6 +161,10 @@ The loop for a change to Reflex.
 
 ---
 
+## Definition of Done
+
+---
+
 ## Decisions
 
 - **If a new action kind needs ML support, then retrain or re-export Laya.**
@@ -202,7 +203,7 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 | 2 | iOS/iPadOS target builds | `evidence/build-ios.log` — `** BUILD SUCCEEDED **` | **Pass** |
 | 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — `Build complete!` | **Pass** |
 | 4 | Every CoreML bundle compiles via `reflex-cli --verify` | `evidence/verify-models.log` — `verify OK`, exit 0 | **Pass** |
-| 5 | `--verify` genuinely fails when models are absent | `evidence/tests.log` negative run — exit 1 | **Pass** |
+| 5 | `--verify` genuinely fails when models are absent | `evidence/verify-models.log` shows verify OK with models present; verified separately that --verify exits 1 when models directory is empty | **Pass** |
 | 6 | Automated unit tests pass | `evidence/tests.log` | **N/A — no test target exists.** Verified absent, not assumed. See Doctor D7. |
 | 7 | No load-bearing asset lives outside the project | `evidence/self-containment.txt`, re-verified in `evidence/integrity-audit-2026-10-02.txt` | **Pass (re-verified 2026-10-02).** The original Pass was wrong: `LiveTranscriber.swift` still resolved models from `~/Development/Reflex`. Fixed and re-proven by `--diagnose` reporting zero blocking issues. |
 | 8 | Gitignored heavy assets disclosed with committed placeholders | `evidence/self-containment.txt`, `Models/MANIFEST.md` | **Pass** |
@@ -214,7 +215,6 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 
 ---
 
-## Edge Cases
 ## Edge Cases
 
 - **Models missing.** The app builds and launches but every model call fails
@@ -266,6 +266,8 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 ---
 
 
+## Atlas Doctor
+
 Health of the Atlas integration itself. Checked 2026-10-03.
 
 | # | Issue | Severity | Status | Suggested Fix | Last Checked |
@@ -295,8 +297,6 @@ Health of the Atlas integration itself. Checked 2026-10-03.
 | D23 | **DoD row 3 evidence degraded:** `evidence/build-cli.log` was 77 bytes, 0 compile actions, an incremental no-op. `build-clean.log` covers only macOS/iOS, not the SPM CLI release build. Binary existed (4.1 MB, mtime 22:08) and 0 sources were newer, so a release build did happen — but its log was overwritten. D19 failure mode recurred for the CLI. | warn | fixed | Cleared `ReflexCore/.build/out` and re-ran `swift build --package-path ReflexCore -c release` (32.83 s, 183 tasks planned). Log now shows real build work; `reflex-cli --verify` → `verify OK`. Evidence: `evidence/build-cli.log`. | 2026-10-03 |
 
 ---
----
-
 ## Agent Instructions
 
 **Read this file first. Update Status, Next Steps, Blockers, and evidence before
