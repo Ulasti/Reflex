@@ -1,0 +1,202 @@
+ATLAS INTEGRITY AUDIT — reflex
+Generated: 2026-10-02 (independent review session, read-only)
+Auditor: fresh agent with no prior context, per the audit mandate
+Scope: verify the claims made by the `integrate` run of 2026-10-02.
+Method: re-derive every check independently. No claim accepted on trust.
+
+====================================================================
+VERDICT: PASS WITH 4 DEFECTS FOUND
+====================================================================
+The integrate run was substantially honest. Every evidence file was
+reproduced and matched. Three of the four defects are real bugs in
+the CODE that the self-containment audit claimed was clean; one is
+stale bookkeeping.
+
+WHAT I INDEPENDENTLY CONFIRMED AS TRUE
+--------------------------------------
+[PASS] Skill installation integrity.
+       ~/Documents/Atlas/SKILL.md
+       ~/.config/opencode/skills/atlas/SKILL.md
+       both SHA-256 3a2404e14fa6a096ca90d2918bce464cbc0fe8d602080b60c85f413119e5ac84
+       `diff` -> identical. No drift. Wrapper present, all 7 subcommands.
+
+[PASS] Branch strategy correctly implemented.
+       main  f5bb01a (1 commit, untouched)
+       dev   f5bb01a (1 commit, untouched)
+       atlas/integrate-reflex a01ff78 (3 commits, agent work)
+       Working tree clean. 81 tracked files, 0 stray untracked.
+
+[PASS] Evidence logs are REAL, not fabricated.
+       I re-ran the gate myself:
+         ./reflex-cli --verify                      -> "verify OK", exit 0
+         REFLEX_MODELS=/tmp/reflex-audit-empty --verify -> exit 1 (D3 fix holds)
+       Build logs contain genuine xcodebuild invocation banners, the
+       resolved package graph, and the real derived-data paths. Log
+       mtimes (21:35:29/31) postdate the real build products in
+       /tmp/reflex-dd (21:25:07) and /tmp/reflex-dd-ios (21:29:26).
+       Logs are re-runs of an already-built tree: 0 compile actions,
+       0 warnings, 0 errors. That is a no-op incremental build, so
+       "BUILD SUCCEEDED" proves the tree still links, NOT that the
+       current sources compile from scratch. Weak, but not a lie.
+
+[PASS] Model manifest tree hashes are correct.
+       I recomputed all 15 tree hashes with the one-liner in
+       Models/MANIFEST.md. All 15 match the table exactly.
+
+[PASS] Relocation is real.
+       ~/Development/Reflex              gone
+       ~/Documents/huggingface           gone
+       ~/.cache/huggingface              gone
+       ~/Desktop/*Reflex_Implementation_Plan.md, *Jev_Voice*.md   gone
+       docs/ copies present.
+
+[PASS] Heavy assets disclosed, not silently dropped.
+       Models/ 4.8G gitignored via `Models/*` with committed
+       Models/MANIFEST.md + Models/.gitkeep + .gitignore negation.
+       tools/.venv 767M, .cache 7.3M likewise disclosed.
+       `git check-ignore -v` confirms the negation works.
+
+[PASS] No secrets. Entitlements = mic only. No .env. No key material.
+
+[PASS] The plan's own gate passes right now.
+       ./reflex-cli --laya-ref tools/laya_reference.json
+       -> "126/126 checks passed"
+
+DEFECT 1 — LIVE BUG, contradicts DoD #7 and Doctor D4  [error]
+----------------------------------------------------------------
+ReflexCore/Sources/ReflexCore/LiveTranscriber.swift:34-36
+
+    #if os(macOS)
+    return FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Development/Reflex/Models")
+    #else
+
+This is a load-bearing model path still hardcoded to the pre-move
+location. `~/Development/Reflex` no longer exists.
+
+The integrate run's own self-containment evidence asserts this is
+clean. evidence/self-containment.txt says:
+
+  "ALL rewritten to derive from the file's own location (#filePath in
+   Swift, __file__ in Python). No $HOME assumption remains in any
+   load-bearing path."
+  "-> the only two hits are intentional runtime user-folder lookups"
+
+That statement is false. There are three, and this one is an asset
+path, not a user-folder lookup. The audit grep missed it because the
+path is assembled from two separate tokens and never appears as a
+literal "/Users/..." string.
+
+PROVEN, NOT THEORETICAL. I ran the CLI:
+
+  $ ./reflex-cli --diagnose
+    x Whisper model: whisper-small models not found in
+      /Users/emir/Development/Reflex/Models
+    1 blocking issue(s)
+
+Two live call sites resolve through it:
+  Reflex/ContentView.swift:420          runDiagnostics() — the macOS
+                                        app's Diagnostics button
+  ReflexCore/Sources/ReflexCore/SystemDiagnostics.swift:46
+                                        default argument, so
+                                        ReflexCLI/main.swift:469
+                                        (--diagnose) inherits it too
+
+Note what is NOT broken: AppModel.swift:87 uses the correct
+ReflexEnvironment.modelDirectory() (#filePath-derived). So
+transcription works; the diagnostics UI lies about the model being
+absent. Worst kind of bug — a false alarm, not a crash.
+
+Fix: give ReflexWhisperKit.defaultModelsDirectory the same #filePath
+treatment as ReflexApp.swift:32-38, or better, delete it and have
+both call sites use one shared resolver. The two divergent resolvers
+are the underlying defect.
+
+DEFECT 2 — DoD #7 AND D4 ARE RECORDED PASS ON A FALSE PREMISE [error]
+--------------------------------------------------------------------
+ATLAS.md:185  | 7 | No load-bearing asset lives outside the project
+                     | evidence/self-containment.txt | **Pass**
+ATLAS.md:248  D4 | Six load-bearing absolute paths ... | error | fixed
+
+Both should be **Fail** / **reopen** until Defect 1 is fixed. Six
+paths were fixed; a seventh was missed and the audit that was supposed
+to catch it reported zero.
+
+This is the more serious of the two, because it is an evidence
+integrity failure, not just a code bug. Everything else in the
+integrate run checked out. This one claim did not.
+
+DEFECT 3 — ATLAS DOCTOR IS FINE, BUT D13 IS NOW WRONG [info]
+-------------------------------------------------------------
+D13 says a stale copy sits in ~/.Trash/Reflex-acjiwxacscamoxemtqezorowawnl/
+at ~800 MB. That path no longer exists; the Trash was emptied at some
+point after the integrate run. Mark D13 fixed rather than open.
+
+DEFECT 4 — build-and-verify.sh's model gate is accidental [warn]
+-----------------------------------------------------------------
+files/build-and-verify.sh:64-68
+
+    "$CLI" --verify 2>&1 | tee "$LOG_DIR/verify-models.log"
+    "${PIPESTATUS[0]:-0}" >/dev/null 2>&1 || true
+
+The intended check is dead code. It writes a status to stdout,
+redirects it to /dev/null, and swallows any error with `|| true`.
+The gate only fires because `set -o pipefail` aborts first — I
+confirmed this by reproducing the construct in isolation. So the
+script does fail correctly today, but by accident, and the author
+clearly did not intend it.
+
+This matters because D3 exists precisely because `--verify` used to
+silently pass. A gate that works by accident is the same failure mode
+one edit away from recurring.
+
+Fix: drop the PIPESTATUS line entirely and rely on pipefail, or write
+it properly:
+    if ! "$CLI" --verify 2>&1 | tee "$LOG_DIR/verify-models.log"; then
+      fail "model verification (see $LOG_DIR/verify-models.log)"
+    fi
+
+MINOR OBSERVATIONS (no action required)
+--------------------------------------
+- Config/registry.json stores needs_review as the string "true", not
+  a boolean. Also its next_step field is truncated mid-sentence
+  ("...The branch holds the"). Cosmetic; registry is regenerable.
+- ATLAS.md:24 says "all 4 CoreML model bundles verify". There are
+  14 .mlpackage bundles + whisperkit, all verifying. Undercounted,
+  harmless.
+- No `src/` or `tests/` directory. Correct for Swift/XcodeGen, and
+  D14 already tracks tests/. `src/` is not tracked anywhere. Atlas's
+  canonical dir list assumes src/; a Swift project legitimately does
+  not have one. Consider noting the deviation in D14 so the next
+  agent does not re-raise it.
+- D16 (the hardcoded path in the OpenCode wrapper) is correctly
+  recorded as an accepted, user-approved deviation. I agree with the
+  call: the spec's "use the skill tool by name" cannot resolve a
+  specific skill when several are installed, and the workspace copy
+  remains byte-identical, so nothing is actually lost.
+
+WHAT THE INTEGRATE RUN DID WELL
+-------------------------------
+- Did not fabricate. Every single evidence claim I re-tested held.
+- Recorded N/A rather than Pass where it could not verify (DoD #13
+  push, DoD #6 tests). That is the hardest part of Atlas compliance
+  and it was done correctly.
+- Found and fixed a real pre-existing bug (D3) rather than writing a
+  green check over it.
+- Moved planning docs into the project with SHA-256 verification.
+- Relocated the HF cache by pinning HF_HOME in-project rather than
+  copying weights, exactly as the spec prefers.
+- Left main and dev untouched.
+- The one failure is narrow: one grep pattern missed one hardcoded
+  path, and the summary line overstated what was checked.
+
+SUGGESTED NEXT ACTION
+---------------------
+1. Fix LiveTranscriber.swift:34-36 (Defect 1).
+2. Flip DoD #7 to Fail and reopen D4 until re-verified (Defect 2).
+3. Re-run ./files/build-and-verify.sh and ./reflex-cli --diagnose;
+   require "0 blocking issue(s)" as the pass condition.
+4. Fix the dead gate in build-and-verify.sh (Defect 4).
+5. Close D13 (Defect 3).
+6. Then, as ATLAS.md already says: review and merge
+   atlas/integrate-reflex -> dev. Do not merge with DoD #7 red.

@@ -1,0 +1,12 @@
+# Reflex conversion toolchain (Python 3.10)
+# Install:  python3.10 -m venv .venv && .venv/bin/pip install -r requirements.txt
+coremltools>=8.0,<9
+numpy
+protobuf
+openai-whisper==20240930
+torch==2.5.0
+transformers>=4.40
+accelerate
+huggingface_hub
+safetensors
+laya>=0.3

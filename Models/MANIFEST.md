@@ -1,0 +1,110 @@
+# Models Manifest
+
+The contents of `Models/` are **gitignored and intentionally not committed**.
+They total **4.8 GB** of CoreML weights, far past any sane repository limit.
+
+This file is the committed placeholder. A fresh `git clone` gives you the
+source code and this manifest, and the re-acquire commands below rebuild the
+models in place. Nothing here is load-bearing at runtime unless the models are
+present — the app degrades to a clear error instead (see
+`ReflexCore/Sources/ReflexCore/SystemDiagnostics.swift`).
+
+## Re-acquiring
+
+### Whisper `.mlpackage` bundles (the four convert.py variants)
+
+```bash
+cd <repo>/tools
+python3.10 -m venv .venv && .venv/bin/pip install -r requirements.txt
+./.venv/bin/python convert.py whisper --variant base         --quantize none
+./.venv/bin/python convert.py whisper --variant base         --quantize int8
+./.venv/bin/python convert.py whisper --variant small        --quantize none
+./.venv/bin/python convert.py whisper --variant small        --quantize int8
+./.venv/bin/python convert.py whisper --variant large-v3-turbo --quantize none
+./.venv/bin/python convert.py whisper --variant large-v3-turbo --quantize int8
+```
+
+Output path defaults to `<repo>/Models` and is derived from the script's own
+location, so no argument is needed. Weights are fetched from
+`openai/whisper` on Hugging Face into the in-project cache at
+`<repo>/.cache/huggingface` (see `tools/project_env.py`).
+
+### Laya router `.mlpackage`
+
+```bash
+./.venv/bin/python convert.py laya --quantize none
+./.venv/bin/python convert.py laya --quantize int8
+```
+
+Source checkpoint: `convaiinnovations/laya`.
+
+### WhisperKit offline pack (`Models/whisperkit/`)
+
+```bash
+./.venv/bin/python download_whisperkit_models.py small
+```
+
+Downloads from HF repo `argmaxinc/whisperkit-coreml`, folder
+`openai_whisper-small`, into `Models/whisperkit/`. `LiveTranscriber` loads it
+with `download: false` so transcription works offline.
+
+## Inventory
+
+Sizes are on-disk bytes. The SHA-256 column is a **tree hash**: the SHA-256 of
+the sorted `relpath␣␣sha256sum` listing of every file in the bundle, so it
+verifies a whole directory rather than a single file. Reproduce with the
+one-liner in [Verifying](#verifying).
+
+| Asset | Bytes | Size | SHA-256 (tree hash) | Origin |
+|---|---|---|---|---|
+| `Models/laya.mlpackage` | 847777792 | 808.5 MB | `2ecc5f93476c7581d31f8526108ed0543a23f67643dc06193418edd183aefede` | `convaiinnovations/laya` via `convert.py laya` |
+| `Models/laya-int8.mlpackage` | 426217472 | 406.5 MB | `f539d37b1e9f045b5b1b90f9142f57412d20cad54ae628d7f1c6332a479e0601` | same, `--quantize int8` |
+| `Models/whisper-large-v3-turbo.mlpackage` | 1274273792 | 1215.2 MB | `67b99e80ee64a3f5e74dc66945fce1f08a41e4b912494175a88de924848abc7b` | `openai/whisper` via `convert.py whisper --variant large-v3-turbo` |
+| `Models/whisper-large-v3-turbo-decoder.mlpackage` | 343216128 | 327.3 MB | `4a6282c84727b866795e63b4bd48af9100f7c3732f6b92a0621cab81cd357a76` | same, fp16 decoder half |
+| `Models/whisper-large-v3-turbo-decoder-int8.mlpackage` | 172118016 | 164.1 MB | `5982534e4b042a98ab95731570f36f61f4999c3cbfce8a3f065462e7872c9bbf` | same, `--quantize int8` |
+| `Models/whisper-large-v3-turbo-encoder-int8.mlpackage` | 638611456 | 609.0 MB | `15468b188a346bccddc087706c48b0a30b7d63f960cb98c1f227c76844bdaa64` | same, `--quantize int8` |
+| `Models/whisper-small.mlpackage` | 176443392 | 168.3 MB | `dcbc8f38c45f31de632904ad9e1a790896aa1ff64975bc75b871d1977a2e81a1` | `openai/whisper` via `convert.py whisper --variant small` |
+| `Models/whisper-small-decoder.mlpackage` | 307023872 | 292.8 MB | `08b6c31d5f08ee179b095b6769b2cdd1e25de66d938fcc9a605d2369d092a5db` | same, fp16 decoder half |
+| `Models/whisper-small-decoder-int8.mlpackage` | 154284032 | 147.1 MB | `deeb2d80928fb819f2632b589dff65b9529b7016851d1683a1a93e7604780d79` | same, `--quantize int8` |
+| `Models/whisper-small-encoder-int8.mlpackage` | 88600576 | 84.5 MB | `d106d73d88197778af6c016a64b56da6efb5071ef60dff21e4692ca604203963` | same, `--quantize int8` |
+| `Models/whisper-base.mlpackage` | 41254912 | 39.3 MB | `4cf7dc89166115c63e21f0b1a43c807aa2e45e0d3a28d3351914b5e8bff4e011` | `openai/whisper` via `convert.py whisper --variant base` |
+| `Models/whisper-base-decoder.mlpackage` | 103931904 | 99.1 MB | `aeae19991204699ed8de9b36635660216a09be9e26ed766592e5003c71c229a3` | same, fp16 decoder half |
+| `Models/whisper-base-decoder-int8.mlpackage` | 52404224 | 50.0 MB | `c1771e9f52eb1109c29bc10fc659e85750f699d585475386d5d88fb9664942c0` | same, `--quantize int8` |
+| `Models/whisper-base-encoder-int8.mlpackage` | 20779008 | 19.8 MB | `f7502b48956a9f723ad33b78e0f972c01144887eac722b63e8f1ff4740b3c0f0` | same, `--quantize int8` |
+| `Models/whisperkit/` | 491802624 | 469.0 MB | `3ff91911a333a5303600d0acc2cc26d1fe1722463ffb6db479a57bbff1b719db` | HF `argmaxinc/whisperkit-coreml` folder `openai_whisper-small` |
+| **Total** | **4902165248** | **4674.9 MB** | | |
+
+`Models/manifest.json` is regenerated by `convert.py` and holds the same paths
+as repo-relative strings. It is gitignored along with the rest of `Models/`;
+this file is the committed copy of that information.
+
+## Verifying
+
+```bash
+cd <repo>/Models
+for d in *.mlpackage whisperkit; do
+  h=$(find "$d" -type f -exec shasum -a 256 {} + \
+      | sed "s|$d/||" | LC_ALL=C sort \
+      | shasum -a 256 | cut -d' ' -f1)
+  echo "$d $h"
+done
+```
+
+Compare against the SHA-256 column above. A mismatch means the bundle differs
+from what the app was tuned against — for the Laya router in particular, the
+tokenizer and question schema in `ReflexCore/Sources/ReflexCore/Resources/`
+were exported against one specific checkpoint, so a different Laya build will
+transcribe wrong even if it loads without error.
+
+## Why gitignored
+
+| Asset | Bytes | Reason |
+|---|---|---|
+| `Models/*.mlpackage` | 4.41 GB | Generated build output, not source. |
+| `Models/whisperkit/` | 469 MB | Third-party download, not source. |
+| `tools/.venv/` | 767 MB | Regenerable from `tools/requirements.txt`. |
+
+Every one of these was reported to the user rather than silently excluded.
+Committing them would add ~5.2 GB to the repository; Atlas convention is
+local-first for anything over ~50 MB, with this manifest as the committed
+placeholder.

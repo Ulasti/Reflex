@@ -1,0 +1,181 @@
+REFLEX PROJECT SELF-CONTAINMENT AUDIT — RE-RUN
+Generated: 2026-10-02 (second pass, after the integrity audit)
+Supersedes: the 2026-10-02T18:31:48Z audit, which reported a false PASS.
+Rule applied: a fresh git clone must produce a project that is fully
+             understood and runnable, with every load-bearing asset
+             inside the project directory.
+
+====================================================================
+WHY THIS FILE WAS REWRITTEN
+====================================================================
+The first audit closed with "PASS. No load-bearing asset lives outside
+the project directory." That was wrong.
+
+`ReflexCore/Sources/ReflexCore/LiveTranscriber.swift` still resolved
+the models directory as:
+
+    FileManager.default.homeDirectoryForCurrentUser
+        .appendingPathComponent("Development/Reflex/Models")
+
+`~/Development/Reflex` was deleted during the integration. Proven, not
+inferred — `reflex-cli --diagnose` reported:
+
+    x Whisper model: whisper-small models not found in
+      /Users/emir/Development/Reflex/Models
+    1 blocking issue(s)
+
+Two things were wrong, and the second is the serious one:
+
+  1. A live bug. The app's Diagnostics button and `--diagnose` both
+     read a path that does not exist. Transcription still worked,
+     because AppModel used a different, correct resolver — which is
+     exactly why it survived: a false alarm, not a crash.
+
+  2. The audit's own method had a blind spot. It grepped for the
+     literal string `/Users/`. This path is assembled from two tokens
+     and never appears literally, so the grep passed clean over it.
+     The audit then wrote "ALL rewritten... No $HOME assumption
+     remains in any load-bearing path" and listed only two intentional
+     hits. Six of seven paths were fixed and the seventh was reported
+     as zero remaining.
+
+Lesson recorded in ATLAS.md Decisions: audit the API, not the string.
+
+====================================================================
+FIX
+====================================================================
+One resolver, three callers.
+
+  ReflexWhisperKit.defaultModelsDirectory   (ReflexCore, the source of truth)
+    |- ReflexEnvironment.modelDirectory()   (Reflex app + the bundle fallback)
+    \- defaultModelsDirectory()             (reflex-cli)
+
+All now derive `Models/` from `#filePath`, never from `$HOME`. The app
+wrapper keeps only the one thing that is genuinely app-specific: the
+`Bundle.main.resourceURL` fallback for a shipped `.app` carrying its own
+weights.
+
+Files changed:
+  ReflexCore/Sources/ReflexCore/LiveTranscriber.swift   resolver rewritten
+  ReflexCore/Sources/ReflexCLI/main.swift               now delegates
+  Reflex/ReflexApp.swift                                now delegates (+ import)
+
+====================================================================
+VERIFICATION
+====================================================================
+  $ ./reflex-cli --diagnose
+    ✓ Whisper model
+    Ready. No blocking issues.                          <- was 1 blocking issue
+
+  $ ./reflex-cli --verify
+    verifying all packages...
+    verify OK                                            exit 0
+
+  $ ./reflex-cli --laya-ref tools/laya_reference.json
+    126/126 checks passed
+
+  $ ./files/build-and-verify.sh
+    All builds succeeded.                                exit 0
+
+====================================================================
+RE-AUDIT WITH A PATTERN THAT CATCHES ASSEMBLED PATHS
+====================================================================
+Every project-owned source file, excluding tools/.venv. Searching for
+the home-directory APIs rather than for a literal path:
+
+  grep -rnE 'homeDirectoryForCurrentUser|NSHomeDirectory\(\)|getpwuid|
+             Path\.home\(\)|expanduser|~/[A-Za-z]' \
+    --include=*.swift --include=*.py --include=*.yml \
+    --include=*.sh --include=*.json \
+    Reflex ReflexCore/Sources tools/*.py project.yml files
+
+Four hits, each classified by reading it:
+
+  ReflexCore/.../PayloadExtractor.swift:82   NSHomeDirectory() + "/Applications"
+      INTENTIONAL. Opening ~/Applications for the user to pick an app.
+      Not an asset path.
+
+  ReflexCore/.../ActionDispatcher.swift:781   URL(NSHomeDirectory())
+      INTENTIONAL. Base for resolving ~/Downloads, ~/Desktop etc. when
+      the user says "save to my desktop". Runtime user data, not assets.
+
+  tools/convert.py:331                        args.output.expanduser()
+      INTENTIONAL. Expands a user-supplied `--output` CLI argument.
+      Only acts when the user passes `~` explicitly.
+
+  Reflex/ReflexApp.swift:22                   a comment
+      Not code. Documents the D17 failure for the next reader.
+
+ZERO load-bearing asset paths outside the project.
+
+Also checked for multi-token paths, the class the first audit missed:
+
+  grep -rnE 'appendingPathComponent\("[^"]*"\)' ... | grep -iE 'development|documents|desktop|models'
+
+Two hits, both relative to an already-resolved repo root:
+
+  ReflexCLI/main.swift:705  tools/download_whisperkit_models.py
+  ReflexCLI/main.swift:714  tools/download_whisperkit_models.py
+
+Both walk up from the binary location or from the resolved models
+directory. In-project by construction.
+
+====================================================================
+ASSET TABLE (unchanged from the first pass, re-verified on disk)
+====================================================================
+Asset | Current Location | In Project? | Size | Action Taken | Gitignored?
+-------|------------------|-------------|------|--------------|-----------
+Swift app sources | Reflex/ | YES | 60KB | verified in place | no
+Core logic + CLI | ReflexCore/Sources | YES | 2572KB | verified in place | no
+XcodeGen spec | project.yml | YES | 1.8KB | verified in place | no
+Generated xcodeproj | Reflex.xcodeproj | YES | 68KB | regenerated | no
+Tokenizer/config/mel | ReflexCore/.../Resources | YES | 2244KB | verified | no
+Implementation plan | docs/implementation-plan.md | YES | 7.7KB | moved from Desktop, SHA-256 verified | no
+Voice action reference | docs/jev-voice-action-reference.md | YES | 6.6KB | moved from Desktop, SHA-256 verified | no
+HF model cache | .cache/huggingface | YES | 7.3MB | MOVED in; download path pinned by tools/project_env.py | yes (.cache/)
+Whisper .mlpackage (12) | Models/ | YES | ~3.3GB | local-first; Models/MANIFEST.md committed | yes (Models/*)
+Laya .mlpackage (2) | Models/ | YES | 1.22GB | same | yes (Models/*)
+WhisperKit pack | Models/whisperkit/ | YES | 469MB | same | yes (Models/*)
+Python venv | tools/.venv/ | YES | 767MB | regenerable from requirements.txt | yes
+SPM build dir | ReflexCore/.build/ | YES | 395MB | build output, not an input | yes
+
+External dependencies that cannot move (unchanged, all deliberate):
+  1. Xcode 27.0 / Swift 6.4            system toolchain
+  2. XcodeGen                           brew install xcodegen
+  3. WhisperKit >=1.1.0                 SPM, Package.resolved committed
+  4. HF checkpoints (openai/whisper, convaiinnovations/laya,
+     argmaxinc/whisperkit-coreml)       fetched at conversion time into
+                                        .cache/huggingface, then converted
+  5. ~/Library/Application Support/Reflex/session-logs.json
+                                        runtime OUTPUT via SessionLog.swift.
+                                        Not an input. Not relocated by design.
+
+====================================================================
+HEAVY ASSET DISCLOSURE
+====================================================================
+  Path | Size | Why gitignored | Placeholder
+  ---- | ---- | -------------- | -----------
+  Models/*.mlpackage | ~4.5 GB | generated from model weights | Models/MANIFEST.md
+  Models/whisperkit/ | 469 MB | third-party HF download | Models/MANIFEST.md
+  tools/.venv/ | 767 MB | regenerable from requirements.txt | tools/requirements.txt
+  ReflexCore/.build/ | 395 MB | SPM build output | none needed
+  .cache/huggingface/ | 7.3 MB | HF cache, pinned in-project | Models/MANIFEST.md
+
+All 15 model tree hashes in Models/MANIFEST.md were recomputed
+independently with the manifest's own one-liner. All 15 match.
+
+====================================================================
+VERDICT
+====================================================================
+PASS — now on a premise that survives an independent check.
+
+No load-bearing asset lives outside the project. Every gitignored heavy
+asset is disclosed with size, reason, and a committed placeholder. All
+15 model tree hashes verify. `--diagnose` reports zero blocking issues,
+`--verify` exits 0, `--laya-ref` is 126/126, and a clean derived-data
+build of both app targets succeeds (459 compile actions, 0 errors,
+evidence/build-clean.log).
+
+The difference from the first pass is not that this audit is more
+careful. It is that this one grepped for the API instead of the string,
+and then read every hit instead of counting them.

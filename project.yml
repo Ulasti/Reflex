@@ -1,0 +1,66 @@
+name: Reflex
+options:
+  bundleIdPrefix: com.reflex
+  deploymentTarget:
+    macOS: "14.0"
+    iOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: 6L6C77HZXN
+packages:
+  ReflexCore:
+    path: ReflexCore
+targets:
+  Reflex-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - Reflex
+    dependencies:
+      - package: ReflexCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.reflex.app.mac
+        PRODUCT_NAME: Reflex
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        ENABLE_HARDENED_RUNTIME: YES
+        ENABLE_APP_SANDBOX: NO
+        CODE_SIGN_ENTITLEMENTS: Reflex/Reflex.entitlements
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Reflex captures microphone audio to transcribe commands on-device."
+        INFOPLIST_KEY_NSAppleEventsUsageDescription: "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media)."
+  Reflex-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - Reflex
+    dependencies:
+      - package: ReflexCore
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.reflex.app.ios
+        PRODUCT_NAME: Reflex
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_NSMicrophoneUsageDescription: "Reflex captures microphone audio to transcribe commands on-device."
+    scheme:
+      testTargets: []
+schemes:
+  Reflex-macOS:
+    build:
+      targets:
+        Reflex-macOS: all
+    run:
+      config: Debug
+  Reflex-iOS:
+    build:
+      targets:
+        Reflex-iOS: all
+    run:
+      config: Debug

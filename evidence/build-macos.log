@@ -1,0 +1,60 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Reflex.xcodeproj -scheme Reflex-macOS -configuration Debug -destination platform=macOS -derivedDataPath /tmp/reflex-dd build
+
+Resolve Package Graph
+
+
+Resolved source packages:
+  swift-argument-parser: https://github.com/apple/swift-argument-parser.git @ 1.8.2
+  ReflexCore: /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore
+  argmax-oss-swift: https://github.com/argmaxinc/WhisperKit.git @ 1.1.0
+
+--- xcodebuild: WARNING: Using the first of multiple matching destinations:
+{ platform:macOS, arch:arm64, id:00006034-0018490A0184001C, name:My Mac }
+{ platform:macOS, arch:x86_64, id:00006034-0018490A0184001C, name:My Mac }
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (7 targets)
+    Target 'Reflex-macOS' in project 'Reflex'
+        ➜ Explicit dependency on target 'ReflexCore-product' in project 'ReflexCore'
+    Target 'ReflexCore-product' in project 'ReflexCore'
+        ➜ Explicit dependency on target 'ReflexCore' in project 'ReflexCore'
+        ➜ Explicit dependency on target 'ReflexCore_ReflexCore' in project 'ReflexCore'
+        ➜ Explicit dependency on target 'WhisperKit-product' in project 'argmax-oss-swift'
+    Target 'ReflexCore' in project 'ReflexCore'
+        ➜ Explicit dependency on target 'ReflexCore_ReflexCore' in project 'ReflexCore'
+        ➜ Explicit dependency on target 'WhisperKit-product' in project 'argmax-oss-swift'
+    Target 'WhisperKit-product' in project 'argmax-oss-swift'
+        ➜ Explicit dependency on target 'WhisperKit' in project 'argmax-oss-swift'
+        ➜ Explicit dependency on target 'ArgmaxCore' in project 'argmax-oss-swift'
+    Target 'WhisperKit' in project 'argmax-oss-swift'
+        ➜ Explicit dependency on target 'ArgmaxCore' in project 'argmax-oss-swift'
+    Target 'ArgmaxCore' in project 'argmax-oss-swift' (no dependencies)
+    Target 'ReflexCore_ReflexCore' in project 'ReflexCore' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk /tmp/reflex-dd/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache
+    cd /Users/emir/Documents/Atlas/Projects/reflex/Reflex.xcodeproj
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -o /tmp/reflex-dd/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache
+
+PruneExplicitPrecompiledModules /tmp/reflex-dd/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/reflex-dd/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/reflex-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+** BUILD SUCCEEDED **
+
