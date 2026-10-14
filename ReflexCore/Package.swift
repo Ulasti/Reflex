@@ -29,6 +29,11 @@ let package = Package(
             name: "ReflexCLI",
             dependencies: ["ReflexCore"],
             path: "Sources/ReflexCLI"
+        ),
+        .testTarget(
+            name: "ReflexCoreTests",
+            dependencies: ["ReflexCore"],
+            path: "Tests/ReflexCoreTests"
         )
     ]
 )
