@@ -78,3 +78,44 @@
 
 ## Key Architectural Shifts
 
+| From (Reflex Today) | To (Target) |
+|---------------------|-------------|
+| RuleRouter (keywords) → LayaRouter (intent+slots) → DecisionArbiter | **Single Laya call** → **PolicyEngine** (thresholds) → ActionDispatcher |
+| Transcript only to Laya | **Transcript + Snapshot + Context** to Laya |
+| Laya generates intent+slots | **Laya returns probabilities** for each typed question; Swift decides |
+| AppleScript/keystroke execution | **JS execution in Safari** for click/type/scroll/history; keystroke fallback |
+| No browser context | **`BrowserContext`** (prev page + last 3 actions) in every decision |
+| Single VAD/cooldown | **Per-intent completion gates** (command vs payload silence) |
+| No correction logic | **Explicit `is_correction` + reversal/redirect** |
+
+---
+
+## Safari-Specific Notes
+
+- **No Playwright on macOS** — we use `WKWebView`/`JSContext` or AppleScript `do JavaScript` for in-page JS. The snapshot and click/type JS must be self-contained strings.
+- **`data-reflex-id` persistence** — Safari doesn't keep custom attributes across navigations. Re-run snapshot on every page load / before every `browser_command`.
+- **Element rects** — `getBoundingClientRect()` works in Safari JS. Use for viewport check and `scrollIntoView()`.
+- **New tab detection** — After click, poll `window.open` or check `document.title`/`URL` change; Safari JS can't directly detect new tabs, but we can compare tab count via AppleScript if needed.
+- **Security** — `do JavaScript` requires "Allow JavaScript from Apple Events" in Safari Develop menu. For distribution, we'll need a Safari Web Extension (later). For now, document the setting.
+
+---
+
+## What We Explicitly DON'T Copy
+
+| jev Feature | Why Not |
+|-------------|---------|
+| Cloud Jev API | We're local-first; Laya on-device |
+| Node server + WebSocket | Native Swift app; no separate process |
+| Headed Chromium + Playwright | Safari is the platform browser; Playwright not available on iOS/macOS easily |
+| Persistent Chromium profile | Safari profile = user's actual profile |
+| CDP attach mode | Safari doesn't support CDP |
+| Numbered overlays on page | Requires Safari Web Extension (later); for now, UI-based disambiguation list |
+| Real-time cost/token tracking | No API cost locally |
+
+---
+
+## Next Steps
+
+1. **Approve this roadmap** → I'll create GitHub issues / Atlas tasks per phase.
+2. **Start Phase 1** — the snapshot JS is the linchpin; everything else builds on it.
+3. **Keep Laya prompt engineering separate** — we can iterate prompts without touching Swift.

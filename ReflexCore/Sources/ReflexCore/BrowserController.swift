@@ -158,32 +158,32 @@ public enum BrowserController {
     public static func clickLink(at index: Int, in browser: String? = nil) throws -> String {
         let js = """
         (function() {
-            // Selector for interactive elements
-            var selector = 'a[href], button, input:not([type=hidden]), textarea, select, summary, ' +
-                           '[role=button], [role=link], [role=tab], [role=menuitem], [role=option], ' +
-                           '[role=checkbox], [role=radio], [role=switch], [role=searchbox], ' +
-                           '[role=combobox], [role=textbox], [contenteditable=true], [onclick]';
-            var elements = document.querySelectorAll(selector);
-            var out = [];
-            var nextId = 1;
-            for (var i = 0; i < elements.length && out.length < 400; i++) {
-                var el = elements[i];
-                var rect = el.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) continue;
-                if (!el.offsetParent) continue;
-                var label = (el.textContent || '').replace(/\\\\s+/g, ' ').trim();
-                if (!label) continue;
-                var href = el.getAttribute('href') || '';
-                if (href === '#' || href.indexOf('#') === 0 || href.indexOf('javascript:') === 0) continue;
-                var id = el.getAttribute('data-reflex-id');
-                if (!id) {
-                    id = 'r' + String(nextId++);
-                    el.setAttribute('data-reflex-id', id);
+            function chrome(a) {
+                var n = a;
+                while (n && n !== document.body) {
+                    var tag = (n.tagName || '').toLowerCase();
+                    if (tag === 'header' || tag === 'nav' || tag === 'footer' ||
+                        tag === 'button' || tag === 'menu') return true;
+                    n = n.parentElement;
                 }
-                var role = el.getAttribute('role') || '';
-                if (!role) {
-                    var tag = el.tagName.toLowerCase();
-                    var type = (el.getAttribute('type') || '').toLowerCase();
+                return false;
+            }
+            // Skip links inside Google's AI response / "knowledge panel" sections
+            function inAIResponse(a) {
+                var n = a;
+                while (n && n !== document.body) {
+                    var className = (n.className || '').toString();
+                    var id = (n.id || '').toString();
+                    // Common AI response container classes/ids
+                    if (className.includes('kno-rdesc') ||      // knowledge panel description
+                        className.includes('g-blk') ||         // knowledge block
+                        className.includes('V3FYCf') ||        // AI overview
+                        className.includes('ULSxyf') ||        // AI response
+                        className.includes('yDYNvb') ||        // AI answer
+                        className.includes('e24Kjd') ||        // AI snippet
+                        className.includes('bkWMgd') ||        // AI box
+                        id.includes('kno-') ||                 // knowledge panel
+                        className.includes('mnr-c') ||         // "People also ask" / AI
                         className.includes('Wt5Tfe') ||        // AI featured snippet
                         className.includes('Gx5Zad')) {        // AI overview wrapper
                         return true;
