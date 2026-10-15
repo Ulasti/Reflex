@@ -231,7 +231,7 @@ public enum ShortcutController {
     private static func pressKey(_ shortcut: Shortcut) throws {
         let part: String
         if let keyChar = shortcut.keyChar {
-            part = "keystroke \"\(Self.escape(keyChar))\""
+            part = "keystroke \"\(keyChar.appleScriptEscaped)\""
         } else if let keyCode = shortcut.keyCode {
             part = "key code \(keyCode)"
         } else {
@@ -252,9 +252,6 @@ public enum ShortcutController {
         return "{\(items.joined(separator: ", "))}"
     }
 
-    private static func escape(_ text: String) -> String {
-        text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-    }
     #endif
 }
 

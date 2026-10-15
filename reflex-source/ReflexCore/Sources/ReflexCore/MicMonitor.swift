@@ -30,14 +30,32 @@ public final class StreamSegmenter: @unchecked Sendable {
     private var rearm = 0
     private var noiseFloor: Float = 0.0005
 
+    /// These callbacks are assigned from the main thread (`MicMonitor.start`)
+    /// and fired from the audio thread, so both sides go through `lock`. The
+    /// stored closure is returned before it is called, never under the lock
+    /// (atlas/docs/audit-2026-10-14.md, N8).
+    private let lock = NSLock()
+    private var storedOnSegment: (@Sendable ([Float]) -> Void)?
+    private var storedOnLevel: (@Sendable (Float, Bool) -> Void)?
+    private var storedOnPartial: (@Sendable ([Float]) -> Void)?
+
     /// Called on the audio thread with each finalized speech segment.
-    public var onSegment: (@Sendable ([Float]) -> Void)?
+    public var onSegment: (@Sendable ([Float]) -> Void)? {
+        get { lock.withLock { storedOnSegment } }
+        set { lock.withLock { storedOnSegment = newValue } }
+    }
     /// Called on the audio thread ~every 100 ms with (normalized rms, speaking).
-    public var onLevel: (@Sendable (Float, Bool) -> Void)?
+    public var onLevel: (@Sendable (Float, Bool) -> Void)? {
+        get { lock.withLock { storedOnLevel } }
+        set { lock.withLock { storedOnLevel = newValue } }
+    }
     /// Called on the audio thread with the current rolling speech window each
     /// time a speech window is processed (~100 ms cadence). Consumers feed it
     /// to a streaming transcriber for live partials; throttle downstream.
-    public var onPartial: (@Sendable ([Float]) -> Void)?
+    public var onPartial: (@Sendable ([Float]) -> Void)? {
+        get { lock.withLock { storedOnPartial } }
+        set { lock.withLock { storedOnPartial = newValue } }
+    }
 
     public init(
         window: Int = 1600,
@@ -142,46 +160,6 @@ public final class StreamSegmenter: @unchecked Sendable {
     }
 
     public private(set) var speaking = false
-}
-
-/// Offline variant of `StreamSegmenter` for files: splits a whole capture into
-/// speech sections so the CLI can replay the exact streaming path headlessly.
-public enum SpeechSegmentifier {
-    public struct Section: Sendable, Equatable {
-        public let sampleRange: Range<Int>
-    }
-
-    public static func sections(in samples: [Float], window: Int = 1600) -> [Section] {
-        guard samples.count >= window else { return [] }
-        let peak = AudioPreflight.peak(samples)
-        let threshold = max(Double(peak) * 0.02, 0.0005)
-
-        var result: [Section] = []
-        var start: Int?
-        var lastSpeechEnd = -1
-        var silenceRuns = 0
-        var offset = 0
-        while offset + window <= samples.count {
-            let slice = samples[offset..<(offset + window)]
-            let energy = slice.reduce(0.0) { $0 + Double($1) * Double($1) }
-            let rms = (energy / Double(window)).squareRoot()
-            if rms >= threshold {
-                if start == nil { start = offset }
-                lastSpeechEnd = offset + window
-                silenceRuns = 0
-            } else if start != nil {
-                silenceRuns += 1
-                if silenceRuns >= 6 {
-                    result.append(Section(sampleRange: start!..<lastSpeechEnd))
-                    start = nil
-                    silenceRuns = 0
-                }
-            }
-            offset += window
-        }
-        if let start { result.append(Section(sampleRange: start..<max(lastSpeechEnd, start))) }
-        return result
-    }
 }
 
 /// Bounded-memory live mic wrapper around `StreamSegmenter`. Owns the

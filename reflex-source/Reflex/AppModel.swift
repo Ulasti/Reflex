@@ -76,7 +76,7 @@ final class AppModel: ObservableObject {
     private let feedbackCooldown: TimeInterval = 1.0
 
     #if os(macOS)
-    private var hotKeyID: UInt32 = 1
+    private let hotKeyID: UInt32 = 1
     /// Holds the mic mute for as long as the feedback tone sounds.
     private var feedbackTone: FeedbackTone?
     #endif

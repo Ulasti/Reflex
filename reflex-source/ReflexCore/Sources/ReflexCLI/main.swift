@@ -189,12 +189,11 @@ struct ReflexCLI {
                 let decision = try await routedDecision(transcript)
                 let plan = CommandPlan.make(
                     target: decision.actionTarget.identifier,
-                    confidence: decision.confidenceValue,
                     transcript: decision.transcript
                 )
                 print("transcript: \(plan.transcript)")
-                print("action: \(plan.action) (conf \(String(format: "%.2f", plan.confidence)), addressed \(String(format: "%.2f", plan.addressed)))")
-                print("submit: \(plan.submit), inApp: \(plan.inApp), compound: \(plan.compound)")
+                print("action: \(plan.action) (conf \(String(format: "%.2f", decision.confidenceValue)), addressed \(String(format: "%.2f", decision.addressed)))")
+                print("submit: \(plan.submit), inApp: \(plan.candidates.inApp ?? "-")")
                 let args = plan.args.sorted { $0.key < $1.key }
                 if args.isEmpty {
                     print("args: none")
@@ -218,10 +217,9 @@ struct ReflexCLI {
                     let decision = try await routedDecision(part.transcript)
                     let plan = CommandPlan.make(
                         target: decision.actionTarget.identifier,
-                        confidence: decision.confidenceValue,
                         transcript: decision.transcript
                     )
-                    var line = "[\(index + 1)] \(part.transcript) -> \(plan.action) (conf \(String(format: "%.2f", plan.confidence)))"
+                    var line = "[\(index + 1)] \(part.transcript) -> \(plan.action) (conf \(String(format: "%.2f", decision.confidenceValue)))"
                     if part.submit { line += " +submit" }
                     print(line)
                 }

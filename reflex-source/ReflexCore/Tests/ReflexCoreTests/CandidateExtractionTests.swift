@@ -88,3 +88,26 @@ struct CandidateExtractionTests {
         #expect(!PayloadExtractor.isSiteToken(token))
     }
 }
+
+/// App names become actions by resolving against installed bundles, so the
+/// matching rules decide which app a phrase maps to.
+#if os(macOS)
+@Suite("AppResolver")
+struct AppResolverTests {
+    @Test("an alias resolves to the app it names")
+    func resolvesAlias() {
+        #expect(AppResolver.url(for: "preferences")?.lastPathComponent == "System Settings.app")
+    }
+
+    @Test("a spoken name matches a whole word of the app name")
+    func resolvesWordMatch() {
+        #expect(AppResolver.url(for: "monitor")?.lastPathComponent == "Activity Monitor.app")
+        #expect(AppResolver.url(for: "activity monitor")?.lastPathComponent == "Activity Monitor.app")
+    }
+
+    @Test("an unknown name resolves to nothing instead of a random substring")
+    func refusesUnknownNames() {
+        #expect(AppResolver.url(for: "zznotanapp") == nil)
+    }
+}
+#endif

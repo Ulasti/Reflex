@@ -118,15 +118,31 @@ struct PhrasePredicateTests {
     @Test("\"find X and copy the path\" is the same request to both sides")
     func fileCopyAgrees() {
         let phrase = "find my invoice and copy the path"
-        #expect(ActionDispatcher.isFileCopyRequest(phrase))
+        #expect(RuleRouter.isFileCopyRequest(phrase))
         #expect(RuleRouter().classify(phrase)?.target == "file_operation")
     }
 
     @Test("a local search is still a file operation, but not a copy-path request")
     func localSearchIsNotCopy() {
         let phrase = "search my documents for the invoice"
-        #expect(!ActionDispatcher.isFileCopyRequest(phrase))
+        #expect(!RuleRouter.isFileCopyRequest(phrase))
         #expect(RuleRouter().classify(phrase)?.target == "file_operation")
+    }
+}
+
+/// One escaper serves every AppleScript literal (N2); if it is wrong, every
+/// osascript payload is wrong.
+@Suite("AppleScript escaping")
+struct AppleScriptEscapeTests {
+    @Test("quotes and backslashes are escaped for interpolation")
+    func escapesQuotesAndBackslashes() {
+        #expect(#"say "hi""#.appleScriptEscaped == #"say \"hi\""#)
+        #expect(#"C:\tmp"#.appleScriptEscaped == #"C:\\tmp"#)
+    }
+
+    @Test("plain text is left alone")
+    func leavesPlainTextAlone() {
+        #expect("/Users/me/Documents".appleScriptEscaped == "/Users/me/Documents")
     }
 }
 

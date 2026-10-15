@@ -147,10 +147,11 @@ cd tools && python3.10 -m venv .venv && .venv/bin/pip install -r requirements.tx
 The loop for a change to Reflex.
 
 1. Read `ATLAS.md`. Confirm the branch is `atlas/<feature>`, created from `dev`.
-2. `xcodegen generate` if you touched `project.yml`, `Reflex/`, or
-   `ReflexCore/` — the `.xcodeproj` is generated, so never hand-edit it.
-3. Build both app targets and the CLI.
-4. Run `./ReflexCore/.build/out/Products/Release/reflex-cli --verify`.
+2. `atlas/files/build-and-verify.sh` if you touched `atlas/project.yml`,
+   `reflex-source/Reflex/`, or `reflex-source/ReflexCore/` — the `.xcodeproj` is
+   generated from the spec, so never hand-edit it.
+3. That script builds both app targets, the CLI and the test suite.
+4. It runs `reflex-source/ReflexCore/.build/out/Products/Release/reflex-cli --verify`.
 5. Exercise the change headlessly through the CLI before touching the UI.
    `--help` lists the verbs; `--diagnose` reports permissions and environment.
    Require **0 blocking issues** from `--diagnose` and **126/126** from
@@ -186,7 +187,7 @@ The loop for a change to Reflex.
   `homeDirectoryForCurrentUser`, `NSHomeDirectory()`, `Path.home()`,
   `getpwuid`, `expanduser` — then read each hit.
 - **If an asset is over ~50 MB, then keep it local and gitignored with a
-  committed manifest.** `Models/MANIFEST.md`. Never commit weights unasked.
+  committed manifest.** `reflex-source/Models/MANIFEST.md`. Never commit weights unasked.
 - **If a check cannot be verified, then record it as unverifiable.** Never
   report an assumed pass.
 - **If a verification command can silently pass, then that is a bug.** Fix it
@@ -201,12 +202,12 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 |---|---|---|---|
 | 1 | macOS target builds | `evidence/build-macos.log` — `** BUILD SUCCEEDED **` | **Pass** |
 | 2 | iOS/iPadOS target builds | `evidence/build-ios.log` — `** BUILD SUCCEEDED **` | **Pass** |
-| 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — `Build complete!` | **Pass** |
+| 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — `Build complete!` | **Pass.** `atlas/files/build-and-verify.sh` also asserts the macOS log contains real compile actions, so a cache-hit no-op can no longer pass as evidence (D23). |
 | 4 | Every CoreML bundle compiles via `reflex-cli --verify` | `evidence/verify-models.log` — `verify OK`, exit 0 | **Pass** |
 | 5 | `--verify` genuinely fails when models are absent | `evidence/verify-models.log` shows verify OK with models present; verified separately that --verify exits 1 when models directory is empty | **Pass** |
-| 6 | Automated unit tests pass | `evidence/tests.log` | **N/A — no test target exists.** Verified absent, not assumed. See Doctor D7. |
+| 6 | Automated unit tests pass | `evidence/tests.log` — `Test run with … passed` | **Pass** — `reflex-source/ReflexCore/Tests/ReflexCoreTests` runs under `atlas/files/build-and-verify.sh`. The earlier "no test target exists" was true only before that target was added. |
 | 7 | No load-bearing asset lives outside the project | `evidence/self-containment.txt`, re-verified in `evidence/integrity-audit-2026-10-02.txt` | **Pass (re-verified 2026-10-02).** The original Pass was wrong: `LiveTranscriber.swift` still resolved models from `~/Development/Reflex`. Fixed and re-proven by `--diagnose` reporting zero blocking issues. |
-| 8 | Gitignored heavy assets disclosed with committed placeholders | `evidence/self-containment.txt`, `Models/MANIFEST.md` | **Pass** |
+| 8 | Gitignored heavy assets disclosed with committed placeholders | `evidence/self-containment.txt`, `reflex-source/Models/MANIFEST.md` | **Pass** |
 | 9 | No secrets or credentials committed | `evidence/security-scan.txt` | **Pass** |
 | 10 | Referenced paths and artifacts all resolve | `evidence/artifacts-check.txt` | **Pass** |
 | 11 | ATLAS.md status, branch, next steps current | `evidence/atlas-status.txt` | **Pass** |

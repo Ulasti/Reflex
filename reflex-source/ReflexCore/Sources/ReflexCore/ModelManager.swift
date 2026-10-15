@@ -74,11 +74,6 @@ public actor ModelManager {
         loadedModels.removeValue(forKey: kind)
     }
 
-    /// Releases everything. Used by the engine when backgrounding on iOS.
-    public func unloadAll() {
-        loadedModels.removeAll()
-    }
-
     /// Optional preflight: verifies every package on disk compiles cleanly
     /// without loading it into memory.
     public func verifyCompilation() async throws {

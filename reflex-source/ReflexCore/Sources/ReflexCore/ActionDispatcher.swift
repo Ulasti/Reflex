@@ -115,34 +115,9 @@ public struct ActionDispatcher: Sendable {
         }
         let plan = CommandPlan.make(
             target: decision.actionTarget.identifier,
-            confidence: decision.confidenceValue,
             transcript: decision.transcript
         )
         return try dispatchSingle(plan)
-    }
-
-    /// Executes a pre-routed list of decisions (one per compound clause) in
-    /// order, gating each independently so a shaky clause never fires.
-    public func dispatchCompound(_ decisions: [ReflexDecision]) throws -> ReflexActionResult {
-        var summaries: [String] = []
-        var anyExecuted = false
-        for decision in decisions {
-            let result = try dispatch(decision)
-            switch result {
-            case .noOp(let reason):
-                summaries.append("Skipped \(reason)")
-            default:
-                anyExecuted = true
-                summaries.append(result.summary)
-            }
-        }
-        if summaries.isEmpty { return .noOp(reason: "compound had no clauses") }
-        if !anyExecuted { return .noOp(reason: summaries.joined(separator: " • ")) }
-        // Lead with the action summary so the status line reads as done work.
-        let lead = summaries[0]
-        let rest = summaries.dropFirst().map { "\($0)" }
-        let combined = ([lead] + rest).joined(separator: " • ")
-        return .browserActed(action: combined)
     }
 
     private func dispatchSingle(_ plan: CommandPlan) throws -> ReflexActionResult {
@@ -234,8 +209,10 @@ public struct ActionDispatcher: Sendable {
     private func mediaControl(plan: CommandPlan) throws -> ReflexActionResult {
         let lower = plan.transcript.lowercased()
 
-        // Volume — the extractor's closed-set VolumeOp beats the heuristics.
-        if let op = plan.candidates.volumeOp ?? Self.legacyVolumeOp(lower) {
+        // Volume — one closed-set VolumeOp, from the extractor. A second table
+        // used to live here and could disagree with it
+        // (atlas/docs/audit-2026-10-14.md, "also noticed").
+        if let op = plan.candidates.volumeOp {
             return try Self.performVolume(op)
         }
 
@@ -308,7 +285,7 @@ public struct ActionDispatcher: Sendable {
             let applied = try BrightnessController.set(percent)
             return .brightnessSet(percent: applied)
         }
-        if lower.contains("maximum") || lower.contains("highest") || lower.contains("full") || lower.contains("max") {
+        if lower.contains("maximum") || lower.contains("full") || lower.contains("max") {
             let applied = try BrightnessController.set(100)
             return .brightnessSet(percent: applied)
         }
@@ -503,16 +480,6 @@ public struct ActionDispatcher: Sendable {
         return nil
     }
 
-    /// Whether a transcript asks for the "find X and copy the path" file op.
-    /// Pure, and shared with `RuleRouter`, so the router cannot advertise a
-    /// phrase the dispatcher will not run (atlas/docs/audit-2026-10-14.md, S5).
-    static func isFileCopyRequest(_ transcript: String) -> Bool {
-        let lower = transcript.lowercased()
-        let finds = lower.contains("search") || lower.contains("find") || lower.contains("locate")
-        let wantsPath = lower.contains("path") || lower.contains("clipboard") || lower.contains("copy")
-        return finds && wantsPath
-    }
-
     /// Whether text left over after a launch verb could be a shell command,
     /// rather than a mis-transcription of a normal request. This is the guard on
     /// the one path that hands arbitrary text to a shell (S1).
@@ -560,11 +527,9 @@ public struct ActionDispatcher: Sendable {
     /// Quits a named app ("quit calculator") via NSRunningApplication so it
     /// doesn't depend on automation or Accessibility permissions.
     private func quitApp(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
         guard let queried = Self.appName(fromQuitPhrase: plan.transcript) else {
             throw ActionExecutionError.parseFailure
         }
-        _ = lower
         guard let url = AppResolver.url(for: queried), let bundleID = Bundle(url: url)?.bundleIdentifier else {
             throw ActionExecutionError.unknownApp(name: queried)
         }
@@ -626,7 +591,7 @@ public struct ActionDispatcher: Sendable {
             return .movedItems(into: destURL.lastPathComponent)
         }
 
-        if Self.isFileCopyRequest(plan.transcript) {
+        if RuleRouter.isFileCopyRequest(plan.transcript) {
             guard let query = plan.candidates.query ?? Self.candidateQuery(plan) else {
                 throw ActionExecutionError.parseFailure
             }
@@ -661,7 +626,7 @@ public struct ActionDispatcher: Sendable {
         let script = """
         on run
             tell application "Terminal"
-                do script "\(Self.appleScriptEscape(command))"
+                do script "\(command.appleScriptEscaped)"
                 activate
             end tell
         end run
@@ -738,33 +703,6 @@ public struct ActionDispatcher: Sendable {
             try setVolume(50)
             return .volumeSet(percent: 50)
         }
-    }
-
-    /// Legacy volume detection kept as a plan/extractor fallback. Aligned to
-    /// the extractor's ±15 steps so direct and fallback paths agree.
-    private static func legacyVolumeOp(_ lower: String) -> VolumeOp? {
-        guard lower.contains("volume") || lower.contains("mute") || lower.contains("louder")
-            || lower.contains("quieter") || lower.contains("turn up") || lower.contains("turn down") else {
-            return nil
-        }
-        if lower.contains("max") || lower.contains("all the way up") {
-            return .max
-        }
-        if lower.contains("half") || lower.contains("medium volume") {
-            return .half
-        }
-        if lower.contains("unmute") || lower.contains("sound back on") {
-            return .unmute
-        }
-        if lower.contains("mute") { return .mute }
-        if let percent = extractPercent(from: lower) { return .percent(percent) }
-        if lower.contains("louder") || lower.contains("up ") || lower.contains("increase") || lower.contains("raise") {
-            return .up(delta: 15)
-        }
-        if lower.contains("quieter") || lower.contains("down") || lower.contains("decrease") || lower.contains("lower") {
-            return .down(delta: 15)
-        }
-        return nil
     }
 
     private static func setVolume(_ percent: Int) throws {
@@ -846,9 +784,9 @@ public struct ActionDispatcher: Sendable {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].path
         let script = """
         tell application "Finder"
-            set theItems to (every item of folder "\(appleScriptEscape(downloads))" whose name contains "\(appleScriptEscape(matcher))")
+            set theItems to (every item of folder "\(downloads.appleScriptEscaped)" whose name contains "\(matcher.appleScriptEscaped)")
             set n to count of theItems
-            if n > 0 then move theItems to folder "\(appleScriptEscape(destURL.path))"
+            if n > 0 then move theItems to folder "\(destURL.path.appleScriptEscaped)"
             return n
         end tell
         """
@@ -1039,10 +977,6 @@ public struct ActionDispatcher: Sendable {
         let url = siteSearchURL(for: site)
         _ = try BrowserController.open(url)
         return .searchedWeb(query: site.query ?? "", site: site.host)
-    }
-
-    private static func appleScriptEscape(_ text: String) -> String {
-        text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     // MARK: - Process

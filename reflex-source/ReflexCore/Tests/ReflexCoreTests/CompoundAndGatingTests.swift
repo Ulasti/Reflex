@@ -84,7 +84,7 @@ struct DecisionArbiterTests {
 struct CommandPlanTests {
     @Test("make() carries the target, transcript and extracted payload")
     func makeCarriesPayload() {
-        let plan = CommandPlan.make(target: "type_text", confidence: 0.95, transcript: "type buy milk")
+        let plan = CommandPlan.make(target: "type_text", transcript: "type buy milk")
         #expect(plan.action == "type_text")
         #expect(plan.transcript == "type buy milk")
         #expect(plan.candidates.text == "buy milk")

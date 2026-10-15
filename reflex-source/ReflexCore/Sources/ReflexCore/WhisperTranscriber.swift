@@ -39,11 +39,6 @@ public final class WhisperTranscriber: @unchecked Sendable {
         state.withLock { $0 = LoadedModels() }
     }
 
-    /// The variant currently resident in memory, if any.
-    public var loadedKind: ReflexModelKind? {
-        state.withLock { $0.kind }
-    }
-
     /// Compiles and loads `kind` into memory, then runs a silent warm-up pass so
     /// the Neural Engine specializes both graphs. Call at boot or on model
     /// switch to keep the first real `transcribe` off the cold path.

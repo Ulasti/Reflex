@@ -90,8 +90,8 @@ public enum BrowserController {
                 activate
                 if (count of windows) is 0 then make new window
                 \(strategy == "new tab"
-                    ? "make new tab with properties {URL:\"\(escape(target))\"} in front window"
-                    : "set URL of current tab of front window to \"\(escape(target))\"")
+                    ? "make new tab with properties {URL:\"\(target.appleScriptEscaped)\"} in front window"
+                    : "set URL of current tab of front window to \"\(target.appleScriptEscaped)\"")
             end tell
             """
         } else {
@@ -100,8 +100,8 @@ public enum BrowserController {
                 activate
                 if (count of windows) is 0 then make new window
                 \(strategy == "new tab"
-                    ? "make new tab with properties {URL:\"\(escape(target))\"} in front window"
-                    : "set URL of active tab of front window to \"\(escape(target))\"")
+                    ? "make new tab with properties {URL:\"\(target.appleScriptEscaped)\"} in front window"
+                    : "set URL of active tab of front window to \"\(target.appleScriptEscaped)\"")
             end tell
             """
         }
@@ -132,14 +132,14 @@ public enum BrowserController {
             tell application id "\(bundleID)"
                 activate
                 if (count of windows) is 0 then make new window
-                return (do JavaScript "\(escape(code))" in current tab of front window)
+                return (do JavaScript "\(code.appleScriptEscaped)" in current tab of front window)
             end tell
             """
             : """
             tell application id "\(bundleID)"
                 activate
                 if (count of windows) is 0 then make new window
-                return (execute active tab of front window javascript "\(escape(code))")
+                return (execute active tab of front window javascript "\(code.appleScriptEscaped)")
             end tell
             """
         let out = try runOSA(script)
@@ -524,12 +524,6 @@ public enum BrowserController {
                 throw ActionExecutionError.automationDenied(what: "your browsers")
             }
         }
-    }
-
-    private static func escape(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
     }
 
     private static func keystroke(key: String, modifiers: String, bundleID: String) throws {

@@ -67,39 +67,49 @@ public enum AppResolver {
         "viber": "Viber",
     ]
 
-    /// Resolves a spoken app name to an installed bundle URL. Exact match
-    /// first, then a fuzzy prefix on any name ≥ 3 chars (keeps "calculator"
-    /// matching "Calculator.app" and not half the /Applications folder).
+    /// Where macOS keeps app bundles, most specific first.
+    private static let directories = [
+        "/System/Applications",
+        "/System/Applications/Utilities",
+        "/System/Library/CoreServices",
+        "/Applications",
+        "/Applications/Utilities",
+        NSHomeDirectory() + "/Applications",
+    ]
+
+    /// Installed app bundles by lowercased name, built once. `url(for:)` used to
+    /// rescan six directories twice per call, and `RuleRouter.classify` asks
+    /// about every token in a transcript (atlas/docs/audit-2026-10-14.md, N4).
+    private static let installedApps: [String: URL] = {
+        var index: [String: URL] = [:]
+        for directory in directories {
+            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
+            for entry in entries where entry.hasSuffix(".app") {
+                let base = (entry as NSString).deletingPathExtension.lowercased()
+                // First directory wins, so a system app shadows a duplicate.
+                if index[base] == nil {
+                    index[base] = URL(fileURLWithPath: directory).appendingPathComponent(entry)
+                }
+            }
+        }
+        return index
+    }()
+
+    /// Resolves a spoken app name to an installed bundle URL: the alias table,
+    /// then an exact name, then the spoken name as a whole word ("code" →
+    /// "Visual Studio Code"), then a prefix only when it is unambiguous. Names
+    /// are sorted, so the pick never depends on directory read order
+    /// (atlas/docs/audit-2026-10-14.md, N6).
     public static func url(for name: String) -> URL? {
         #if os(macOS)
-        let match = aliases[name.lowercased()] ?? name
-        let directories = [
-            "/System/Applications",
-            "/System/Applications/Utilities",
-            "/System/Library/CoreServices",
-            "/Applications",
-            "/Applications/Utilities",
-            NSHomeDirectory() + "/Applications",
-        ]
-        for directory in directories {
-            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
-            for entry in entries where entry.hasSuffix(".app") {
-                let base = (entry as NSString).deletingPathExtension
-                if base.caseInsensitiveCompare(match) == .orderedSame {
-                    return URL(fileURLWithPath: directory).appendingPathComponent(entry)
-                }
-            }
+        let match = (aliases[name.lowercased()] ?? name).lowercased()
+        if let exact = installedApps[match] { return exact }
+        let names = installedApps.keys.sorted()
+        if let word = names.first(where: { $0.split(separator: " ").contains(Substring(match)) }) {
+            return installedApps[word]
         }
-        for directory in directories {
-            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
-            for entry in entries where entry.hasSuffix(".app") {
-                let base = (entry as NSString).deletingPathExtension
-                if base.count >= 3, base.lowercased().hasPrefix(match.lowercased()) {
-                    return URL(fileURLWithPath: directory).appendingPathComponent(entry)
-                }
-            }
-        }
-        return nil
+        let prefixed = names.filter { $0.count >= 3 && $0.hasPrefix(match) }
+        return prefixed.count == 1 ? installedApps[prefixed[0]] : nil
         #else
         return nil
         #endif
@@ -123,7 +133,7 @@ public enum PayloadExtractor {
         "youtube", "google", "wikipedia", "github", "reddit", "maps", "amazon",
         "imdb", "netflix", "twitter", "x", "spotify", "instagram", "facebook",
         "linkedin", "news", "translate", "gmail", "drive", "docs", "calendar",
-        "chatgpt", "claude", "notion", "hacker news", "hackernews", "twitch",
+        "chatgpt", "claude", "notion", "hackernews", "twitch",
         "figma", "perplexity", "whatsapp", "pinterest", "tumblr",
     ]
 
@@ -435,7 +445,8 @@ public enum PayloadExtractor {
 
     private static func extractVolume(in lower: String) -> VolumeOp? {
         guard lower.contains("volume") || lower.contains("mute") || lower.contains("louder")
-            || lower.contains("quieter") || lower.contains("turn the volume")
+            || lower.contains("quieter") || lower.contains("turn up") || lower.contains("turn down")
+            || lower.contains("turn the volume")
         else { return nil }
         if lower.contains("max") || lower.contains("all the way up") || lower.contains("full volume") {
             return .max
@@ -451,12 +462,14 @@ public enum PayloadExtractor {
             if percent == 0 { return .mute }
             return .percent(percent)
         }
-        if lower.contains("louder") || lower.contains("turn it up") || lower.contains(" turn up")
-            || lower.contains("increase") || lower.contains("raise") {
+        // "turn up" has to match at the start of a transcript too, not only with
+        // a leading space ("turn up the volume" is the common phrasing).
+        if lower.contains("louder") || lower.contains("turn up") || lower.contains("turn it up")
+            || lower.contains("volume up") || lower.contains("increase") || lower.contains("raise") {
             return .up(delta: 15)
         }
-        if lower.contains("quieter") || lower.contains("turn it down") || lower.contains(" turn down")
-            || lower.contains("decrease") || lower.contains("lower") {
+        if lower.contains("quieter") || lower.contains("turn down") || lower.contains("turn it down")
+            || lower.contains("volume down") || lower.contains("decrease") || lower.contains("lower") {
             return .down(delta: 15)
         }
         return nil

@@ -125,7 +125,7 @@ public struct RuleRouter: Sendable {
         // The copy-a-path half shares the dispatcher's predicate, so the router
         // can never advertise a "find X and copy the path" phrase that the
         // dispatcher then refuses to run (atlas/docs/audit-2026-10-14.md, S5).
-        if ActionDispatcher.isFileCopyRequest(t) {
+        if Self.isFileCopyRequest(t) {
             return RuleDecision(target: "file_operation", confidence: 0.9)
         }
         if t.contains("search") || t.contains("find") || t.contains("locate") {
@@ -273,6 +273,18 @@ public struct RuleRouter: Sendable {
         }
         return nil
     }
+
+    /// Whether a transcript asks for the "find X and copy the path" file op.
+    /// Pure, and the one predicate both sides use, so the router can never
+    /// advertise a phrase the dispatcher then refuses to run
+    /// (atlas/docs/audit-2026-10-14.md, S5). Lives here rather than on
+    /// `ActionDispatcher` because that type is macOS-only and this router is not.
+    public static func isFileCopyRequest(_ transcript: String) -> Bool {
+        let lower = transcript.lowercased()
+        let finds = lower.contains("search") || lower.contains("find") || lower.contains("locate")
+        let wantsPath = lower.contains("path") || lower.contains("clipboard") || lower.contains("copy")
+        return finds && wantsPath
+    }
 }
 
 public struct RuleDecision: Sendable, Equatable {
@@ -297,9 +309,6 @@ public struct DecisionArbiter: Sendable {
     /// dispatch — this is the gate that stops "50 times 20" landing in
     /// file_operation at P(6–29%).
     public let minConfidence = 0.4
-    /// In always-on/vocal mode, the "addressed" gate (is anyone talking to
-    /// Reflex?) sits at this level before any command executes.
-    public let addressedThreshold = 0.7
 
     public init() {}
 
