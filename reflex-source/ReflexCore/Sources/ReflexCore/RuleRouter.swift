@@ -122,12 +122,16 @@ public struct RuleRouter: Sendable {
         if t.contains("move ") && (t.contains(" into ") || t.contains(" to the ")) {
             return RuleDecision(target: "file_operation", confidence: 0.9)
         }
+        // The copy-a-path half shares the dispatcher's predicate, so the router
+        // can never advertise a "find X and copy the path" phrase that the
+        // dispatcher then refuses to run (atlas/docs/audit-2026-10-14.md, S5).
+        if ActionDispatcher.isFileCopyRequest(t) {
+            return RuleDecision(target: "file_operation", confidence: 0.9)
+        }
         if t.contains("search") || t.contains("find") || t.contains("locate") {
             let localMarkers = ["folder", "directory", "desktop", "documents", " mac",
                                 "disk", "drive", "finder", "library", "partition"]
-            let marksLocal = localMarkers.contains { t.contains($0) }
-            let copiesPath = t.contains("path") && (t.contains("copy") || t.contains("clipboard"))
-            if marksLocal || copiesPath {
+            if localMarkers.contains(where: { t.contains($0) }) {
                 return RuleDecision(target: "file_operation", confidence: 0.9)
             }
         }

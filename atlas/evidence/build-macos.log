@@ -1,17 +1,21 @@
 Command line invocation:
-    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Reflex.xcodeproj -scheme Reflex-macOS -configuration Debug -destination platform=macOS -derivedDataPath /tmp/reflex-dd build
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild -project Reflex.xcodeproj -scheme Reflex-macOS -configuration Debug -derivedDataPath /private/tmp/reflex-dd CODE_SIGNING_ALLOWED=NO build
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
 
 Resolve Package Graph
 
 
 Resolved source packages:
-  swift-argument-parser: https://github.com/apple/swift-argument-parser.git @ 1.8.2
-  ReflexCore: /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore
   argmax-oss-swift: https://github.com/argmaxinc/WhisperKit.git @ 1.1.1
+  swift-argument-parser: https://github.com/apple/swift-argument-parser.git @ 1.8.2
+  ReflexCore: /Users/emir/Documents/Atlas/Projects/reflex/reflex-source/ReflexCore
 
 --- xcodebuild: WARNING: Using the first of multiple matching destinations:
 { platform:macOS, arch:arm64, id:00006034-0018490A0184001C, name:My Mac }
 { platform:macOS, arch:x86_64, id:00006034-0018490A0184001C, name:My Mac }
+{ platform:macOS, name:Any Mac }
 ComputePackagePrebuildTargetDependencyGraph
 
 Prepare packages
@@ -50,11 +54,19 @@ ClangStatCache /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefaul
     cd /Users/emir/Documents/Atlas/Projects/reflex/Reflex.xcodeproj
     /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX27.0.sdk -o /tmp/reflex-dd/SDKStatCaches.noindex/macosx27.0-26A425-7231f6df4def33e022ae2eb8f782df1a.sdkstatcache
 
+Copy /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/Resources/ReflexCore_ReflexCore.bundle /tmp/reflex-dd/Build/Products/Debug/ReflexCore_ReflexCore.bundle (in target 'Reflex-macOS' from project 'Reflex')
+    cd /Users/emir/Documents/Atlas/Projects/reflex
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /tmp/reflex-dd/Build/Products/Debug/ReflexCore_ReflexCore.bundle /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/Resources
+
+ProcessInfoPlistFile /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/Info.plist /tmp/reflex-dd/Build/Intermediates.noindex/Reflex.build/Debug/Reflex-macOS.build/empty-Reflex.plist (in target 'Reflex-macOS' from project 'Reflex')
+    cd /Users/emir/Documents/Atlas/Projects/reflex
+    builtin-infoPlistUtility /tmp/reflex-dd/Build/Intermediates.noindex/Reflex.build/Debug/Reflex-macOS.build/empty-Reflex.plist -producttype com.apple.product-type.application -genpkginfo /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/PkgInfo -expandbuildsettings -platform macosx -additionalcontentfile /tmp/reflex-dd/Build/Intermediates.noindex/Reflex.build/Debug/Reflex-macOS.build/assetcatalog_generated_info.plist -scanforprivacyfile /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/Resources/ReflexCore_ReflexCore.bundle -o /tmp/reflex-dd/Build/Products/Debug/Reflex.app/Contents/Info.plist
+
+PruneExplicitPrecompiledModules /tmp/reflex-dd/SDKExplicitPrecompiledModules
+
 PruneExplicitPrecompiledModules /tmp/reflex-dd/Build/Intermediates.noindex/ExplicitPrecompiledModules
 
 PruneExplicitPrecompiledModules /tmp/reflex-dd/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
-
-PruneExplicitPrecompiledModules /tmp/reflex-dd/SDKExplicitPrecompiledModules
 
 ** BUILD SUCCEEDED **
 

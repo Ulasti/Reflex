@@ -7,48 +7,62 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0008569A1C9609F516392758 /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */; };
-		0261CDDEC0159935B1EDBC8D /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF2B369C18B6A73CBDAA7587 /* AppModel.swift */; };
-		0CF55452DD8971EDB78AFE5B /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67404D2736683A88670F345A /* SessionLog.swift */; };
-		0D58D227DA71912B5B0D2E94 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98481F3EB392CF01B8D39CED /* Assets.xcassets */; };
+		00AE1A2EE3F1C9DCADE57DE8 /* RuleRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F140B4B70EA4DFD9571C997F /* RuleRouterTests.swift */; };
 		16E72162D8A1A114B5A2B5CF /* ReflexCore in Frameworks */ = {isa = PBXBuildFile; productRef = E8AE0A4426F0A96C36825F18 /* ReflexCore */; };
-		284BE4184D8DCF84CF629CDD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98481F3EB392CF01B8D39CED /* Assets.xcassets */; };
-		2D989A57308012C8009019AA /* reflex.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2D989A56308012C8009019AA /* reflex.icon */; };
-		2D989A58308012C8009019AA /* reflex.icon in Resources */ = {isa = PBXBuildFile; fileRef = 2D989A56308012C8009019AA /* reflex.icon */; };
-		36E8053D951B33A78FA5E4F3 /* PayloadExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25BDF3BE428BF54A12FCECD2 /* PayloadExtractorTests.swift */; };
-		3BA555589AB7603C3C1961F4 /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 67404D2736683A88670F345A /* SessionLog.swift */; };
-		431DBA537134569F046616F3 /* ReflexCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E72CEBA82C1210B8078732EE /* ReflexCoreTests.swift */; };
+		26EBC8A6E1A991813BA5196D /* MisfireRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B0A35C9C7923EBD5D5EE82C0 /* MisfireRegressionTests.swift */; };
+		285A75BF0C591A1F48815EEA /* PayloadExtractorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B7B6E0BE3AA783DBC9269FE /* PayloadExtractorTests.swift */; };
+		28FE396612CC8C3910A928AF /* SmokeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 510A3475FD8218ABC1237E11 /* SmokeTests.swift */; };
+		2B4F47D2B23CDADEBA2D7A54 /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84259B83F67B9CDB54E1935A /* MarkdownDocument.swift */; };
+		3D4F0E3EBD559E5B240FD7C5 /* reflex.icon in Resources */ = {isa = PBXBuildFile; fileRef = 45BA2E35C46DFF468C5DF284 /* reflex.icon */; };
+		418D99032DB5464627727908 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D89415392F7F723575479 /* ContentView.swift */; };
+		46056A8CDBC4BB2277886B61 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B7D89415392F7F723575479 /* ContentView.swift */; };
 		51D3CE1A55F9A1FFFBC20314 /* ReflexCore in Frameworks */ = {isa = PBXBuildFile; productRef = D144CA98C1552F65476B63F2 /* ReflexCore */; };
-		596179215A53469A986C57DE /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */; };
-		7C1C58ED726A57E539264B50 /* RuleRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8B8C7F5F86411C63CB65CE2 /* RuleRouterTests.swift */; };
-		8067998BDFBBA36304A43779 /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */; };
-		886294F689EB2FA91FB80363 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF2B369C18B6A73CBDAA7587 /* AppModel.swift */; };
-		9366A5DF86677F788D6CDD3F /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C73340D38CC6C717F3EFE6 /* ContentView.swift */; };
-		9E0FD6819D383A4B9759C337 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4C73340D38CC6C717F3EFE6 /* ContentView.swift */; };
-		9FEA7C11471DC8286F0F4CD2 /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */; };
+		66DB7A574B0A9D1C2207906C /* RoutingContractTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C44EB1328789E476DA182F2 /* RoutingContractTests.swift */; };
+		6CFC7F5E0E60AB47B9207D4F /* StreamSegmenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B41CD2C2A6C5782039B5D326 /* StreamSegmenterTests.swift */; };
+		7C11D1C1CEE9E52F4950229E /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84259B83F67B9CDB54E1935A /* MarkdownDocument.swift */; };
+		7E302FE60AA84A7942F62955 /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5065B67DEC4C4BEFC1DF2D /* ReflexApp.swift */; };
+		957E981A481D95E9F2DCB324 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A195A23196C5776468F806C /* Assets.xcassets */; };
+		A119E8EEAC1337FE64E5BFAF /* CandidateExtractionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF251C6F074FD7ED59C1C557 /* CandidateExtractionTests.swift */; };
 		A4AF5174E2F6ECFF66FEB93A /* ReflexCore in Frameworks */ = {isa = PBXBuildFile; productRef = 08987345CCFDF9646293F171 /* ReflexCore */; };
-		AD6DB96C89BA748702C4C0AD /* MisfireRegressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D6707AEB7B97CC93948A690 /* MisfireRegressionTests.swift */; };
-		E6822020510821177014A53C /* MarkdownDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */; };
-		FC789E2C485F0EBF15EE5C84 /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */; };
+		C83953A3837EFA5938B34D47 /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D8A7256521290D4E90AD0 /* SessionLog.swift */; };
+		C9DBC9849CD8AB7658387F0B /* ReflexApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5065B67DEC4C4BEFC1DF2D /* ReflexApp.swift */; };
+		CC9FCC5FC12F796CE380FAAF /* SessionLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 614D8A7256521290D4E90AD0 /* SessionLog.swift */; };
+		D27E8845E5014F730CCD55EE /* LockedBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = 216B9D5522F5D6E9DB1EC664 /* LockedBox.swift */; };
+		D552E3086DDECF5F8DE5DF48 /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7D1E3C1E5DF88B760CBE90 /* HotKeyCenter.swift */; };
+		D828ADB9C3471CA79B771CE4 /* reflex.icon in Resources */ = {isa = PBXBuildFile; fileRef = 45BA2E35C46DFF468C5DF284 /* reflex.icon */; };
+		DAFADA9E8DFBC924DF49F01C /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86AC3BB8F1ED50F4DAAD31CF /* AppModel.swift */; };
+		DB5C2760DEE46391DDD9A52E /* ReflexCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75EC1316BA38BACD5A0C2D9E /* ReflexCoreTests.swift */; };
+		DBB2A77B52C0C38E7B2173EC /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8A195A23196C5776468F806C /* Assets.xcassets */; };
+		E61D01359633E83637557DB1 /* HotKeyCenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D7D1E3C1E5DF88B760CBE90 /* HotKeyCenter.swift */; };
+		EB556BA57CBC57F3307E84EA /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86AC3BB8F1ED50F4DAAD31CF /* AppModel.swift */; };
+		F18667C0B904EE80F516D1B6 /* CompoundAndGatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D884F01BF6E7EB035E100FC0 /* CompoundAndGatingTests.swift */; };
+		F733A40DDC680368B62EEF8D /* ActionDispatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15B2D5D546392893D1E4D7D0 /* ActionDispatcherTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		0D6707AEB7B97CC93948A690 /* MisfireRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MisfireRegressionTests.swift; sourceTree = "<group>"; };
-		25BDF3BE428BF54A12FCECD2 /* PayloadExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayloadExtractorTests.swift; sourceTree = "<group>"; };
-		2D989A56308012C8009019AA /* reflex.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = reflex.icon; sourceTree = "<group>"; };
-		31C9A3F2858C998067993DFE /* ReflexCore */ = {isa = PBXFileReference; lastKnownFileType = folder; path = ReflexCore; sourceTree = SOURCE_ROOT; };
-		67404D2736683A88670F345A /* SessionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLog.swift; sourceTree = "<group>"; };
-		845BEAD085C0EEED6DC4E897 /* Reflex.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Reflex.entitlements; sourceTree = "<group>"; };
-		96A27403E9509850B535AC34 /* Reflex.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Reflex.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		98481F3EB392CF01B8D39CED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyCenter.swift; sourceTree = "<group>"; };
-		B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflexApp.swift; sourceTree = "<group>"; };
-		CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; name = "Reflex-iOS.app"; path = Reflex.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownDocument.swift; sourceTree = "<group>"; };
-		E72CEBA82C1210B8078732EE /* ReflexCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflexCoreTests.swift; sourceTree = "<group>"; };
-		E8B8C7F5F86411C63CB65CE2 /* RuleRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleRouterTests.swift; sourceTree = "<group>"; };
-		EF2B369C18B6A73CBDAA7587 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
-		F4C73340D38CC6C717F3EFE6 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		15B2D5D546392893D1E4D7D0 /* ActionDispatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActionDispatcherTests.swift; sourceTree = "<group>"; };
+		216B9D5522F5D6E9DB1EC664 /* LockedBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LockedBox.swift; sourceTree = "<group>"; };
+		2B7D89415392F7F723575479 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		2C5065B67DEC4C4BEFC1DF2D /* ReflexApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflexApp.swift; sourceTree = "<group>"; };
+		31C9A3F2858C998067993DFE /* ReflexCore */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ReflexCore; path = "reflex-source/ReflexCore"; sourceTree = SOURCE_ROOT; };
+		45BA2E35C46DFF468C5DF284 /* reflex.icon */ = {isa = PBXFileReference; lastKnownFileType = wrapper.icon; path = reflex.icon; sourceTree = "<group>"; };
+		4C44EB1328789E476DA182F2 /* RoutingContractTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingContractTests.swift; sourceTree = "<group>"; };
+		510A3475FD8218ABC1237E11 /* SmokeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SmokeTests.swift; sourceTree = "<group>"; };
+		5D7D1E3C1E5DF88B760CBE90 /* HotKeyCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotKeyCenter.swift; sourceTree = "<group>"; };
+		614D8A7256521290D4E90AD0 /* SessionLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionLog.swift; sourceTree = "<group>"; };
+		75EC1316BA38BACD5A0C2D9E /* ReflexCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflexCoreTests.swift; sourceTree = "<group>"; };
+		79914453D150E1A10F31F1B1 /* Reflex.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Reflex.entitlements; sourceTree = "<group>"; };
+		84259B83F67B9CDB54E1935A /* MarkdownDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarkdownDocument.swift; sourceTree = "<group>"; };
+		86AC3BB8F1ED50F4DAAD31CF /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		8A195A23196C5776468F806C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8B7B6E0BE3AA783DBC9269FE /* PayloadExtractorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PayloadExtractorTests.swift; sourceTree = "<group>"; };
+		96A27403E9509850B535AC34 /* Reflex-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Reflex-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		B0A35C9C7923EBD5D5EE82C0 /* MisfireRegressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MisfireRegressionTests.swift; sourceTree = "<group>"; };
+		B41CD2C2A6C5782039B5D326 /* StreamSegmenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreamSegmenterTests.swift; sourceTree = "<group>"; };
+		BF251C6F074FD7ED59C1C557 /* CandidateExtractionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandidateExtractionTests.swift; sourceTree = "<group>"; };
+		CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Reflex-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D884F01BF6E7EB035E100FC0 /* CompoundAndGatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompoundAndGatingTests.swift; sourceTree = "<group>"; };
+		F140B4B70EA4DFD9571C997F /* RuleRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RuleRouterTests.swift; sourceTree = "<group>"; };
 		F74A2740C69C1740D79F1B10 /* ReflexCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReflexCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -88,20 +102,27 @@
 			name = Packages;
 			sourceTree = "<group>";
 		};
+		37B7F383770407E9CF4EE48F /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				216B9D5522F5D6E9DB1EC664 /* LockedBox.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
 		4772A2EC6CC2B2C08ED4BFE2 = {
 			isa = PBXGroup;
 			children = (
 				11F375B3A7F3C7815287CCC3 /* Packages */,
-				B4C9D59B29766C3CA0232DF3 /* Reflex */,
-				924C224E652865A3B8700A8C /* ReflexCore */,
+				B832CDE7320D2786702C1130 /* reflex-source */,
 				7350B4F4BC6D09093F775456 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		49E6F192152C456661AC7833 /* Tests */ = {
+		698BE85459F371B40D84D7BF /* Tests */ = {
 			isa = PBXGroup;
 			children = (
-				8FD8C1784E4D98E0D994B945 /* ReflexCoreTests */,
+				97FE958F982A9A11BC67A7CB /* ReflexCoreTests */,
 			);
 			path = Tests;
 			sourceTree = "<group>";
@@ -110,45 +131,61 @@
 			isa = PBXGroup;
 			children = (
 				CEFB00CDC1E1A8E209F49F52 /* Reflex-iOS.app */,
-				96A27403E9509850B535AC34 /* Reflex.app */,
+				96A27403E9509850B535AC34 /* Reflex-macOS.app */,
 				F74A2740C69C1740D79F1B10 /* ReflexCoreTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		8FD8C1784E4D98E0D994B945 /* ReflexCoreTests */ = {
+		97FE958F982A9A11BC67A7CB /* ReflexCoreTests */ = {
 			isa = PBXGroup;
 			children = (
-				0D6707AEB7B97CC93948A690 /* MisfireRegressionTests.swift */,
-				25BDF3BE428BF54A12FCECD2 /* PayloadExtractorTests.swift */,
-				E72CEBA82C1210B8078732EE /* ReflexCoreTests.swift */,
-				E8B8C7F5F86411C63CB65CE2 /* RuleRouterTests.swift */,
+				15B2D5D546392893D1E4D7D0 /* ActionDispatcherTests.swift */,
+				BF251C6F074FD7ED59C1C557 /* CandidateExtractionTests.swift */,
+				D884F01BF6E7EB035E100FC0 /* CompoundAndGatingTests.swift */,
+				B0A35C9C7923EBD5D5EE82C0 /* MisfireRegressionTests.swift */,
+				8B7B6E0BE3AA783DBC9269FE /* PayloadExtractorTests.swift */,
+				75EC1316BA38BACD5A0C2D9E /* ReflexCoreTests.swift */,
+				4C44EB1328789E476DA182F2 /* RoutingContractTests.swift */,
+				F140B4B70EA4DFD9571C997F /* RuleRouterTests.swift */,
+				510A3475FD8218ABC1237E11 /* SmokeTests.swift */,
+				B41CD2C2A6C5782039B5D326 /* StreamSegmenterTests.swift */,
+				37B7F383770407E9CF4EE48F /* Support */,
 			);
 			path = ReflexCoreTests;
 			sourceTree = "<group>";
 		};
-		924C224E652865A3B8700A8C /* ReflexCore */ = {
+		B832CDE7320D2786702C1130 /* reflex-source */ = {
 			isa = PBXGroup;
 			children = (
-				49E6F192152C456661AC7833 /* Tests */,
+				C97A8B1AFD41A8269D507EF0 /* Reflex */,
+				CC679D8E84194A2BBC136F8E /* ReflexCore */,
 			);
-			path = ReflexCore;
+			path = "reflex-source";
 			sourceTree = "<group>";
 		};
-		B4C9D59B29766C3CA0232DF3 /* Reflex */ = {
+		C97A8B1AFD41A8269D507EF0 /* Reflex */ = {
 			isa = PBXGroup;
 			children = (
-				EF2B369C18B6A73CBDAA7587 /* AppModel.swift */,
-				98481F3EB392CF01B8D39CED /* Assets.xcassets */,
-				2D989A56308012C8009019AA /* reflex.icon */,
-				F4C73340D38CC6C717F3EFE6 /* ContentView.swift */,
-				98FFF36E1FC5600054E298D4 /* HotKeyCenter.swift */,
-				DC6C11B9E150F02DF087E12B /* MarkdownDocument.swift */,
-				845BEAD085C0EEED6DC4E897 /* Reflex.entitlements */,
-				B19B50FE40FAAAA58F039ED6 /* ReflexApp.swift */,
-				67404D2736683A88670F345A /* SessionLog.swift */,
+				86AC3BB8F1ED50F4DAAD31CF /* AppModel.swift */,
+				8A195A23196C5776468F806C /* Assets.xcassets */,
+				2B7D89415392F7F723575479 /* ContentView.swift */,
+				5D7D1E3C1E5DF88B760CBE90 /* HotKeyCenter.swift */,
+				84259B83F67B9CDB54E1935A /* MarkdownDocument.swift */,
+				79914453D150E1A10F31F1B1 /* Reflex.entitlements */,
+				45BA2E35C46DFF468C5DF284 /* reflex.icon */,
+				2C5065B67DEC4C4BEFC1DF2D /* ReflexApp.swift */,
+				614D8A7256521290D4E90AD0 /* SessionLog.swift */,
 			);
 			path = Reflex;
+			sourceTree = "<group>";
+		};
+		CC679D8E84194A2BBC136F8E /* ReflexCore */ = {
+			isa = PBXGroup;
+			children = (
+				698BE85459F371B40D84D7BF /* Tests */,
+			);
+			path = ReflexCore;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -171,7 +208,7 @@
 				E8AE0A4426F0A96C36825F18 /* ReflexCore */,
 			);
 			productName = "Reflex-macOS";
-			productReference = 96A27403E9509850B535AC34 /* Reflex.app */;
+			productReference = 96A27403E9509850B535AC34 /* Reflex-macOS.app */;
 			productType = "com.apple.product-type.application";
 		};
 		8AB6978EB5674A3E32BD25B6 /* ReflexCoreTests */ = {
@@ -246,7 +283,7 @@
 			mainGroup = 4772A2EC6CC2B2C08ED4BFE2;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				0C361B78A47C2A5ACEAA20B7 /* XCLocalSwiftPackageReference "ReflexCore" */,
+				E51BFD766F2F1032B57460A2 /* XCLocalSwiftPackageReference "reflex-source/ReflexCore" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 7350B4F4BC6D09093F775456 /* Products */;
@@ -265,8 +302,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D989A58308012C8009019AA /* reflex.icon in Resources */,
-				284BE4184D8DCF84CF629CDD /* Assets.xcassets in Resources */,
+				957E981A481D95E9F2DCB324 /* Assets.xcassets in Resources */,
+				3D4F0E3EBD559E5B240FD7C5 /* reflex.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,8 +311,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2D989A57308012C8009019AA /* reflex.icon in Resources */,
-				0D58D227DA71912B5B0D2E94 /* Assets.xcassets in Resources */,
+				DBB2A77B52C0C38E7B2173EC /* Assets.xcassets in Resources */,
+				D828ADB9C3471CA79B771CE4 /* reflex.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,12 +323,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				886294F689EB2FA91FB80363 /* AppModel.swift in Sources */,
-				9366A5DF86677F788D6CDD3F /* ContentView.swift in Sources */,
-				596179215A53469A986C57DE /* HotKeyCenter.swift in Sources */,
-				0008569A1C9609F516392758 /* MarkdownDocument.swift in Sources */,
-				FC789E2C485F0EBF15EE5C84 /* ReflexApp.swift in Sources */,
-				3BA555589AB7603C3C1961F4 /* SessionLog.swift in Sources */,
+				DAFADA9E8DFBC924DF49F01C /* AppModel.swift in Sources */,
+				46056A8CDBC4BB2277886B61 /* ContentView.swift in Sources */,
+				E61D01359633E83637557DB1 /* HotKeyCenter.swift in Sources */,
+				2B4F47D2B23CDADEBA2D7A54 /* MarkdownDocument.swift in Sources */,
+				7E302FE60AA84A7942F62955 /* ReflexApp.swift in Sources */,
+				CC9FCC5FC12F796CE380FAAF /* SessionLog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -299,12 +336,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0261CDDEC0159935B1EDBC8D /* AppModel.swift in Sources */,
-				9E0FD6819D383A4B9759C337 /* ContentView.swift in Sources */,
-				8067998BDFBBA36304A43779 /* HotKeyCenter.swift in Sources */,
-				E6822020510821177014A53C /* MarkdownDocument.swift in Sources */,
-				9FEA7C11471DC8286F0F4CD2 /* ReflexApp.swift in Sources */,
-				0CF55452DD8971EDB78AFE5B /* SessionLog.swift in Sources */,
+				EB556BA57CBC57F3307E84EA /* AppModel.swift in Sources */,
+				418D99032DB5464627727908 /* ContentView.swift in Sources */,
+				D552E3086DDECF5F8DE5DF48 /* HotKeyCenter.swift in Sources */,
+				7C11D1C1CEE9E52F4950229E /* MarkdownDocument.swift in Sources */,
+				C9DBC9849CD8AB7658387F0B /* ReflexApp.swift in Sources */,
+				C83953A3837EFA5938B34D47 /* SessionLog.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -312,10 +349,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AD6DB96C89BA748702C4C0AD /* MisfireRegressionTests.swift in Sources */,
-				36E8053D951B33A78FA5E4F3 /* PayloadExtractorTests.swift in Sources */,
-				431DBA537134569F046616F3 /* ReflexCoreTests.swift in Sources */,
-				7C1C58ED726A57E539264B50 /* RuleRouterTests.swift in Sources */,
+				F733A40DDC680368B62EEF8D /* ActionDispatcherTests.swift in Sources */,
+				A119E8EEAC1337FE64E5BFAF /* CandidateExtractionTests.swift in Sources */,
+				F18667C0B904EE80F516D1B6 /* CompoundAndGatingTests.swift in Sources */,
+				D27E8845E5014F730CCD55EE /* LockedBox.swift in Sources */,
+				26EBC8A6E1A991813BA5196D /* MisfireRegressionTests.swift in Sources */,
+				285A75BF0C591A1F48815EEA /* PayloadExtractorTests.swift in Sources */,
+				DB5C2760DEE46391DDD9A52E /* ReflexCoreTests.swift in Sources */,
+				66DB7A574B0A9D1C2207906C /* RoutingContractTests.swift in Sources */,
+				00AE1A2EE3F1C9DCADE57DE8 /* RuleRouterTests.swift in Sources */,
+				28FE396612CC8C3910A928AF /* SmokeTests.swift in Sources */,
+				6CFC7F5E0E60AB47B9207D4F /* StreamSegmenterTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -325,16 +369,14 @@
 		113E705451E5E19A5AED48E9 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = reflex;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = Reflex/Reflex.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "reflex-source/Reflex/Reflex.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Reflex;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media).";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -495,16 +537,14 @@
 		B3B10621850B9CF76DACD11D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = reflex;
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
-				CODE_SIGN_ENTITLEMENTS = Reflex/Reflex.entitlements;
+				CODE_SIGN_ENTITLEMENTS = "reflex-source/Reflex/Reflex.entitlements";
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Reflex;
 				INFOPLIST_KEY_NSAppleEventsUsageDescription = "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media).";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "Reflex captures microphone audio to transcribe commands on-device.";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -611,9 +651,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		0C361B78A47C2A5ACEAA20B7 /* XCLocalSwiftPackageReference "ReflexCore" */ = {
+		E51BFD766F2F1032B57460A2 /* XCLocalSwiftPackageReference "reflex-source/ReflexCore" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ReflexCore;
+			relativePath = "reflex-source/ReflexCore";
 		};
 /* End XCLocalSwiftPackageReference section */
 

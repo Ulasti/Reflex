@@ -77,6 +77,8 @@ final class AppModel: ObservableObject {
 
     #if os(macOS)
     private var hotKeyID: UInt32 = 1
+    /// Holds the mic mute for as long as the feedback tone sounds.
+    private var feedbackTone: FeedbackTone?
     #endif
 
     /// True while the active model is loading. Drives UI gating so the user
@@ -318,15 +320,6 @@ final class AppModel: ObservableObject {
             modelStatus = "Cooldown, ignoring feedback"
             return
         }
-#if os(macOS)
-        // System audio (Music, Safari, YouTube) is loud enough to trip the
-        // VAD and gets dictated as "bell dings" etc. When media is actually
-        // playing, drop the segment rather than route it.
-        if suppressWhileMediaPlaying, NowPlaying.status().isPlaying {
-            modelStatus = "Media playing, ignoring system audio"
-            return
-        }
-#endif
         guard !processing else {
             modelStatus = "Busy, dropped a segment"
             return
@@ -334,6 +327,21 @@ final class AppModel: ObservableObject {
         processing = true
         modelStatus = "Deciding…"
         Task {
+#if os(macOS)
+            // System audio (Music, Safari, YouTube) is loud enough to trip the
+            // VAD and gets dictated as "bell dings" etc. When media is actually
+            // playing, drop the segment rather than route it.
+            //
+            // Below the busy guard and off the main actor: `NowPlaying.status()`
+            // blocks on a semaphore for up to 3 s, which must never happen on the
+            // main actor, and a segment about to be dropped should not pay for
+            // it either (atlas/docs/audit-2026-10-14.md, M2).
+            if suppressWhileMediaPlaying, await mediaIsPlaying() {
+                modelStatus = "Media playing, ignoring system audio"
+                processing = false
+                return
+            }
+#endif
             do {
                 if let live = liveTranscriber {
                     // Live mode: WhisperKit finalized the text already; route
@@ -366,6 +374,14 @@ final class AppModel: ObservableObject {
             }
         }
     }
+
+#if os(macOS)
+    /// Whether the system is playing media right now. Detached because
+    /// `NowPlaying.status()` blocks on a semaphore for up to 3 s.
+    private func mediaIsPlaying() async -> Bool {
+        await Task.detached(priority: .utility) { NowPlaying.status().isPlaying }.value
+    }
+#endif
 
     /// Routes a WhisperKit-finalized transcript through Laya and executes.
     /// Compound utterances ("new note ... then open ...") expand into one gated
@@ -404,7 +420,7 @@ final class AppModel: ObservableObject {
             modelStatus = result.summary
             if shouldPlayFeedbackSounds, result.summary != "Stopped listening" {
                 lastActionTime = Date()
-                Self.playFeedbackDone()
+                playFeedback(named: "Glass")
             } else if result.summary != "Stopped listening" {
                 lastActionTime = Date()
             }
@@ -412,7 +428,7 @@ final class AppModel: ObservableObject {
             modelStatus = "Execute failed: \(failure ?? "unknown error")"
             lastActionTime = Date()
             if shouldPlayFeedbackSounds {
-                Self.playFeedbackFail()
+                playFeedback(named: "Sosumi")
             }
         }
 
@@ -451,23 +467,74 @@ final class AppModel: ObservableObject {
     }
 
     #if os(macOS)
-    /// Phase C feedback tones: "Glass" (done) and "Sosumi" (failure) — the
-    /// system sound list, no bundled assets needed.
-    ///
-    /// The input device is muted for the duration of the tone so the mic
-    /// cannot hear its own feedback (MicMute). A software cooldown alone is
-    /// not enough: the bell is loud enough to trip the VAD even through the
-    /// cooldown, and a long cooldown makes the app feel sluggish.
-    private static func playFeedbackDone() {
-        MicMute.withInputMuted(nil) { NSSound(named: "Glass")?.play() }
+    /// Phase C feedback tone. The input device is muted for the duration of the
+    /// tone so the mic cannot hear its own feedback (MicMute). A software
+    /// cooldown alone is not enough: the bell is loud enough to trip the VAD
+    /// even through the cooldown, and a long cooldown makes the app feel
+    /// sluggish.
+    private func playFeedback(named name: String) {
+        // A previous tone may still be sounding; re-arm the mic before the next.
+        feedbackTone?.finish()
+        let tone = FeedbackTone(
+            named: name,
+            deviceID: selectedMicID.flatMap(UInt32.init)
+        ) { [weak self] in
+            self?.feedbackTone = nil
+        }
+        feedbackTone = tone
+        tone.play()
     }
-
-    private static func playFeedbackFail() {
-        MicMute.withInputMuted(nil) { NSSound(named: "Sosumi")?.play() }
-    }
-    #else
-    // iOS: silent feedback for now (no haptics wired in this pass).
-    private static func playFeedbackDone() {}
-    private static func playFeedbackFail() {}
     #endif
 }
+
+#if os(macOS)
+/// Plays one feedback tone with the input device muted for exactly as long as
+/// the tone lasts, then puts the user's mic level back.
+///
+/// `NSSound.play()` returns immediately, so unmuting in the same run-loop tick
+/// leaves the mute window at ~0 ms and the ding is recorded anyway (audit M5) —
+/// the unmute has to be driven by the sound finishing. `NSSound` holds its
+/// delegate weakly, so `AppModel` keeps the tone alive until `onFinish` runs.
+@MainActor
+private final class FeedbackTone: NSObject, NSSoundDelegate {
+    private let sound: NSSound?
+    /// The device capture actually uses, not the system default (audit S7).
+    private let deviceID: UInt32?
+    private let onFinish: () -> Void
+    /// The level found before muting, put back when the tone ends.
+    private var savedLevel: Float32?
+    private var isMuted = false
+
+    init(named name: String, deviceID: UInt32?, onFinish: @escaping () -> Void) {
+        sound = NSSound(named: name)
+        self.deviceID = deviceID
+        self.onFinish = onFinish
+        super.init()
+    }
+
+    func play() {
+        guard let sound else {
+            onFinish()
+            return
+        }
+        savedLevel = MicMute.muteInput(deviceID)
+        isMuted = true
+        sound.delegate = self
+        sound.play()
+    }
+
+    /// Re-arms the mic now. Idempotent: whichever of the sound's delegate or a
+    /// replacement tone gets here first, the level is restored exactly once.
+    func finish() {
+        guard isMuted else { return }
+        isMuted = false
+        sound?.delegate = nil
+        MicMute.restoreInput(deviceID, to: savedLevel)
+        onFinish()
+    }
+
+    nonisolated func sound(_ sound: NSSound, didFinishPlaying success: Bool) {
+        Task { @MainActor in finish() }
+    }
+}
+#endif

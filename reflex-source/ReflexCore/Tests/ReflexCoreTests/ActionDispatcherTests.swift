@@ -97,4 +97,37 @@ struct SystemControlTests {
     }
 }
 
+/// The phrase predicates the router and the dispatcher must agree on, extracted
+/// so the contract is checkable without executing anything (S1, S5).
+@Suite("ActionDispatcher phrase predicates")
+struct PhrasePredicateTests {
+    @Test("a leftover article is not a command", arguments: [
+        "a terminal", "the terminal", "my shell", "an app", "",
+    ])
+    func articleIsNotCommand(residual: String) {
+        #expect(!ActionDispatcher.looksLikeShellCommand(residual))
+    }
+
+    @Test("a plausible command survives", arguments: [
+        "npm run dev", "ssh host", "top", "python3 -m http.server",
+    ])
+    func commandSurvives(residual: String) {
+        #expect(ActionDispatcher.looksLikeShellCommand(residual))
+    }
+
+    @Test("\"find X and copy the path\" is the same request to both sides")
+    func fileCopyAgrees() {
+        let phrase = "find my invoice and copy the path"
+        #expect(ActionDispatcher.isFileCopyRequest(phrase))
+        #expect(RuleRouter().classify(phrase)?.target == "file_operation")
+    }
+
+    @Test("a local search is still a file operation, but not a copy-path request")
+    func localSearchIsNotCopy() {
+        let phrase = "search my documents for the invoice"
+        #expect(!ActionDispatcher.isFileCopyRequest(phrase))
+        #expect(RuleRouter().classify(phrase)?.target == "file_operation")
+    }
+}
+
 #endif

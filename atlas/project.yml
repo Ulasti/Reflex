@@ -12,13 +12,13 @@ settings:
     DEVELOPMENT_TEAM: 6L6C77HZXN
 packages:
   ReflexCore:
-    path: ReflexCore
+    path: reflex-source/ReflexCore
 targets:
   Reflex-macOS:
     type: application
     platform: macOS
     sources:
-      - Reflex
+      - reflex-source/Reflex
     dependencies:
       - package: ReflexCore
     settings:
@@ -29,7 +29,7 @@ targets:
         CURRENT_PROJECT_VERSION: "1"
         ENABLE_HARDENED_RUNTIME: YES
         ENABLE_APP_SANDBOX: NO
-        CODE_SIGN_ENTITLEMENTS: Reflex/Reflex.entitlements
+        CODE_SIGN_ENTITLEMENTS: reflex-source/Reflex/Reflex.entitlements
         GENERATE_INFOPLIST_FILE: YES
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
@@ -39,7 +39,7 @@ targets:
     type: application
     platform: iOS
     sources:
-      - Reflex
+      - reflex-source/Reflex
     dependencies:
       - package: ReflexCore
     settings:
@@ -59,7 +59,7 @@ targets:
     type: bundle.unit-test
     platform: macOS
     sources:
-      - ReflexCore/Tests/ReflexCoreTests
+      - reflex-source/ReflexCore/Tests/ReflexCoreTests
     dependencies:
       - package: ReflexCore
 schemes:

@@ -224,8 +224,10 @@ public struct ActionDispatcher: Sendable {
         components?.queryItems = [URLQueryItem(name: "q", value: query)]
         guard let url = components?.url else { throw ActionExecutionError.parseFailure }
         _ = try BrowserController.open(url)
-        // Wait for Google to actually inject result links (readyState fires too early).
-        _ = BrowserController.waitForSearchResults()
+        // No wait here: the "open the first result" clause owns it, and
+        // clickLink already retries ~4 s for result links and reports why it
+        // failed. This call only burned up to 8 s holding `processing`
+        // (atlas/docs/audit-2026-10-14.md, S2).
         return .searchedWeb(query: query, site: nil)
     }
 
@@ -335,7 +337,7 @@ public struct ActionDispatcher: Sendable {
         guard !text.isEmpty else { throw ActionExecutionError.parseFailure }
 
         if let appName = c.inApp ?? Self.candidateInApp(plan), let url = AppResolver.url(for: appName) {
-            _ = NSWorkspace.shared.open(url)
+            Self.openAndActivate(url)
         }
         try Self.pasteText(text, withReturn: submit)
         return .typedText(text: text)
@@ -434,7 +436,7 @@ public struct ActionDispatcher: Sendable {
         let appName = Self.candidateInApp(plan)
 
         if let appName, let url = AppResolver.url(for: appName) {
-            _ = NSWorkspace.shared.open(url)
+            Self.openAndActivate(url)
         }
         // ⌘N then (optionally) type the title.
         try ShortcutController.press(name: "new_document")
@@ -499,6 +501,25 @@ public struct ActionDispatcher: Sendable {
         }
         if lower.contains("trash") || lower.contains("bin") { return .emptyTrash }
         return nil
+    }
+
+    /// Whether a transcript asks for the "find X and copy the path" file op.
+    /// Pure, and shared with `RuleRouter`, so the router cannot advertise a
+    /// phrase the dispatcher will not run (atlas/docs/audit-2026-10-14.md, S5).
+    static func isFileCopyRequest(_ transcript: String) -> Bool {
+        let lower = transcript.lowercased()
+        let finds = lower.contains("search") || lower.contains("find") || lower.contains("locate")
+        let wantsPath = lower.contains("path") || lower.contains("clipboard") || lower.contains("copy")
+        return finds && wantsPath
+    }
+
+    /// Whether text left over after a launch verb could be a shell command,
+    /// rather than a mis-transcription of a normal request. This is the guard on
+    /// the one path that hands arbitrary text to a shell (S1).
+    static func looksLikeShellCommand(_ command: String) -> Bool {
+        guard let first = command.split(separator: " ").first else { return false }
+        let articles: Set<String> = ["a", "an", "the", "my", "our", "your", "it", "that", "this"]
+        return !articles.contains(first.lowercased())
     }
 
     private func systemControl(plan: CommandPlan) throws -> ReflexActionResult {
@@ -605,7 +626,7 @@ public struct ActionDispatcher: Sendable {
             return .movedItems(into: destURL.lastPathComponent)
         }
 
-        if lower.contains("search") && (lower.contains("path") || lower.contains("clipboard") || lower.contains("copy")) {
+        if Self.isFileCopyRequest(plan.transcript) {
             guard let query = plan.candidates.query ?? Self.candidateQuery(plan) else {
                 throw ActionExecutionError.parseFailure
             }
@@ -629,6 +650,13 @@ public struct ActionDispatcher: Sendable {
         }
         if let ssh = command.lowercased().range(of: "ssh") {
             command = String(command[ssh.lowerBound...])
+        }
+        // The residual goes straight into Terminal, so refuse anything that is
+        // plainly not a command: "open a terminal" reduces to "a terminal" and
+        // the shell just prints "command not found" (atlas/docs/audit-2026-10-14.md,
+        // S1).
+        guard Self.looksLikeShellCommand(command) else {
+            return .noOp(reason: "not a command: \"\(command)\"")
         }
         let script = """
         on run
@@ -868,6 +896,26 @@ public struct ActionDispatcher: Sendable {
 
     private static let desktop = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0]
     private static let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+
+    /// Opens `url`'s app and waits until it is actually frontmost before the
+    /// caller sends it a keystroke. Launch/activation takes ~0.5–2 s, and a ⌘V
+    /// or ⌘N sent before that lands in Reflex or whatever was frontmost —
+    /// silently typing into the wrong window (atlas/docs/audit-2026-10-14.md,
+    /// M4). Blocks the calling thread, which is the detached dispatch thread,
+    /// never the main actor.
+    private static func openAndActivate(_ url: URL, timeout: TimeInterval = 3.0) {
+        guard let bundleID = Bundle(url: url)?.bundleIdentifier else {
+            _ = NSWorkspace.shared.open(url)
+            return
+        }
+        guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier != bundleID else { return }
+        _ = NSWorkspace.shared.open(url)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline,
+              NSWorkspace.shared.frontmostApplication?.bundleIdentifier != bundleID {
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+    }
 
     /// Types text as the user did in Jev: copy to the clipboard, then ⌘V
     /// (Cmd+V is the only keystroke that handles non-ASCII, accented, and
