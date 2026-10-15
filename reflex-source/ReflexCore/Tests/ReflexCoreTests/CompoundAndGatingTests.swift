@@ -21,18 +21,14 @@ struct CompoundRouterTests {
 
     @Test("a typed payload containing \"and\" is not split")
     func typedPayloadStaysWhole() {
-        withKnownIssue("audit S10: looksLikeActionStart matches the leading verb, so the payload is cut") {
-            #expect(!CompoundRouter.isCompound("type this and that"))
-        }
+        #expect(!CompoundRouter.isCompound("type this and that"))
     }
 
     @Test("a trailing \"and press enter\" folds into the last part")
     func trailingSubmitFolds() {
         let parts = CompoundRouter.split("open notes and type buy milk and press enter")
         #expect(parts.map(\.transcript) == ["open notes", "type buy milk"])
-        withKnownIssue("audit S9: split() drops the folded submit instead of recording it") {
-            #expect(parts.last?.submit == true)
-        }
+        #expect(parts.last?.submit == true)
     }
 }
 

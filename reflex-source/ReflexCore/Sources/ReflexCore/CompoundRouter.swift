@@ -29,6 +29,7 @@ public enum CompoundRouter {
     public static func split(_ transcript: String) -> [Part] {
         var text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
+        var foldedSubmit = false
 
         // Find the *first* connective. Only split when the text after it is a
         // real, non-trivial clause; trailing "press enter" etc stays with the
@@ -40,6 +41,7 @@ public enum CompoundRouter {
             // "press enter" trailing the whole utterance folds into `left`.
             if !remainingClause(right) {
                 text = left
+                foldedSubmit = !right.isEmpty
                 break
             }
             parts.append(left)
@@ -49,8 +51,8 @@ public enum CompoundRouter {
             return []
         }
         parts.append(text)
-        return parts.map { part in
-            let submit = trailingSubmit(from: part)
+        return parts.enumerated().map { index, part in
+            let submit = trailingSubmit(from: part) || (foldedSubmit && index == parts.count - 1)
             let trimmed = stripTrailingSubmit(part)
             return Part(transcript: trimmed.isEmpty ? part : trimmed, submit: submit)
         }
@@ -76,10 +78,18 @@ public enum CompoundRouter {
         return nil
     }
 
+    /// Verbs whose remainder is a free-text payload, not a new clause. "type
+    /// this and that" is one typed message, not two actions.
+    private static let payloadVerbs = [
+        "type ", "write ", "paste ", "dictate ", "input ", "search ", "look up ",
+        "look for ", "play ",
+    ]
+
     /// A clause is a real action when it begins with a command verb (open,
     /// type, play, search, scroll, press, new, show, go, create, move, etc.).
     private static func looksLikeActionStart(_ clause: String) -> Bool {
         let lower = clause.lowercased()
+        if payloadVerbs.contains(where: { lower.hasPrefix($0) }) { return false }
         let verbs = [
             "open ", "launch ", "start ", "create ", "make ", "move ", "copy ",
             "type ", "write ", "paste ", "dictate ", "play ", "pause ", "stop ",

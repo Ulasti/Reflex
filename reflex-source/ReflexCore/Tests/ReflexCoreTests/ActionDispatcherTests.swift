@@ -21,20 +21,8 @@ struct RunToolTests {
         }
     }
 
-    /// M1 (`docs/audit-2026-10-14.md`): `waitUntilExit()` runs before the pipe
-    /// is drained, so once the child writes past the ~64 KB pipe buffer it
-    /// blocks on write and the parent blocks in `wait()`.
-    ///
-    /// The child is a Perl one-liner that writes 200704 bytes (49 × 4 KB) and
-    /// arms a 5 s alarm that `_exit`s without flushing. That matters: a blocked
-    /// child that never dies keeps the pipe open and hangs the test runner
-    /// instead of failing a test. With the bug the write stalls after one pipe
-    /// buffer, the alarm kills the child, and `runTool` returns 65536 bytes —
-    /// a clean failure. With the fix the parent drains continuously, Perl
-    /// finishes in under a second and the alarm never fires.
-    ///
-    /// The call runs on a bare `Thread`, not the cooperative pool, because a
-    /// regression would occupy a pool thread forever.
+    /// M1 (`atlas/docs/audit-2026-10-14.md`) was `waitUntilExit()` before draining the
+    /// pipe; fixed by draining first, so this is now a plain assertion.
     @Test("output larger than the pipe buffer is neither truncated nor deadlocked")
     func largeOutputDoesNotDeadlock() async {
         let producer = """
@@ -52,14 +40,15 @@ struct RunToolTests {
             }
         }.start()
 
-        await withKnownIssue("audit M1: runTool waits for exit before draining the pipe") {
-            var waited = 0
-            while output.withLock({ $0 == nil }), waited < 100 {
-                try? await Task.sleep(for: .milliseconds(100))
-                waited += 1
-            }
-            #expect(output.withLock { $0 }?.count == 200_704)
+        // The 5 s alarm is a guard: if the drain regresses, the producer blocks
+        // on a full pipe and, without the alarm, would keep the test runner
+        // alive forever instead of failing one test.
+        var waited = 0
+        while output.withLock({ $0 == nil }), waited < 100 {
+            try? await Task.sleep(for: .milliseconds(100))
+            waited += 1
         }
+        #expect(output.withLock { $0 }?.count == 200_704)
     }
 }
 
@@ -94,16 +83,12 @@ struct SystemControlTests {
 
     @Test("\"turn off the screen\" is dispatchable")
     func screenOffIsDispatchable() {
-        withKnownIssue("audit M3: systemControl has no branch for \"turn off the screen\"") {
-            #expect(ActionDispatcher.systemOperation(for: "turn off the screen") != nil)
-        }
+        #expect(ActionDispatcher.systemOperation(for: "turn off the screen") != nil)
     }
 
     @Test("\"unlock the screen\" must not lock it")
     func unlockDoesNotLock() {
-        withKnownIssue("audit M3: \"unlock the screen\" contains \"lock\", so the fuzzy match locks the screen") {
-            #expect(ActionDispatcher.systemOperation(for: "unlock the screen") != .lockScreen)
-        }
+        #expect(ActionDispatcher.systemOperation(for: "unlock the screen") != .lockScreen)
     }
 
     @Test("an unhandled phrase reports a parse failure rather than guessing")

@@ -5,12 +5,8 @@ import Testing
 /// table and checked against the live router (`reflex-cli --rule`).
 ///
 /// This is the regression net for the biggest structural finding
-/// (`docs/audit-2026-10-14.md`, M3): `RuleRouter` and `ActionDispatcher` each
-/// hold a phrase table and must agree. Cases that encode the *intended* target
-/// but do not hold today live in `RoutingMismatchTests`, wrapped in
-/// `withKnownIssue` and tagged with the finding that has to fix them. When a
-/// fix lands the known issue is reported as unexpectedly passing, which is the
-/// signal to delete the wrapper.
+/// (`atlas/docs/audit-2026-10-14.md`, M3): `RuleRouter` and `ActionDispatcher`
+/// each hold a phrase table and must agree.
 @Suite("RuleRouter contract")
 struct RoutingContractTests {
     @Test("phrase routes to the intended target", arguments: [
@@ -109,39 +105,32 @@ struct RoutingContractTests {
     }
 }
 
-/// Cases where the router and the dispatcher currently disagree. Each is a
-/// real, reproduced misroute, not a hypothetical.
-@Suite("RuleRouter mismatches (open findings)")
+/// Phrases that used to misroute, pinned as regressions (audit M3, S8). Each
+/// was a real, reproduced misroute, not a hypothetical; they carried
+/// `withKnownIssue` until the router fix landed.
+@Suite("RuleRouter regressions")
 struct RoutingMismatchTests {
     @Test("a display-sleep phrase reaches system_control", arguments: [
         "turn off the display", "sleep the display", "put the display to sleep",
     ])
     func displaySleepRoutesToSystemControl(phrase: String) {
-        withKnownIssue("audit M3: the media rule uses contains/hasSuffix(\"play\"), and \"display\" ends in it") {
-            #expect(RuleRouter().classify(phrase)?.target == "system_control")
-        }
+        #expect(RuleRouter().classify(phrase)?.target == "system_control")
     }
 
     @Test("\"display\" alone is not a media command")
     func displayIsNotMedia() {
-        withKnownIssue("audit M3: hasSuffix(\"play\") fires on any phrase ending in \"display\"") {
-            #expect(RuleRouter().classify("open the display")?.target != "media_control")
-        }
+        #expect(RuleRouter().classify("open the display")?.target != "media_control")
     }
 
     @Test("a show-desktop phrase reaches system_control", arguments: [
         "show desktop", "show the desktop", "go to the desktop",
     ])
     func showDesktopRoutesToSystemControl(phrase: String) {
-        withKnownIssue("audit M3: isFolderOpen is checked before the system_control block, and \"desktop\" is a folder") {
-            #expect(RuleRouter().classify(phrase)?.target == "system_control")
-        }
+        #expect(RuleRouter().classify(phrase)?.target == "system_control")
     }
 
     @Test("opening a browser by name is an app launch, not a web search")
     func openGoogleChromeIsAppLaunch() {
-        withKnownIssue("audit S8: web_search's bare \"google\" token is checked before open_app") {
-            #expect(RuleRouter().classify("open google chrome")?.target == "open_app")
-        }
+        #expect(RuleRouter().classify("open google chrome")?.target == "open_app")
     }
 }

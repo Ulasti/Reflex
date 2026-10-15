@@ -10,6 +10,7 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
     case searchedWeb(query: String, site: String?)
     case volumeSet(percent: Int)
     case volumeChanged(delta: Int)
+    case volumeMuted
     case volumeUnmuted
     case brightnessSet(percent: Int)
     case brightnessChanged(delta: Int)
@@ -40,6 +41,7 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
         case .searchedWeb(let query, let site): "Searched the web\(site.map { " on \($0)" } ?? "") for \"\(query)\""
         case .volumeSet(let percent): "Volume set to \(percent)%"
         case .volumeChanged(let delta): delta >= 0 ? "Volume up \(delta)%" : "Volume down \(-delta)%"
+        case .volumeMuted: "Volume muted"
         case .volumeUnmuted: "Volume unmuted"
         case .brightnessSet(let percent): "Brightness set to \(percent)%"
         case .brightnessChanged(let delta): delta >= 0 ? "Brightness up \(delta)%" : "Brightness down \(-delta)%"
@@ -453,9 +455,12 @@ public struct ActionDispatcher: Sendable {
 
     private func screenshot(plan: CommandPlan) throws -> ReflexActionResult {
         let dir = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0]
-        let stamp = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
-            .replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
-        let path = dir.appendingPathComponent("Reflex \(stamp).png").path
+        // Seconds (and milliseconds) in the name: the old minute-granular style
+        // made two shots in the same minute collide and silently overwrite.
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss.SSS"
+        let path = dir.appendingPathComponent("Reflex \(formatter.string(from: Date())).png").path
         let output = try Self.runTool("/usr/sbin/screencapture", arguments: ["-x", path])
         guard output.isEmpty || !output.contains("error") else {
             return .failed(error: output)
@@ -465,7 +470,7 @@ public struct ActionDispatcher: Sendable {
 
     /// What a transcript asks `system_control` to do. Pure and separate from
     /// execution so the routing contract tests can assert that every phrase the
-    /// router sends here is actually handleable (docs/audit-2026-10-14.md, M3).
+    /// router sends here is actually handleable (atlas/docs/audit-2026-10-14.md, M3).
     enum SystemOperation: Equatable {
         case lockScreen
         case sleepDisplay
@@ -477,9 +482,17 @@ public struct ActionDispatcher: Sendable {
     /// Phrase to operation, in the original if-chain's order.
     static func systemOperation(for transcript: String) -> SystemOperation? {
         let lower = transcript.lowercased()
-        if lower.contains("lock") { return .lockScreen }
-        if lower.contains("sleep") { return .sleepDisplay }
-        if lower.contains("show desktop") || lower.contains("reveal the desktop") { return .showDesktop }
+        // Word boundaries, not substrings: "unlock the screen" must not lock
+        // (and macOS cannot unlock it anyway).
+        if lower.containsWord("lock") { return .lockScreen }
+        if lower.contains("sleep") || lower.contains("turn off the screen")
+            || lower.contains("turn off the display") {
+            return .sleepDisplay
+        }
+        if lower.contains("show desktop") || lower.contains("show the desktop")
+            || lower.contains("reveal the desktop") || lower.contains("go to the desktop") {
+            return .showDesktop
+        }
         if lower.contains("dark mode") || lower.contains("light mode") || lower.contains("dark theme")
             || lower.contains("light theme") {
             return .darkMode(lower.contains("dark"))
@@ -585,7 +598,10 @@ public struct ActionDispatcher: Sendable {
             }
             let targetName = Self.sanitizeName(rawTarget)
             let destURL = try Self.ensureFolder(named: targetName)
-            try Self.moveDownloads(matching: matcher, to: destURL)
+            let moved = try Self.moveDownloads(matching: matcher, to: destURL)
+            guard moved > 0 else {
+                return .noOp(reason: "nothing matched \"\(matcher)\" in Downloads")
+            }
             return .movedItems(into: destURL.lastPathComponent)
         }
 
@@ -682,10 +698,10 @@ public struct ActionDispatcher: Sendable {
             let applied = try adjustVolume(by: -delta)
             return .volumeChanged(delta: applied)
         case .mute:
-            try setVolume(0)
-            return .volumeSet(percent: 0)
+            try setMuted(true)
+            return .volumeMuted
         case .unmute:
-            try setVolume(50)
+            try setMuted(false)
             return .volumeUnmuted
         case .max:
             try setVolume(100)
@@ -725,7 +741,18 @@ public struct ActionDispatcher: Sendable {
 
     private static func setVolume(_ percent: Int) throws {
         let clamped = min(100, max(0, percent))
-        _ = try runTool("/usr/bin/osascript", arguments: ["-e", "set volume output volume \(clamped)"])
+        // Clear the mute flag too, or a level change while muted looks like it
+        // did nothing.
+        _ = try runTool("/usr/bin/osascript", arguments: [
+            "-e", "set volume output muted false",
+            "-e", "set volume output volume \(clamped)",
+        ])
+    }
+
+    /// Mutes or restores output without touching the level, so "unmute" returns
+    /// to the volume in use before the mute instead of a hardcoded 50 (S6).
+    private static func setMuted(_ muted: Bool) throws {
+        _ = try runTool("/usr/bin/osascript", arguments: ["-e", "set volume output muted \(muted)"])
     }
 
     private static func adjustVolume(by delta: Int) throws -> Int {
@@ -784,14 +811,21 @@ public struct ActionDispatcher: Sendable {
 
     // MARK: - File helpers
 
-    private static func moveDownloads(matching matcher: String, to destURL: URL) throws {
+    /// Returns the number of items Finder actually moved, so a zero-match run is
+    /// reported as "nothing matched" instead of a success.
+    @discardableResult
+    private static func moveDownloads(matching matcher: String, to destURL: URL) throws -> Int {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].path
         let script = """
         tell application "Finder"
-            move (every item of folder "\(appleScriptEscape(downloads))" whose name contains "\(appleScriptEscape(matcher))") to folder "\(appleScriptEscape(destURL.path))"
+            set theItems to (every item of folder "\(appleScriptEscape(downloads))" whose name contains "\(appleScriptEscape(matcher))")
+            set n to count of theItems
+            if n > 0 then move theItems to folder "\(appleScriptEscape(destURL.path))"
+            return n
         end tell
         """
-        _ = try runTool("/usr/bin/osascript", arguments: ["-e", script])
+        let output = try runTool("/usr/bin/osascript", arguments: ["-e", script])
+        return Int(output.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
     }
 
     private static func ensureFolder(named name: String) throws -> URL {
@@ -973,8 +1007,10 @@ public struct ActionDispatcher: Sendable {
         process.standardOutput = output
         process.standardError = output
         try process.run()
-        process.waitUntilExit()
+        // Drain before waiting. A child that writes more than the pipe buffer
+        // (~64 KB) blocks on write, and then waitUntilExit() blocks with it.
         let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
         let text = String(data: data, encoding: .utf8) ?? ""
         guard process.terminationStatus == 0 else {
             throw ActionExecutionError.unexpectedExit(

@@ -53,7 +53,7 @@ public struct RuleRouter: Sendable {
             || t.contains("change the volume") {
             return RuleDecision(target: "media_control", confidence: 0.95)
         }
-        if t.contains("play ") || t.hasSuffix("play") || t.contains("pause")
+        if t.containsWord("play") || t.contains("pause")
             || t.contains("resume") || t.contains("next song") || t.contains("previous song")
             || t.contains("skip") || t.contains("stop the music") || t.contains("stop playing")
             || t.contains("play music") || t.contains("continue") || t.contains("listen to") {
@@ -132,28 +132,11 @@ public struct RuleRouter: Sendable {
             }
         }
 
-        // Folders — "open the downloads folder" / "show me my documents".
-        if Self.isFolderOpen(t) {
-            return RuleDecision(target: "open_folder", confidence: 0.93)
-        }
-
-        // New item — "new window/document/note/file" in the frontmost or named
-        // app ("new note in notes", "new document called q3 report").
-        if t.contains("new window") || t.contains("new document") || t.contains("new note")
-            || t.contains("new file") || t.contains("new email") || t.contains("new message") {
-            return RuleDecision(target: "new_item", confidence: 0.93)
-        }
-
-        // Screenshot.
-        if t.contains("screenshot") || t.contains("screen shot") || t.contains("capture the screen")
-            || t.contains("take a screen") {
-            return RuleDecision(target: "screenshot", confidence: 0.95)
-        }
-
-        // System ops — lock/sleep/show desktop/dark mode/empty trash. Runs
-        // before open-app so "lock the screen" never tries to open an app.
-        if t.contains("lock the screen") || t.contains("lock screen") || t.contains("lock the mac")
-            || t.contains("lock my mac") {
+        // System ops — lock/sleep/show desktop/dark mode/empty trash. Runs before
+        // the folder rule so "show desktop" is the system gesture rather than the
+        // Desktop folder, and before open-app so "lock the screen" never tries to
+        // open an app.
+        if t.containsWord("lock") && (t.contains("screen") || t.contains("mac")) {
             return RuleDecision(target: "system_control", confidence: 0.95)
         }
         if t.contains("sleep the display") || t.contains("sleep display") || t.contains("display to sleep")
@@ -172,6 +155,24 @@ public struct RuleRouter: Sendable {
         if t.contains("empty the trash") || t.contains("empty trash") || t.contains("clear the trash")
             || t.contains("empty the bin") {
             return RuleDecision(target: "system_control", confidence: 0.95)
+        }
+
+        // Folders — "open the downloads folder" / "show me my documents".
+        if Self.isFolderOpen(t) {
+            return RuleDecision(target: "open_folder", confidence: 0.93)
+        }
+
+        // New item — "new window/document/note/file" in the frontmost or named
+        // app ("new note in notes", "new document called q3 report").
+        if t.contains("new window") || t.contains("new document") || t.contains("new note")
+            || t.contains("new file") || t.contains("new email") || t.contains("new message") {
+            return RuleDecision(target: "new_item", confidence: 0.93)
+        }
+
+        // Screenshot.
+        if t.contains("screenshot") || t.contains("screen shot") || t.contains("capture the screen")
+            || t.contains("take a screen") {
+            return RuleDecision(target: "screenshot", confidence: 0.95)
         }
 
         // Stop — "stop listening", "go to sleep mode", explicit shutdown words.
@@ -196,9 +197,13 @@ public struct RuleRouter: Sendable {
             return RuleDecision(target: "environment_setup", confidence: 0.9)
         }
 
-        // Web search — explicit web words, plus bare "search <topic>".
+        // Web search — explicit web words, plus bare "search <topic>". A leading
+        // launch verb wins over the bare "google" token, so "open google chrome"
+        // is an app launch, not a web search (S8).
+        let opensApp = ["open ", "open up ", "launch ", "start ", "bring up ", "pull up "]
+            .contains { t.hasPrefix($0) }
         if t.contains("on the web") || t.contains("online") || t.contains("internet")
-            || t.contains("browser") || t.contains("google") || t.hasPrefix("search ")
+            || t.contains("browser") || (t.contains("google") && !opensApp) || t.hasPrefix("search ")
             || t.hasPrefix("look up ") {
             return RuleDecision(target: "web_search", confidence: 0.85)
         }

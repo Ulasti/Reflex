@@ -544,12 +544,14 @@ public enum PayloadExtractor {
 
     private static func extractTitle(_ t: String) -> String? {
         // "called/titled/named/that says" + quoted span or a bare run.
-        let pattern = #"((called|titled|named|that says|that is called)\s+"[^"]+"|(called|titled|named|that says)\s+[^.,!?;]+)"#
+        // The payload must be its own capture group: reading a group index the
+        // pattern does not have raises an NSException that terminates the app.
+        let pattern = #"(?:called|titled|named|that says|that is called)\s+(?:"([^"]+)"|([^.,!?;]+))"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { return nil }
         let ns = t as NSString
         guard let match = regex.firstMatch(in: t, range: NSRange(location: 0, length: ns.length)) else { return nil }
-        let quoted = match.range(at: 3).location != NSNotFound ? ns.substring(with: match.range(at: 3)) : ""
-        let bare = match.range(at: 5).location != NSNotFound ? ns.substring(with: match.range(at: 5)) : ""
+        let quoted = match.range(at: 1).location != NSNotFound ? ns.substring(with: match.range(at: 1)) : ""
+        let bare = match.range(at: 2).location != NSNotFound ? ns.substring(with: match.range(at: 2)) : ""
         let result = (!quoted.isEmpty ? quoted : bare)
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?;"))

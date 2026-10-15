@@ -50,13 +50,7 @@ struct CandidateExtractionTests {
         #expect(extract("open the third link", target: "browser_command").linkIndex == 2)
     }
 
-    /// Disabled, not `withKnownIssue`: the failure mode is an Objective-C
-    /// `NSException` out of `range(at:)`, which kills the test process instead
-    /// of failing a test. Enable this the moment M6 is fixed.
-    @Test(
-        "a named payload becomes the title",
-        .disabled("audit M6: extractTitle reads capture group 5 of a 3-group pattern and raises NSException")
-    )
+    @Test("a named payload becomes the title")
     func extractsTitle() {
         #expect(extract("new document called q3 report", target: "new_item").title == "q3 report")
     }
