@@ -1,34 +1,11 @@
 Building for production...
-[Planning 1 / 183]
-[Planning deferred tasks]
-[42 / 69]
-[43 / 70] ArgmaxCore
-[54 / 123]
-[60 / 123]
-[65 / 123]
-[67 / 123]
-[71 / 123]
-[74 / 123]
-[81 / 123]
-[84 / 123]
-[85 / 123]
-[86 / 123]
-[93 / 123]
-[96 / 123]
-[97 / 123] ArgmaxCore
-[104 / 124] WhisperKit
-[115 / 142]
-[117 / 142]
-[118 / 142]
-[119 / 142]
-[121 / 142]
-[122 / 142]
-[123 / 142] WhisperKit
-[130 / 143] ReflexCore
-[140 / 153]
-[141 / 153] ReflexCore
-[149 / 154] reflex-cli-product
-[151 / 155] reflex-cli-product
-[153 / 155] reflex-cli-product
-[154 / 155] reflex-cli-product
-Build complete! (30,85 sec)
+[11 / 23]
+[12 / 24] ArgmaxCore
+[14 / 25] ArgmaxCore
+[17 / 27] WhisperKit
+[19 / 28] WhisperKit
+[22 / 30] ReflexCore
+[24 / 31] ReflexCore
+[27 / 30] reflex-cli-product
+[28 / 31] reflex-cli-product
+Build complete! (21,62 sec)

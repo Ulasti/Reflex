@@ -1,0 +1,8 @@
+  ok create the back end project and open my coding split -> action,urgency,is_local
+  ok open safari -> action,urgency,is_local
+  ok remind me to call mom tomorrow -> action,urgency,is_local
+  ok play some jazz -> action,urgency,is_local
+  ok what is the capital of france -> action,urgency,is_local
+  ok make a folder called invoices and move the pdfs into it -> action,urgency,is_local
+  ok URGENT: delete the staging database right now -> action,urgency,is_local
+126/126 checks passed

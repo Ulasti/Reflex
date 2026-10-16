@@ -1,7 +1,14 @@
-2026-10-14T22:00:00Z
-Current branch: atlas/phase-a-wiring (verified by git branch --show-current)
-Status field In Progress
-Needs_review true
-Last worked on 2026-10-14
-Unstaged changes: none (all changes committed on atlas/phase-a-wiring)
-Next steps: Merge atlas/phase-a-wiring → dev. All gates green: build-and-verify.sh passed, reflex-cli --verify OK, reflex-cli --diagnose clean, reflex-cli --laya-ref 126/126, Models (4.8G) + Resources regenerated.
+# ATLAS.md status update
+Date: 2026-10-16T02:53:33Z
+Branch: atlas/phase-a-verify
+
+Updated sections: Status (Branch -> atlas/phase-a-verify, Where I left off),
+Next Steps (Phase A verified; A5 remains), Blockers (test net updated; added lost-doc blocker),
+Inputs & Locations (jev reference MISSING), Links (added audit + roadmap; flagged lost doc),
+DoD (all 13 rows re-derived this session), Atlas Doctor (D1 reformatted, D22 corrected, D6 annotated, D30/D31/D32 added),
+Toolbox (reflex.icon row added).
+
+Diff summary:
+ atlas/ATLAS.md       | 106 +++++++++++++++++++++++++++++++--------------------
+ atlas/files/INDEX.md |   1 +
+ 2 files changed, 65 insertions(+), 42 deletions(-)
