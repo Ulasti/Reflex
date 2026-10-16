@@ -29,7 +29,7 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Last worked on | 2026-10-16 |
 | Branch | `atlas/atlas-upgrade-v2` |
 | needs_review | true |
-| Where I left off | Added the v2 ATLAS.md sections (Original Intent, Last Failure, Rule Ledger), corrected stale Doctor and Next Steps entries, and restored the DoD table under its own header. Then unwrapped the `reflex-source/` folder: sources (`Reflex/`, `ReflexCore/`, `Models/`) returned to the repo root and `project.yml` moved out of `atlas/` to the root, restoring the layout the code and `tools/project_env.py` already assume. Restored `.gitignore` to the original root-anchored form and re-ran the full build after clearing the stale `.build` cache. Work is on `atlas/atlas-upgrade-v2`, branched from `atlas/phase-a-wiring`. |
+| Where I left off | Added the v2 ATLAS.md sections (Original Intent, Last Failure, Rule Ledger), corrected stale Doctor and Next Steps entries, and restored the DoD table under its own header. Then unwrapped the `reflex-source/` folder: sources (`Reflex/`, `ReflexCore/`, `Models/`) returned to the repo root and `project.yml` moved out of `atlas/` to the root, restoring the layout the code and `tools/project_env.py` already assume. Restored `.gitignore` to the original root-anchored form and re-ran the full build after clearing the stale `.build` cache. Merged onto `dev` and pushed to `origin/dev` (2026-10-16). |
 
 ---
 
@@ -41,13 +41,10 @@ None. The last session ended with all gates passing on `atlas/phase-a-wiring` (c
 
 ## Next Steps
 
-1. **Review `atlas/phase-a-wiring`, then merge it → `dev`.**
-   `dev` is still at the initial commit (`a74e26b`); `atlas/phase-a-wiring`
-   is 12 commits ahead and is up to date with `origin/atlas/phase-a-wiring`.
-   The earlier text here named `atlas/integrate-reflex` and
-   `atlas/fix-model-path-resolver`; neither branch exists locally or on the
-   remote, so that plan is stale. This branch, `atlas/atlas-upgrade-v2`,
-   sits on top of `atlas/phase-a-wiring` and merges after it.
+1. **Phase A/B is consolidated on `dev` — done (2026-10-16).**
+   `atlas/phase-a-wiring` and `atlas/atlas-upgrade-v2` were fast-forwarded into
+   `dev` and pushed to `origin/dev`. `main` is still at the initial commit
+   (`a74e26b`), behind `dev`; fast-forward it when you want a release branch.
 2. **Verify Phase A actually does what the plan claims.** A1–A4 files exist
    (`PayloadExtractor`, `CommandPlan`, `CompoundRouter`, and the confidence
    floor). Run the plan's own gate: `--laya-ref` must stay 126/126 and the A-log
