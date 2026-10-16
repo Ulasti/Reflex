@@ -1,24 +1,9 @@
 # Commit evidence
-Date: 2026-10-16T02:54:00Z
+Date: 2026-10-16T02:55:08Z
 Branch: atlas/phase-a-verify
-Commit: c2627205c282ca7ec83dc398a7584bda9ae06c31
-Message: docs(atlas): verify Phase A, restore DoD evidence, fix Doctor drift - evidence: atlas/evidence/phase-a-verify.txt
+Session commits (newest first):
+e1cad76 docs(atlas): correct D5/.gitkeep and DoD row 8 claims - evidence: atlas/evidence/atlas-status.txt
+9d6a9a8 docs(atlas): record commit evidence - evidence: atlas/evidence/commit.txt
+c262720 docs(atlas): verify Phase A, restore DoD evidence, fix Doctor drift - evidence: atlas/evidence/phase-a-verify.txt
 
-Files in that commit:
- .../xcshareddata/xcschemes/Reflex-iOS.xcscheme     |   22 +-
- .../xcshareddata/xcschemes/Reflex-macOS.xcscheme   |   20 +-
- atlas/ATLAS.md                                     |  106 +-
- atlas/evidence/artifacts-check.txt                 |   29 +
- atlas/evidence/atlas-status.txt                    |   21 +-
- atlas/evidence/build-cli.log                       |   43 +-
- atlas/evidence/build-ios.log                       | 2678 ++++++++++----------
- atlas/evidence/build-macos.log                     | 1464 +++++------
- atlas/evidence/diagnose.txt                        |   14 +
- atlas/evidence/git-push.txt                        |   10 +
- atlas/evidence/laya-ref.txt                        |    8 +
- atlas/evidence/phase-a-verify.txt                  |   41 +
- atlas/evidence/security-scan.txt                   |   16 +
- atlas/evidence/tests.log                           |  391 ++-
- atlas/evidence/verify-models-negative.txt          |   12 +
- atlas/files/INDEX.md                               |    1 +
- 16 files changed, 2489 insertions(+), 2387 deletions(-)
+HEAD: e1cad76f9a9e6b87d0bf4c2dac6c3e610289e6aa
