@@ -37,10 +37,10 @@ require_compile_actions() {
 }
 
 # 1. Regenerate the Xcode project. Reflex.xcodeproj is generated from project.yml
-#    by XcodeGen, so project.yml is the source of truth. The spec lives in
-#    atlas/ while the project sits at the repo root, so both are given explicitly.
+#    by XcodeGen, so project.yml is the source of truth. The spec sits at the
+#    repo root, next to the project it generates.
 echo "==> [1/5] xcodegen generate"
-xcodegen generate --spec atlas/project.yml --project-root . --project . \
+xcodegen generate \
   > "$LOG_DIR/xcodegen.log" 2>&1 || fail "xcodegen (see $LOG_DIR/xcodegen.log)"
 
 # 2. macOS app (the primary target).
@@ -65,8 +65,8 @@ fi
 
 # 4. ReflexCore unit tests. A suite no gate runs is not evidence, so the summary
 #    line is required and any failure symbol fails the run.
-echo "==> [4/5] swift test reflex-source/ReflexCore"
-swift test --package-path reflex-source/ReflexCore > "$LOG_DIR/tests.log" 2>&1 \
+echo "==> [4/5] swift test ReflexCore"
+swift test --package-path ReflexCore > "$LOG_DIR/tests.log" 2>&1 \
   || fail "tests (see $LOG_DIR/tests.log)"
 grep -q "Test run with" "$LOG_DIR/tests.log" || fail "swift test wrote no summary line"
 if grep -qE "✘|error:" "$LOG_DIR/tests.log"; then
@@ -75,11 +75,11 @@ fi
 
 # 5. SPM package + CLI, then verify every CoreML bundle actually compiles.
 echo "==> [5/5] swift build ReflexCore + reflex-cli --verify"
-swift build --package-path reflex-source/ReflexCore -c release > "$LOG_DIR/build-cli.log" 2>&1 \
+swift build --package-path ReflexCore -c release > "$LOG_DIR/build-cli.log" 2>&1 \
   || fail "SPM build (see $LOG_DIR/build-cli.log)"
 grep -q "Build complete!" "$LOG_DIR/build-cli.log" || fail "SPM build did not report success"
 
-CLI="reflex-source/ReflexCore/.build/out/Products/Release/reflex-cli"
+CLI="ReflexCore/.build/out/Products/Release/reflex-cli"
 [[ -x "$CLI" ]] || fail "reflex-cli release binary not found at $CLI"
 
 # --verify exits non-zero when models are missing or nothing was found.
@@ -97,4 +97,4 @@ grep -q "verify OK" "$LOG_DIR/verify-models.log" \
 
 echo
 echo "All builds, tests and model checks succeeded. Evidence written to $LOG_DIR/."
-echo "NOTE: models are gitignored. If --verify reports missing packages, see reflex-source/Models/MANIFEST.md."
+echo "NOTE: models are gitignored. If --verify reports missing packages, see Models/MANIFEST.md."

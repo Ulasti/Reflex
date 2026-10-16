@@ -29,7 +29,7 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Last worked on | 2026-10-16 |
 | Branch | `atlas/atlas-upgrade-v2` |
 | needs_review | true |
-| Where I left off | Added the v2 ATLAS.md sections (Original Intent, Last Failure, Rule Ledger), corrected stale Doctor and Next Steps entries, and restored the DoD table under its own header. Work is on `atlas/atlas-upgrade-v2`, branched from `atlas/phase-a-wiring`. |
+| Where I left off | Added the v2 ATLAS.md sections (Original Intent, Last Failure, Rule Ledger), corrected stale Doctor and Next Steps entries, and restored the DoD table under its own header. Then unwrapped the `reflex-source/` folder: sources (`Reflex/`, `ReflexCore/`, `Models/`) returned to the repo root and `project.yml` moved out of `atlas/` to the root, restoring the layout the code and `tools/project_env.py` already assume. Restored `.gitignore` to the original root-anchored form and re-ran the full build after clearing the stale `.build` cache. Work is on `atlas/atlas-upgrade-v2`, branched from `atlas/phase-a-wiring`. |
 
 ---
 
@@ -146,7 +146,7 @@ cd tools && python3.10 -m venv .venv && .venv/bin/pip install -r requirements.tx
 ./.venv/bin/python download_whisperkit_models.py small
 ```
 
-**There is no test target and no lint step.** The gates that do exist:
+**There is no lint step.** The gates that exist:
 
 | Gate | What it proves |
 |---|---|
@@ -163,10 +163,10 @@ The loop for a change to Reflex.
 
 1. Read `ATLAS.md`. Confirm the branch is `atlas/<feature>`, created from `dev`.
 2. `atlas/files/build-and-verify.sh` if you touched `atlas/project.yml`,
-   `reflex-source/Reflex/`, or `reflex-source/ReflexCore/` — the `.xcodeproj` is
+   `Reflex/`, or `ReflexCore/` — the `.xcodeproj` is
    generated from the spec, so never hand-edit it.
 3. That script builds both app targets, the CLI and the test suite.
-4. It runs `reflex-source/ReflexCore/.build/out/Products/Release/reflex-cli --verify`.
+4. It runs `ReflexCore/.build/out/Products/Release/reflex-cli --verify`.
 5. Exercise the change headlessly through the CLI before touching the UI.
    `--help` lists the verbs; `--diagnose` reports permissions and environment.
    Require **0 blocking issues** from `--diagnose` and **126/126** from
@@ -198,7 +198,7 @@ The loop for a change to Reflex.
   `homeDirectoryForCurrentUser`, `NSHomeDirectory()`, `Path.home()`,
   `getpwuid`, `expanduser` — then read each hit.
 - **If an asset is over ~50 MB, then keep it local and gitignored with a
-  committed manifest.** `reflex-source/Models/MANIFEST.md`. Never commit weights unasked.
+  committed manifest.** `Models/MANIFEST.md`. Never commit weights unasked.
 - **If a check cannot be verified, then record it as unverifiable.** Never
   report an assumed pass.
 - **If a verification command can silently pass, then that is a bug.** Fix it
@@ -217,6 +217,7 @@ The loop for a change to Reflex.
 | Record an unverifiable check as `Unverified`, never as Pass. | Doctor D22; Decisions | project | proven |
 | Re-derive inherited results; a prior green DoD is a claim, not evidence. | Doctor D19, D23 | project | proven |
 | Never hand-edit `Reflex.xcodeproj`; edit `project.yml` then run `xcodegen generate`. | Agent Instructions | project | proven |
+| Keep framework-native files at the project root; only Atlas-owned files (`ATLAS.md`, `evidence/`, `docs/`, `files/`) live in `atlas/`. | Doctor D27 | project | proven |
 
 ---
 
@@ -231,9 +232,9 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 | 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — `Build complete!` | **Pass.** `atlas/files/build-and-verify.sh` also asserts the macOS log contains real compile actions, so a cache-hit no-op can no longer pass as evidence (D23). |
 | 4 | Every CoreML bundle compiles via `reflex-cli --verify` | `evidence/verify-models.log` — `verify OK`, exit 0 | **Pass** |
 | 5 | `--verify` genuinely fails when models are absent | `evidence/verify-models.log` shows verify OK with models present; verified separately that --verify exits 1 when models directory is empty | **Pass** |
-| 6 | Automated unit tests pass | `evidence/tests.log` — `Test run with … passed` | **Pass** — `reflex-source/ReflexCore/Tests/ReflexCoreTests` runs under `atlas/files/build-and-verify.sh`. The earlier "no test target exists" was true only before that target was added. |
+| 6 | Automated unit tests pass | `evidence/tests.log` — `Test run with … passed` | **Pass** — `ReflexCore/Tests/ReflexCoreTests` runs under `atlas/files/build-and-verify.sh`. The earlier "no test target exists" was true only before that target was added. |
 | 7 | No load-bearing asset lives outside the project | `evidence/self-containment.txt`, re-verified in `evidence/integrity-audit-2026-10-02.txt` | **Pass (re-verified 2026-10-02).** The original Pass was wrong: `LiveTranscriber.swift` still resolved models from `~/Development/Reflex`. Fixed and re-proven by `--diagnose` reporting zero blocking issues. |
-| 8 | Gitignored heavy assets disclosed with committed placeholders | `evidence/self-containment.txt`, `reflex-source/Models/MANIFEST.md` | **Pass** |
+| 8 | Gitignored heavy assets disclosed with committed placeholders | `evidence/self-containment.txt`, `Models/MANIFEST.md` | **Pass** |
 | 9 | No secrets or credentials committed | `evidence/security-scan.txt` | **Pass** |
 | 10 | Referenced paths and artifacts all resolve | `evidence/artifacts-check.txt` | **Pass** |
 | 11 | ATLAS.md status, branch, next steps current | `evidence/atlas-status.txt` | **Pass** |
@@ -318,13 +319,16 @@ Health of the Atlas integration itself. Checked 2026-10-16.
 | D14 | No `tests/` or `src/` directory. Atlas's canonical structure expects both. | info | open | Resolved by creating a real test target rather than empty directories — tracked as D1. `src/` will never exist here: this is a Swift/XcodeGen project whose sources live in `Reflex/` and `ReflexCore/Sources/`. Recorded so the next agent does not re-raise it. | 2026-10-02 |
 | D15 | `tools/__pycache__` and `.DS_Store` are gitignored but were present in the working tree before integration. | info | fixed | Already covered by the existing `.gitignore` rules; confirmed no stray artifacts are staged. | 2026-10-02 |
 | D16 | `~/.config/opencode/commands/atlas.md` hardcodes `/Users/emir/.config/opencode/skills/atlas/SKILL.md`, which the Atlas spec forbids in a wrapper. | info | ignored | **Accepted by the user, deliberately.** The hardcoded path is how OpenCode resolves this skill without matching another one. `<workspace>/SKILL.md` remains the pristine source of truth for cloning and for any other host; the OpenCode copy is a host-local install and is intentionally not byte-identical. Re-check only if `/atlas` stops resolving the skill. | 2026-10-02 |
-| D20 | Skill copy drift: `~/.config/opencode/skills/atlas/SKILL.md` differed from `<workspace>/SKILL.md`. | warn | fixed | Re-installed during the v2 workspace upgrade: the two files are now byte-identical (sha256 `822765b2…`). Verified by `diff` 2026-10-16. | 2026-10-16 |
+| D20 | Skill copy drift: `~/.config/opencode/skills/atlas/SKILL.md` differed from `<workspace>/SKILL.md`. | warn | fixed | Re-installed during the v2 workspace upgrade; after the user's manual SKILL 2.1.0 update the two files are byte-identical (sha256 `0fae35d6…`). Verified by `diff` 2026-10-16. | 2026-10-16 |
 | D21 | **Self-containment evidence corrupted:** an automated script (`atlas-self-containment-audit.sh`) overwrote `evidence/self-containment.txt` with false positives. It grepped for APIs but did **not classify by reading** — it counted 5 hits as "violations" including intentional code (`expanduser` on user arg), documentation lines in ATLAS.md, and the two intentional `NSHomeDirectory()` calls. The script violated "Classify, do not count" and "Search the API, not the string" (then read every hit). Restored from git. | error | fixed | Remove or fix the script so it classifies each hit by reading it, and asserts a number with classification. Script currently produces unfalsifiable "violations" that require manual re-audit to debunk. Evidence restored to the correct re-verified audit. | 2026-10-03 |
 | D22 | **`--laya-ref` 126/126 claim had no evidence file.** Asserted in Status and How to Run/Test, but no `evidence/laya-ref.txt` existed. Per "inherited results are not results" and "re-derive inherited results," this was an inherited claim, not evidence. | warn | fixed | Ran `reflex-cli --laya-ref tools/laya_reference.json` → 126/126. Output saved to `evidence/laya-ref.txt`. Independently re-verified. | 2026-10-03 |
 | D23 | **DoD row 3 evidence degraded:** `evidence/build-cli.log` was 77 bytes, 0 compile actions, an incremental no-op. `build-clean.log` covers only macOS/iOS, not the SPM CLI release build. Binary existed (4.1 MB, mtime 22:08) and 0 sources were newer, so a release build did happen — but its log was overwritten. D19 failure mode recurred for the CLI. | warn | fixed | Cleared `ReflexCore/.build/out` and re-ran `swift build --package-path ReflexCore -c release` (32.83 s, 183 tasks planned). Log now shows real build work; `reflex-cli --verify` → `verify OK`. Evidence: `evidence/build-cli.log`. | 2026-10-03 |
 | D24 | ATLAS.md lacked the v2 sections **Original Intent**, **Last Failure** and **Rule Ledger**. | info | fixed | Added all three. Original Intent frozen from the user's own Purpose line after explicit confirmation (2026-10-16). Evidence: `evidence/atlas-upgrade.txt`. | 2026-10-16 |
 | D25 | Next Steps and Blockers named branches that do not exist (`atlas/integrate-reflex`, `atlas/fix-model-path-resolver`); D2 also claimed there was no remote. | warn | fixed | Next Steps rewritten around the real state: `dev` is at `a74e26b` and `atlas/phase-a-wiring` is 12 commits ahead. D2 marked fixed. Evidence: `evidence/atlas-upgrade.txt`. | 2026-10-16 |
 | D26 | `## Definition of Done` header was empty and the DoD table sat orphaned under `## Decisions`. | warn | fixed | DoD table moved back under its own header; Rule Ledger inserted after Decisions per the v2 template. | 2026-10-16 |
+| D27 | **Source wrapper split the repo from its own path assumptions.** A prior restructure moved the sources under `reflex-source/`, but `tools/project_env.py` (`MODELS_DIR`, `RESOURCES_DIR`) and `LiveTranscriber.swift` (`#filePath`) both derive the repo root assuming `Reflex/`, `ReflexCore/` and `Models/` sit at the root — so `REFLEX_MODELS` and the Python `MODELS_DIR` pointed at a non-existent `<root>/Models`, and `tools/convert.py`/`download_whisperkit_models.py` would write weights where the app does not read. `project.yml` was also inside `atlas/`, contradicting Atlas 2.1.0 (only Atlas-owned files belong in `atlas/`). | warn | fixed | Unwrapped back to the original root layout: `git mv reflex-source/{Reflex,ReflexCore,Models}` → repo root, `git mv atlas/project.yml` → root. Updated every path reference (`project.yml`, `atlas/files/build-and-verify.sh`, this file) and the `.gitignore` comment. Nothing deleted: the emptied wrapper and the orphan root `ReflexCore/Package.resolved` (which differed from the real one) were moved to a backup. The Swift and Python resolvers now reach the true repo root with no code change. Evidence: `evidence/atlas-layout-restructure.txt` and the refreshed build logs. | 2026-10-16 |
+| D28 | `Models/manifest.json` (gitignored, written by `tools/convert.py`, read by nothing) still holds absolute `/Users/emir/…` paths and a `whisper-large-v3-turbo` key that no longer exists (the variants live under `Models/whisperkit/`). | info | open | Regenerate it from `tools/convert.py` so it uses `project_env.relative_to_repo` relative paths (D4), or drop the file. Harmless today because nothing reads it and it is not committed. | 2026-10-16 |
+| D29 | After moving `ReflexCore/`, `ReflexCore/.build/out` held absolute paths from the old `reflex-source/ReflexCore/.build/…`, so `swift test` / `swift build` emitted ~530 "Stale file … is located outside of the allowed root paths" warnings (visible in `evidence/tests.log`, `evidence/build-cli.log`). | info | fixed | Cleared `ReflexCore/.build` (745 MB) and re-ran `atlas/files/build-and-verify.sh`: logs now contain 0 stale-path warnings, both app targets build (320 compile actions), 51 tests in 13 suites pass, release CLI Build complete, `reflex-cli --verify` OK. | 2026-10-16 |
 
 ---
 ## Agent Instructions
