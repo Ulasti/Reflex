@@ -13,25 +13,41 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 
 ---
 
+## Original Intent
+
+On-device voice command router: transcribes speech with Whisper on the Neural
+Engine, decides intent with a Laya router, and performs the action — macOS
+first, sharing one SwiftUI UI into an iOS/iPadOS app.
+
+---
+
 ## Status
  
 | Field | Value |
 |---|---|
 | Status | `In Progress` |
-| Last worked on | 2026-10-14 |
-| Branch | `atlas/phase-a-wiring` |
+| Last worked on | 2026-10-16 |
+| Branch | `atlas/atlas-upgrade-v2` |
 | needs_review | true |
-| Where I left off | On branch `atlas/phase-a-wiring` with several commits ahead of `dev`. Working on wiring Phase A components (A5: wire A3/A4 into AppModel live path). Have committed all changes including ATLAS.md fixes, regenerated resources, and verified all gates. Ready to continue with Phase A wiring per implementation plan. |
+| Where I left off | Added the v2 ATLAS.md sections (Original Intent, Last Failure, Rule Ledger), corrected stale Doctor and Next Steps entries, and restored the DoD table under its own header. Work is on `atlas/atlas-upgrade-v2`, branched from `atlas/phase-a-wiring`. |
+
+---
+
+## Last Failure
+
+None. The last session ended with all gates passing on `atlas/phase-a-wiring` (commit `1fb1beb`); no error stopped work.
 
 ---
 
 ## Next Steps
 
-1. **Review `atlas/fix-model-path-resolver`, then merge both branches → `dev`.**
-   Two branches now carry unreviewed work, in order:
-   `atlas/integrate-reflex` (the integration) then
-   `atlas/fix-model-path-resolver` (the audit fixes, branched from it).
-   Merge in that order. Nothing is on `dev` yet.
+1. **Review `atlas/phase-a-wiring`, then merge it → `dev`.**
+   `dev` is still at the initial commit (`a74e26b`); `atlas/phase-a-wiring`
+   is 12 commits ahead and is up to date with `origin/atlas/phase-a-wiring`.
+   The earlier text here named `atlas/integrate-reflex` and
+   `atlas/fix-model-path-resolver`; neither branch exists locally or on the
+   remote, so that plan is stale. This branch, `atlas/atlas-upgrade-v2`,
+   sits on top of `atlas/phase-a-wiring` and merges after it.
 2. **Verify Phase A actually does what the plan claims.** A1–A4 files exist
    (`PayloadExtractor`, `CommandPlan`, `CompoundRouter`, and the confidence
    floor). Run the plan's own gate: `--laya-ref` must stay 126/126 and the A-log
@@ -49,10 +65,9 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 
 ## Blockers
 
-- **No test suite (self-imposed).** Every Phase A–B file is unverified. This is
-  the main risk to the project, not a missing dependency.
-- **No git remote.** The repository has no `origin`, so nothing can be pushed
-  and nothing is backed up. Needs the user to create a remote.
+- **No dedicated test suite (self-imposed), partly addressed.** A
+  `ReflexCoreTests` target now exists with rule-routing and payload coverage
+  (see D1). Phase A–B files outside that net remain the main project risk.
 - **`docs/implementation-plan.md` Phase A refers to `DecisionArbiter.swift`**, but
   the arbitration logic lives in `ReflexSystemEngine.swift`. Either the file was
   renamed or the plan is stale. Resolve before starting A3.
@@ -162,10 +177,6 @@ The loop for a change to Reflex.
 
 ---
 
-## Definition of Done
-
----
-
 ## Decisions
 
 - **If a new action kind needs ML support, then retrain or re-export Laya.**
@@ -195,6 +206,21 @@ The loop for a change to Reflex.
 
 ---
 
+## Rule Ledger
+
+| Rule | Born from (incident or evidence path) | Scope (project/global) | Status (unproven/proven) |
+|---|---|---|---|
+| Never grep for `/Users/` to prove self-containment; grep the home-directory APIs, then read every hit. | `atlas/evidence/integrity-audit-2026-10-02.txt`; Doctor D17 | project | proven |
+| One resolver per asset; every caller delegates to it. | Doctor D4, D17 | project | proven |
+| A verification command that can silently pass is a bug: make it exit non-zero and prove the failure. | Doctor D3, D18, D23 | project | proven |
+| Keep any asset over ~50 MB local and gitignored, with a committed manifest. | Doctor D5 | project | proven |
+| Record an unverifiable check as `Unverified`, never as Pass. | Doctor D22; Decisions | project | proven |
+| Re-derive inherited results; a prior green DoD is a claim, not evidence. | Doctor D19, D23 | project | proven |
+| Never hand-edit `Reflex.xcodeproj`; edit `project.yml` then run `xcodegen generate`. | Agent Instructions | project | proven |
+
+---
+
+## Definition of Done
 
 Every check is run and evidenced. Pass/Fail reflects what actually ran.
 
@@ -269,12 +295,12 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 
 ## Atlas Doctor
 
-Health of the Atlas integration itself. Checked 2026-10-03.
+Health of the Atlas integration itself. Checked 2026-10-16.
 
 | # | Issue | Severity | Status | Suggested Fix | Last Checked |
 |---|---|---|---|---|---|
 | D1 | No test target anywhere in the project, so every Phase A–B file is unverified. | error | partially addressed | Added ReflexCoreTests target + initial tests (RuleRouter, PayloadExtractor). MisfireRegression needs rule coverage. | 2026-10-09 Add `ReflexCoreTests` targeting the pure functions first (`RuleRouter.classify`, `PayloadExtractor`), then the plan's own `--laya-ref` 126/126 gate as a test. | 2026-10-02 |
-| D2 | No git remote configured. Nothing can be pushed or backed up. | error | open | User must create a remote and add `origin`. Until then the branch strategy's push step is unverifiable. | 2026-10-02 |
+| D2 | No git remote configured. | error | fixed | Remote now exists: `origin` = `git@github.com:Ulasti/Reflex.git`; `atlas/phase-a-wiring` tracks `origin/atlas/phase-a-wiring`. The push step is now verifiable. (Re-checked 2026-10-16.) | 2026-10-16 |
 | D3 | `--verify` previously reported success with zero models present, because it silently skipped missing packages and always exited 0. | error | fixed | Rewrote `verifyCompilation()` to throw when nothing is found and to list what is missing; `--verify` now exits 1. Proven with a negative run against an empty directory. | 2026-10-02 |
 | D4 | Six load-bearing absolute paths pointed at `~/Development/Reflex`, which no longer exists after relocation. | error | fixed | All rewritten to derive from the repo via `#filePath` / `__file__`. `Models/manifest.json` rebuilt with relative paths. | 2026-10-02 |
 | D17 | A **seventh** path was missed: `LiveTranscriber.swift` still resolved models from `~/Development/Reflex/Models`, so `--diagnose` and the app's Diagnostics button reported a false "Whisper model not found". The original self-containment audit asserted "ALL rewritten" and reported zero, because it grepped for literal `/Users/` and this path is assembled from `appendingPathComponent`. | error | fixed | `ReflexWhisperKit.defaultModelsDirectory` now derives from `#filePath`. `ReflexEnvironment.modelDirectory()` and the CLI's `defaultModelsDirectory()` both delegate to it, so one resolver, not three. Proven: `--diagnose` → 0 blocking issues. Re-audited with an escape-hatch pattern that catches assembled paths. | 2026-10-02 |
@@ -292,10 +318,13 @@ Health of the Atlas integration itself. Checked 2026-10-03.
 | D14 | No `tests/` or `src/` directory. Atlas's canonical structure expects both. | info | open | Resolved by creating a real test target rather than empty directories — tracked as D1. `src/` will never exist here: this is a Swift/XcodeGen project whose sources live in `Reflex/` and `ReflexCore/Sources/`. Recorded so the next agent does not re-raise it. | 2026-10-02 |
 | D15 | `tools/__pycache__` and `.DS_Store` are gitignored but were present in the working tree before integration. | info | fixed | Already covered by the existing `.gitignore` rules; confirmed no stray artifacts are staged. | 2026-10-02 |
 | D16 | `~/.config/opencode/commands/atlas.md` hardcodes `/Users/emir/.config/opencode/skills/atlas/SKILL.md`, which the Atlas spec forbids in a wrapper. | info | ignored | **Accepted by the user, deliberately.** The hardcoded path is how OpenCode resolves this skill without matching another one. `<workspace>/SKILL.md` remains the pristine source of truth for cloning and for any other host; the OpenCode copy is a host-local install and is intentionally not byte-identical. Re-check only if `/atlas` stops resolving the skill. | 2026-10-02 |
-| D20 | **Skill copy drift:** `~/.config/opencode/skills/atlas/SKILL.md` differs from `<workspace>/SKILL.md`. The host copy lost the "Automated audit script" paragraph (lines 234-237 in workspace). Per Atlas spec, host copy must stay byte-identical to workspace original. | warn | open | Re-install: copy `<workspace>/SKILL.md` → host skills dir. Or edit workspace original and re-install; never edit host copy directly. | 2026-10-03 |
+| D20 | Skill copy drift: `~/.config/opencode/skills/atlas/SKILL.md` differed from `<workspace>/SKILL.md`. | warn | fixed | Re-installed during the v2 workspace upgrade: the two files are now byte-identical (sha256 `822765b2…`). Verified by `diff` 2026-10-16. | 2026-10-16 |
 | D21 | **Self-containment evidence corrupted:** an automated script (`atlas-self-containment-audit.sh`) overwrote `evidence/self-containment.txt` with false positives. It grepped for APIs but did **not classify by reading** — it counted 5 hits as "violations" including intentional code (`expanduser` on user arg), documentation lines in ATLAS.md, and the two intentional `NSHomeDirectory()` calls. The script violated "Classify, do not count" and "Search the API, not the string" (then read every hit). Restored from git. | error | fixed | Remove or fix the script so it classifies each hit by reading it, and asserts a number with classification. Script currently produces unfalsifiable "violations" that require manual re-audit to debunk. Evidence restored to the correct re-verified audit. | 2026-10-03 |
 | D22 | **`--laya-ref` 126/126 claim had no evidence file.** Asserted in Status and How to Run/Test, but no `evidence/laya-ref.txt` existed. Per "inherited results are not results" and "re-derive inherited results," this was an inherited claim, not evidence. | warn | fixed | Ran `reflex-cli --laya-ref tools/laya_reference.json` → 126/126. Output saved to `evidence/laya-ref.txt`. Independently re-verified. | 2026-10-03 |
 | D23 | **DoD row 3 evidence degraded:** `evidence/build-cli.log` was 77 bytes, 0 compile actions, an incremental no-op. `build-clean.log` covers only macOS/iOS, not the SPM CLI release build. Binary existed (4.1 MB, mtime 22:08) and 0 sources were newer, so a release build did happen — but its log was overwritten. D19 failure mode recurred for the CLI. | warn | fixed | Cleared `ReflexCore/.build/out` and re-ran `swift build --package-path ReflexCore -c release` (32.83 s, 183 tasks planned). Log now shows real build work; `reflex-cli --verify` → `verify OK`. Evidence: `evidence/build-cli.log`. | 2026-10-03 |
+| D24 | ATLAS.md lacked the v2 sections **Original Intent**, **Last Failure** and **Rule Ledger**. | info | fixed | Added all three. Original Intent frozen from the user's own Purpose line after explicit confirmation (2026-10-16). Evidence: `evidence/atlas-upgrade.txt`. | 2026-10-16 |
+| D25 | Next Steps and Blockers named branches that do not exist (`atlas/integrate-reflex`, `atlas/fix-model-path-resolver`); D2 also claimed there was no remote. | warn | fixed | Next Steps rewritten around the real state: `dev` is at `a74e26b` and `atlas/phase-a-wiring` is 12 commits ahead. D2 marked fixed. Evidence: `evidence/atlas-upgrade.txt`. | 2026-10-16 |
+| D26 | `## Definition of Done` header was empty and the DoD table sat orphaned under `## Decisions`. | warn | fixed | DoD table moved back under its own header; Rule Ledger inserted after Decisions per the v2 template. | 2026-10-16 |
 
 ---
 ## Agent Instructions
