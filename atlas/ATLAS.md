@@ -26,10 +26,10 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Field | Value |
 |---|---|
 | Status | `In Progress` |
-| Last worked on | 2026-10-16 |
-| Branch | `atlas/phase-a-verify` |
+| Last worked on | 2026-10-18 |
+| Branch | `atlas/menubar-ui` |
 | needs_review | true |
-| Where I left off | Re-derived the Phase A gate on `atlas/phase-a-verify` (brought from `dev` @ `56813b8`). Ran the plan's own gate end to end: `--laya-ref` 126/126, `--diagnose` 0 blocking issues, the A-log phrases behave (`Search, PSP` → web_search 0.85; `quit calculator` → quit 0.9; `50 times 20` → `.noOp` at 5% confidence, which is the A3 floor working), and `--compound` splits 2 clauses. `atlas/files/build-and-verify.sh` rebuilt everything (320 compile actions, 51 tests in 13 suites, `verify OK`). Evidence: `evidence/phase-a-verify.txt`. Housekeeping: restored the missing DoD evidence files (security-scan, artifacts-check), fixed a malformed Doctor row, and found one lost doc (see Blockers). Not pushed: DoD row 10 fails on that missing doc. |
+| Where I left off | Converted the macOS app to a menu bar extra (`atlas/menubar-ui`, 2026-10-18): `MenuBarExtra` (.menu style) + `Settings` scene, no app window, `LSUIElement` on. Added the pill-shaped status light (`StatusPillView`) and a notch overlay (`NotchPillController`) that measures Vorssaint's/other notch apps' island windows via `CGWindowListCopyWindowInfo`, sits below them, and hides while their island covers the slot. Both app targets build, `swift test` 51/51, launch smoke test alive at 5 s. **Not yet verified visually** (pill placement vs the real notch and a running Vorssaint; `SettingsLink` from the LSUIElement menu). Evidence: `atlas/evidence/menubar-ui.txt`. Earlier: re-derived the Phase A gate on `atlas/phase-a-verify` (`--laya-ref` 126/126, `--diagnose` 0 blocking). |
 
 ---
 
@@ -41,7 +41,13 @@ None. The last session ended with all gates passing on `atlas/phase-a-wiring` (c
 
 ## Next Steps
 
-1. **Phase A is verified — done (2026-10-16).** `--laya-ref` 126/126,
+1. **Verify the menubar UI on a real display (`atlas/menubar-ui`).** Launch
+   the app with Vorssaint running: check the pill sits below the notch, steps
+   down/aside when Vorssaint's Dynamic Island expands, and returns after; and
+   that `Settings…` from the menu bar extra opens the Settings window while
+   the app is an LSUIElement agent. Builds/tests only so far —
+   `evidence/menubar-ui.txt`.
+2. **Phase A is verified — done (2026-10-16).** `--laya-ref` 126/126,
    `--diagnose` 0 blocking issues, and the A-log phrases behave. The plan's own
    gate passes. Evidence: `evidence/phase-a-verify.txt`.
 2. **A5: wire A3/A4 into the AppModel live path — still open.** The CLI

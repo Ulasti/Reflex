@@ -6,10 +6,28 @@ struct ReflexApp: App {
     @StateObject private var appModel = AppModel()
 
     var body: some Scene {
+        #if os(macOS)
+        // The app lives in the menu bar. A menu, not a popover, per the HIG
+        // (`the-menu-bar.md › Menu bar extras`); settings get their own
+        // fixed-settings window through the Settings scene.
+        MenuBarExtra {
+            MenuBarView()
+                .environmentObject(appModel)
+        } label: {
+            Image(systemName: "capsule.fill")
+        }
+        .menuBarExtraStyle(.menu)
+
+        Settings {
+            SettingsView()
+                .environmentObject(appModel)
+        }
+        #else
         WindowGroup {
             ContentView()
                 .environmentObject(appModel)
         }
+        #endif
     }
 }
 

@@ -56,6 +56,11 @@ final class AppModel: ObservableObject {
     @Published var suppressWhileMediaPlaying: Bool {
         didSet { UserDefaults.standard.set(suppressWhileMediaPlaying, forKey: Self.mediaSuppressKey) }
     }
+    /// Pill-shaped status light near the notch. It also steps aside on its own
+    /// while another notch app's island covers the slot (see NotchPillController).
+    @Published var showNotchPill: Bool {
+        didSet { UserDefaults.standard.set(showNotchPill, forKey: Self.notchPillKey) }
+    }
     /// Completed sessions, newest first (persisted on disk).
     @Published var sessions: [SessionLog] = []
     /// The most recently completed session (what "copy last session" copies).
@@ -64,6 +69,7 @@ final class AppModel: ObservableObject {
     private static let verboseKey = "verboseLogging"
     private static let feedbackKey = "feedbackSounds"
     private static let mediaSuppressKey = "suppressWhileMediaPlaying"
+    private static let notchPillKey = "showNotchPill"
 
     private let modelManager: ModelManager
     private let engine: ReflexSystemEngine
@@ -79,6 +85,8 @@ final class AppModel: ObservableObject {
     private let hotKeyID: UInt32 = 1
     /// Holds the mic mute for as long as the feedback tone sounds.
     private var feedbackTone: FeedbackTone?
+    /// The pill status light below the notch; started in init.
+    private let notchPill = NotchPillController()
     #endif
 
     /// True while the active model is loading. Drives UI gating so the user
@@ -118,6 +126,8 @@ final class AppModel: ObservableObject {
             ? true : UserDefaults.standard.bool(forKey: Self.feedbackKey)
         suppressWhileMediaPlaying = UserDefaults.standard.object(forKey: Self.mediaSuppressKey) == nil
             ? true : UserDefaults.standard.bool(forKey: Self.mediaSuppressKey)
+        showNotchPill = UserDefaults.standard.object(forKey: Self.notchPillKey) == nil
+            ? true : UserDefaults.standard.bool(forKey: Self.notchPillKey)
         sessions = SessionLogStore.load()
 
         #if os(macOS)
@@ -135,6 +145,8 @@ final class AppModel: ObservableObject {
         ) { [weak self] in
             Task { @MainActor in self?.killSwitch() }
         }
+
+        notchPill.start(self)
         #endif
 
         if let path = ProcessInfo.processInfo.environment["REFLEX_SELFTEST"] {
