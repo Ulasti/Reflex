@@ -40,3 +40,12 @@ Branch: atlas/live-demo-v1 (cut from dev immediately after the menubar merge 9d3
 Full gate on the menubar merge (same tree): 342 compile actions, 56 tests/14
 suites, verify OK, --diagnose 0 blocking, --laya-ref 126/126. No code changed
 this session — docs/branch only.
+
+## Recording assets (added same day)
+
+- corpus/PHRASES.md — the reading copy of the corpus: Part 1 train (91 lines),
+  Part 2 heldout (41 lines), Part 3 ambient, take rules, file-naming stems.
+  Wording matches atlas/docs/live-demo-corpus-v0.md 1:1 (canonical).
+- corpus/{train,heldout,ambient}/ created as the recording destinations.
+- corpus/.gitignore — *.wav/*.m4a/*.mp3/*.flac ignored; audio never committed.
+- 132 phrasings total; 2 takes minimum = 264 clips, 4 takes = 528 clips.
