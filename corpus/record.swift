@@ -84,6 +84,11 @@ default:
     exit(3)
 }
 
+func capturedSeconds(_ url: URL) -> Double {
+    guard let file = try? AVAudioFile(forReading: url), file.length > 0 else { return 0 }
+    return Double(file.length) / file.fileFormat.sampleRate
+}
+
 func recordTake(_ url: URL) -> Double {
     let settings: [String: Any] = [
         AVFormatIDKey: kAudioFormatLinearPCM,
@@ -95,6 +100,7 @@ func recordTake(_ url: URL) -> Double {
     ]
     do {
         let rec = try AVAudioRecorder(url: url, settings: settings)
+        rec.isMeteringEnabled = true
         guard rec.prepareToRecord() else {
             print("  ! recorder did not prepare for \(url.lastPathComponent)")
             return 0
@@ -103,13 +109,29 @@ func recordTake(_ url: URL) -> Double {
         print("  ● recording — press Enter to stop")
         fflush(stdout)
         guard rec.record() else {
-            print("  ! recorder did not start for \(url.lastPathComponent)")
+            print("  ! recorder did not start — is Microphone allowed for your terminal?")
             return 0
         }
-        _ = readLine()
+        // Pump the run loop while waiting for Enter: a fully blocked main thread
+        // can leave the capture engine without a chance to run.
+        let enter = DispatchSemaphore(value: 0)
+        DispatchQueue.global().async {
+            _ = readLine()
+            enter.signal()
+        }
+        var nextReport = Date().addingTimeInterval(1.0)
+        while enter.wait(timeout: .now()) == .timedOut {
+            CFRunLoopRunInMode(.defaultMode, 0.05, false)
+            if Date() >= nextReport {
+                rec.updateMeters()
+                print(String(format: "    %.1f s  level %.0f dB", rec.currentTime, rec.averagePower(forChannel: 0)))
+                fflush(stdout)
+                nextReport = Date().addingTimeInterval(1.0)
+            }
+        }
         rec.stop()
         beep("Pop")
-        return rec.currentTime
+        return capturedSeconds(url)
     } catch {
         print("  ! \(error.localizedDescription)")
         return 0
@@ -144,7 +166,12 @@ outer: for (n, item) in items.enumerated() {
         let duration = recordTake(url)
         if duration < 0.5 {
             try? FileManager.default.removeItem(at: url)
-            print("  too short (\(String(format: "%.2f", duration)) s) — discarded, redo this take")
+            if duration == 0 {
+                print("  no audio captured. Check System Settings > Privacy & Security > Microphone")
+                print("  (your terminal app must be enabled) and the input device in Sound settings.")
+            } else {
+                print("  too short (\(String(format: "%.1f", duration)) s) — discarded, redo this take")
+            }
         } else {
             saved += 1
             print("  ✓ \(item.stem)__take\(take) (\(String(format: "%.1f", duration)) s)")

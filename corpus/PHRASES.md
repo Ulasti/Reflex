@@ -33,6 +33,11 @@ renaming. First run asks for Microphone permission.
 
 - Per take: press Enter to start, speak the phrase once, press Enter to stop.
   A beep marks each boundary and the saved length is printed after every take.
+- A level reading prints each second while recording. If it stays at the
+  -160 dB floor or the take is reported as "no audio captured", the mic is not
+  reaching the script: enable your terminal app under System Settings >
+  Privacy & Security > Microphone and check the input device in Sound settings.
+- The take length is measured from the saved file, not from the recorder clock.
 - `swift corpus/record.swift --list` — print the queue and counts, record nothing.
 - Resume any time: lines whose two takes exist are skipped. To redo a clip,
   delete its file and rerun.

@@ -64,3 +64,11 @@ this session — docs/branch only.
   take. --seconds flag removed.
   First user run left one 0.0 s file (corpus/train/volume_up__1__take1.wav):
   to be deleted by the user before recording for real.
+- recorder v3 (same day, after the second user run still reported 0.00 s):
+  take length now measured from the saved file (AVAudioFile length / sample
+  rate) instead of AVAudioRecorder.currentTime, which reported 0 while the
+  main thread sat blocked in readLine(); the wait for Enter now pumps
+  CFRunLoopRunInMode so the capture engine has a running loop; metering is on
+  and prints "%.1f s level %.0f dB" every second during capture; a 0-length
+  file now reports "no audio captured" with a microphone-permission hint
+  instead of "too short". Live-mic verification still user-side.
