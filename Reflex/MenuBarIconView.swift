@@ -5,16 +5,17 @@ import ReflexCore
 
 /// The menu bar icon as the entire status display. Of the three planned
 /// surfaces (notch, floating pill, menu bar) this one has the least room, so it
-/// carries no words: color, motion and the glyph do all the work.
+/// carries no words and no pictogram: a plain circle — hollow when off, filled
+/// in the state color when lit — with color and motion doing all the work.
 ///
 /// The glyph is drawn as an explicit `NSImage` rather than a SwiftUI
 /// `Image(systemName:)`. A symbol placed directly in a `MenuBarExtra` label is
 /// auto-sized and template-tinted by the system; anything less trivial than a
-/// bare image (a `TimelineView`, an animated opacity) loses that sizing and the
-/// symbol falls back to body-text size — a few unreadable pixels. Drawing the
-/// symbol ourselves with an explicit point size and `isTemplate = false` pins
-/// both the size and the color, and nothing about it depends on the label
-/// being simple.
+/// bare image (an animated opacity) loses that sizing and the symbol falls
+/// back to body-text size — a few unreadable pixels. Drawing the symbol
+/// ourselves with an explicit point size and `isTemplate = false` pins both
+/// the size and the color, and nothing about it depends on the label being
+/// simple.
 struct MenuBarIconView: View {
     @EnvironmentObject private var appModel: AppModel
 
@@ -51,7 +52,9 @@ struct MenuBarIconView: View {
     // MARK: - Glyph
 
     private func draw(_ state: SignalLight) -> NSImage {
-        let name = state == .off ? "mic.slash.fill" : "mic.fill"
+        // Off is the outline of the same circle (no light), lit states the
+        // filled one — one shape, so state reads from color and fill alone.
+        let name = state == .off ? "circle" : "circle.fill"
         guard let base = NSImage(systemSymbolName: name, accessibilityDescription: nil) else {
             return blankGlyph
         }
@@ -88,8 +91,10 @@ struct MenuBarIconView: View {
             return breath(at: date, low: 0.50, high: 1.0)
         case .hearing:
             // Voice-following: one level per capture chunk (tens of ms), so the
-            // 30 fps redraw is what limits how fast the light reacts.
-            return 0.70 + 0.30 * clampedLevel
+            // 30 fps redraw is what limits how fast the light reacts. Raw rms
+            // sits low at talking distance, so it takes a square root — a
+            // linear 0.70–1.0 band moved too little to see on a 12 pt circle.
+            return 0.50 + 0.50 * clampedLevel.squareRoot()
         case .executed:
             guard let start = appModel.actionFlashStart else { return 1 }
             let progress = min(1, max(0, date.timeIntervalSince(start) / flashDuration))

@@ -1,11 +1,8 @@
 Building for production...
-[4 / 16]
 [5 / 17] ArgmaxCore
 [7 / 18] ArgmaxCore
 [10 / 20] WhisperKit
 [12 / 21] WhisperKit
 [15 / 23] ReflexCore
 [17 / 24] ReflexCore
-[22 / 23] reflex-cli-product
-[23 / 23] reflex-cli-product
-Build complete! (20,06 sec)
+Build complete! (19,10 sec)

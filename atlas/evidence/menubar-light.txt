@@ -60,3 +60,18 @@ verify-models.log, diagnose.txt, laya-ref.txt
   requires a live AVAudioEngine, which the test target cannot run headlessly.
   The segmenter behavior it relies on (onLevel contract) is covered by
   StreamSegmenter tests.
+
+## Second pass (2026-10-19, after user review)
+
+- Reflex/MenuBarIconView.swift: mic pictogram dropped. The light is now a
+  plain 16 pt circle — `circle` (outline) for Off = no light, `circle.fill` in
+  the state color for every lit state. Same draw path (explicit NSImage,
+  palette color, isTemplate=false), so the earlier invisible-icon fix holds.
+- Hearing band widened: opacity 0.50 + 0.50*sqrt(level) instead of
+  0.70 + 0.30*level. The linear band sat too close together to see voice
+  reactivity on a 12 pt circle (user report: "not quite see the white
+  reactive"). Still ~30 fps render; level still arrives per capture chunk.
+- Re-ran the full gate after the change: 342 compile actions, 56 tests in 14
+  suites, verify OK, --diagnose 0 blocking, --laya-ref 126/126.
+- Still Unverified by eye: the new circle shape, the hollow-ring Off state,
+  and the widened hearing response (user to eyeball; capture abandoned).

@@ -29,7 +29,7 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Last worked on | 2026-10-19 |
 | Branch | `atlas/menubar-ui` |
 | needs_review | true |
-| Where I left off | Menu bar feedback light shipped (2026-10-19, `ec0ef08`): `SignalLight` (off/armed/hearing/executed/waiting/error, 5 priority tests) rendered by `MenuBarIconView` as an explicit 16 pt `NSImage` glyph — palette color, `isTemplate = false`, 30 fps opacity motion (4 s breathing, voice-level follow, 300 ms green flash retriggered per action). Notch pill **parked**: `NotchPillController` moved to `atlas/attic/`, `showNotchPill` + its Settings section removed. `MicMonitor` now emits levels per capture chunk so hearing follows the voice at capture cadence. Full gate green: 342 compile actions, 56 tests/14 suites, `--diagnose` 0 blocking, `--laya-ref` 126/126. **Unverified:** breathing/flash/amber never checked by pixel capture (screencapture unreliable this session; user checks by eye — off state + slashed glyph confirmed). Evidence: `atlas/evidence/menubar-light.txt`. Earlier: menu bar conversion 2026-10-18 (`atlas/evidence/menubar-ui.txt`); Phase A gate on `atlas/phase-a-verify`. |
+| Where I left off | Menu bar feedback light shipped (2026-10-19, `ec0ef08`): `SignalLight` (off/armed/hearing/executed/waiting/error, 5 priority tests) rendered by `MenuBarIconView` as an explicit 16 pt `NSImage` circle — hollow ring when off, filled in the state color when lit, no pictogram; hearing opacity widened to 0.50–1.0 with a sqrt on the level (both 2026-10-19 second pass). Palette color, `isTemplate = false`, 30 fps opacity motion (4 s breathing, voice-level follow, 300 ms green flash retriggered per action). Notch pill **parked**: `NotchPillController` moved to `atlas/attic/`, `showNotchPill` + its Settings section removed. `MicMonitor` now emits levels per capture chunk so hearing follows the voice at capture cadence. Full gate green: 342 compile actions, 56 tests/14 suites, `--diagnose` 0 blocking, `--laya-ref` 126/126. **Unverified:** breathing/flash/amber never checked by pixel capture (screencapture unreliable this session; user checks by eye — off/glyph confirmed *before* the circle change, re-check pending). Evidence: `atlas/evidence/menubar-light.txt`. Earlier: menu bar conversion 2026-10-18 (`atlas/evidence/menubar-ui.txt`); Phase A gate on `atlas/phase-a-verify`. |
 
 ---
 
@@ -46,10 +46,12 @@ never as a pass.
 ## Next Steps
 
 1. **Eyeball the menu bar light's motion (`atlas/menubar-ui`), then decide on
-   the merge.** Off + slashed glyph confirmed by the user 2026-10-19; still to
-   confirm by eye: dim-white 4 s breathing while armed, level-following while
-   hearing, the green flash per action, amber while the model loads. If it
-   feels right, hand off for merge into `dev`. The notch pill is parked in
+   the merge.** The glyph is now a circle (mic dropped 2026-10-19), so the
+   earlier off-state confirmation no longer covers what's on screen — check
+   the hollow-ring Off state first, then dim-white 4 s breathing while armed,
+   level-following while hearing, the green flash per action, and amber while
+   the model loads. If it feels right, hand off for merge into `dev`. The
+   notch pill is parked in
    `atlas/attic/NotchPillController.swift` — restoring it means moving the file
    back and re-adding `showNotchPill` plus its Settings section. Pixel-capture
    verification was abandoned 2026-10-19; do not spend another session on it.
