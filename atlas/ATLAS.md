@@ -27,9 +27,9 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 |---|---|
 | Status | `In Progress` |
 | Last worked on | 2026-10-19 |
-| Branch | `atlas/menubar-ui` |
+| Branch | `atlas/live-demo-v1` |
 | needs_review | false — prototype accepted by the user 2026-10-19; remaining polish tracked in Next Steps |
-| Where I left off | Menu bar feedback light shipped (2026-10-19, `ec0ef08`): `SignalLight` (off/armed/hearing/executed/waiting/error, 5 priority tests) rendered by `MenuBarIconView` as an explicit 16 pt `NSImage` circle — hollow ring when off, filled in the state color when lit, no pictogram; hearing opacity widened to 0.50–1.0 with a sqrt on the level (both 2026-10-19 second pass). Palette color, `isTemplate = false`, 30 fps opacity motion (4 s breathing, voice-level follow, 300 ms green flash retriggered per action). Notch pill **parked**: `NotchPillController` moved to `atlas/attic/`, `showNotchPill` + its Settings section removed. `MicMonitor` now emits levels per capture chunk so hearing follows the voice at capture cadence. Full gate green: 342 compile actions, 56 tests/14 suites, `--diagnose` 0 blocking, `--laya-ref` 126/126. **Merged into `dev` 2026-10-19** (`--no-ff`, local only, not pushed) — user's call: working prototype that reports the intended status colors; evidence `atlas/evidence/menubar-merge.txt`. Focus now the engine (response time + accuracy, see Next Steps); menu bar polish is parked and still Unverified by eye (screencapture unreliable 2026-10-19; capture verification abandoned by agreement). Evidence: `atlas/evidence/menubar-light.txt`. Earlier: menu bar conversion 2026-10-18 (`atlas/evidence/menubar-ui.txt`); Phase A gate on `atlas/phase-a-verify`. |
+| Where I left off | Menu bar feedback light shipped (2026-10-19, `ec0ef08`): `SignalLight` (off/armed/hearing/executed/waiting/error, 5 priority tests) rendered by `MenuBarIconView` as an explicit 16 pt `NSImage` circle — hollow ring when off, filled in the state color when lit, no pictogram; hearing opacity widened to 0.50–1.0 with a sqrt on the level (both 2026-10-19 second pass). Palette color, `isTemplate = false`, 30 fps opacity motion (4 s breathing, voice-level follow, 300 ms green flash retriggered per action). Notch pill **parked**: `NotchPillController` moved to `atlas/attic/`, `showNotchPill` + its Settings section removed. `MicMonitor` now emits levels per capture chunk so hearing follows the voice at capture cadence. Full gate green: 342 compile actions, 56 tests/14 suites, `--diagnose` 0 blocking, `--laya-ref` 126/126. **Merged into `dev` 2026-10-19** (`--no-ff`, local only, not pushed) — user's call: working prototype that reports the intended status colors; evidence `atlas/evidence/menubar-merge.txt`. Focus now the engine (response time + accuracy, see Next Steps); menu bar polish is parked and still Unverified by eye (screencapture unreliable 2026-10-19; capture verification abandoned by agreement). Evidence: `atlas/evidence/menubar-light.txt`. Earlier: menu bar conversion 2026-10-18 (`atlas/evidence/menubar-ui.txt`); Phase A gate on `atlas/phase-a-verify`. **2026-10-19, later:** Live Demo v1 plan accepted verbatim (`atlas/docs/live-demo-v1-plan.md`) as the driver for accuracy + response time; `atlas/live-demo-v1` cut from `dev`; Phase 0 command set + phrasings drafted in `atlas/docs/live-demo-corpus-v0.md`, awaiting the user's freeze and the corpus recording. Next agent task: the replay harness + baseline ablation (must precede any Phase 1 change). |
 
 ---
 
@@ -45,38 +45,37 @@ never as a pass.
 
 ## Next Steps
 
-1. **Engine, response time — the active focus.** The menubar prototype is
-   merged to `dev` (2026-10-19); polish waits. End-to-end command latency is
-   ~1.1–1.6 s today: a 0.7 s VAD endpoint gate, ~1 s in the `floor()`-quantized
-   partial throttle in `LiveTranscriber`, then final decode + dispatch. The
-   theoretical floor is ~250–400 ms by routing on a stable partial prefix
-   instead of endpoint silence. Same pass: `handleSegment` drops segments while
-   `processing` and inside the 1.0 s `feedbackCooldown` — replace with a FIFO
-   queue so "volume up … resume media … open app" fires continuously — and
-   0.2 s gaps merge two commands into one segment.
-2. **Engine, accuracy.** Keep `--laya-ref` 126/126 as the regression gate.
-   Close A5: the AppModel live path still bypasses the A3/A4 compound router —
-   `--dispatch "open safari and then search for cats"` returns one merged
-   result while `--compound` splits it into 2 clauses. Last open Phase A item.
-3. **Menu bar polish — later, needs an eyeball not a session.** Still
-   Unverified by eye: hollow-ring Off, armed breathing, level-following, green
-   flash, amber load. Notch pill parked at
-   `atlas/attic/NotchPillController.swift` (restore = move back + re-add
-   `showNotchPill` + its Settings section). Gesture model (hold-to-talk ~350 ms
-   threshold, menubar tap-toggle) still deferred. Pixel-capture verification
-   was abandoned 2026-10-19; do not revive it.
-4. **Phase A is verified — done (2026-10-16).** `--laya-ref` 126/126,
+1. **Execute `docs/live-demo-v1-plan.md` (Live Demo v1) — the active driver,
+   accepted 2026-10-19.** Order is fixed: Phase 0 first — freeze
+   `docs/live-demo-corpus-v0.md` (drafted by the agent, needs the user's
+   freeze), record it (25 commands + 30-60 min of ambient decoys), build the
+   replay harness, and capture the baseline ablation **before any Phase 1
+   change** — then Phase 1 free wins (throttle fix, FIFO queue, rearm/cooldown),
+   Phase 2 gate tuning, Phases 3-5 two lanes + ambient guard, Phase 6 light
+   verification, Phase 7 rehearsal. Targets: p50 ≤ 500 ms / p95 ≤ 700 ms,
+   ≥ 90% accuracy, near-zero false triggers. Every phase delivers before/after
+   numbers or it is not done; the Stop line holds all other feature work.
+   A5 (compound router into the live path) closes inside Phases 3/4, not
+   separately. `--laya-ref` 126/126 stays the regression gate throughout.
+2. **Menu bar polish — after the demo.** Still Unverified by eye: hollow-ring
+   Off, armed breathing, level-following, green flash, amber load. Notch pill
+   parked at `atlas/attic/NotchPillController.swift` (restore = move back +
+   re-add `showNotchPill` + its Settings section). Gesture model (hold-to-talk
+   ~350 ms threshold, menubar tap-toggle) still deferred. Pixel-capture
+   verification was abandoned 2026-10-19; do not revive it.
+3. **Phase A is verified — done (2026-10-16).** `--laya-ref` 126/126,
    `--diagnose` 0 blocking issues, and the A-log phrases behave. The plan's own
    gate passes. Evidence: `evidence/phase-a-verify.txt`.
-5. **Then work Phase B in order:** B1 (`ShortcutController`, the biggest "more
-   actions" win) → B4 → B5 → B6 → B2 → B3 → B7 → Phase C.
-6. **Resolve Blocker #2** (`docs/implementation-plan.md` still names
+4. **Then work Phase B in order:** B1 (`ShortcutController`, the biggest "more
+   actions" win) → B4 → B5 → B6 → B2 → B3 → B7 → Phase C. Held until after the
+   demo — the v1 Stop line covers it.
+5. **Resolve Blocker #2** (`docs/implementation-plan.md` still names
    `DecisionArbiter.swift` at lines 21 and 60, though arbitration lives in
-   `ReflexSystemEngine.swift`). One-line plan fix; do it before A5.
-7. **Replace or drop the lost upstream reference** (`docs/jev-voice-action-reference.md`,
+   `ReflexSystemEngine.swift`). One-line plan fix.
+6. **Replace or drop the lost upstream reference** (`docs/jev-voice-action-reference.md`,
    see Blockers). Phase B ports from it, so B1–B7 are unauditable against the
    original until it is restored or the plan is treated as the source.
-8. **Decide on the upstream.** If the reference project will not be consumed
+7. **Decide on the upstream.** If the reference project will not be consumed
    further, re-plan B1–B7 from first principles instead of porting.
 
 ---
@@ -313,8 +312,13 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 
 ## Links
 
-- `docs/implementation-plan.md` — the Phase A/B/C plan. The primary driver of
-  Next Steps. **Read before starting any feature work.**
+- `docs/live-demo-v1-plan.md` — **the active driver of Next Steps** (accepted
+  2026-10-19): Live Demo v1, three-lane architecture, Phases 0-7, stop line.
+- `docs/live-demo-corpus-v0.md` — Phase 0 draft: the 25-command set, phrasings
+  with heldout split, recording protocol, ambient decoys. Awaiting the user's
+  freeze.
+- `docs/implementation-plan.md` — the older Phase A/B/C plan. Superseded as the
+  driver by the v1 demo plan; still the record for Phase B scope after the demo.
 - `docs/jev-voice-action-reference.md` — the upstream action/workflow reference
   that Phase A and B port from. **Currently MISSING** (see Blockers, D30): the
   path is referenced but no such file exists. Restore it or treat the plan as
