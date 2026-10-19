@@ -48,6 +48,9 @@ public struct ReflexDecision: Sendable {
     public let confidenceValue: Double
     /// Continuous "is the user talking to Reflex?" confidence from the arbiter.
     public let addressed: Double
+    /// Laya's raw action confidence, before the arbiter's rule override and
+    /// the execute gate. Only the replay harness's ablation reads this.
+    public let layaConfidence: Double
 
     public init(
         actionTarget: ReflexChoice,
@@ -56,7 +59,8 @@ public struct ReflexDecision: Sendable {
         transcript: String,
         trace: RoutingTrace? = nil,
         confidenceValue: Double? = nil,
-        addressed: Double? = nil
+        addressed: Double? = nil,
+        layaConfidence: Double = 0
     ) {
         self.actionTarget = actionTarget
         self.urgencyScore = urgencyScore
@@ -65,5 +69,6 @@ public struct ReflexDecision: Sendable {
         self.trace = trace
         self.confidenceValue = confidenceValue ?? confidence.midpoint
         self.addressed = addressed ?? self.confidenceValue
+        self.layaConfidence = layaConfidence
     }
 }

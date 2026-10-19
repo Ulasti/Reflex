@@ -305,6 +305,22 @@ struct ReflexCLI {
             return
         }
 
+        if args.count >= 3, args[1] == "--replay" {
+            // Corpus harness: real-time replay through the live path, mock
+            // dispatch, per-clip accuracy + stage latency (plan Phase 0.4).
+            do {
+                try await ReplayHarness.run(
+                    corpusDir: args[2],
+                    variant: stringArg("--variant", in: args) ?? "small",
+                    limit: intArg("--limit", in: args),
+                    csvPath: stringArg("--csv", in: args)
+                )
+            } catch {
+                print("error: \(error.localizedDescription)")
+            }
+            return
+        }
+
         if args.count >= 2, args[1] == "--wk-install" {
             let rest = args.dropFirst(2)
             let variant = rest.first ?? "small"
@@ -358,6 +374,7 @@ struct ReflexCLI {
                    reflex-cli --laya-bench <iterations> [transcript...]
                    reflex-cli --laya-ref <reference.json>
                    reflex-cli --vlive <audio-file> [variant] [--run] [--wk]
+                   reflex-cli --replay <corpus-dir> [--variant small] [--limit N] [--csv out.csv]
                    reflex-cli --listen [variant] [--run] [--wk]
                    reflex-cli --wk-install [variant] [models-dir]
                    reflex-cli --tokenize <text...>
@@ -394,6 +411,15 @@ struct ReflexCLI {
         } catch {
             print("error: \(error.localizedDescription)")
         }
+    }
+
+    static func stringArg(_ flag: String, in args: [String]) -> String? {
+        guard let index = args.firstIndex(of: flag), index + 1 < args.count else { return nil }
+        return args[index + 1]
+    }
+
+    static func intArg(_ flag: String, in args: [String]) -> Int? {
+        stringArg(flag, in: args).flatMap(Int.init)
     }
 
     static func kind(for variant: String) throws -> ReflexModelKind {

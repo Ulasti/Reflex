@@ -1,0 +1,5 @@
+file,split,command_id,phrase_id,segments,transcript,expected,rule_sig,laya_sig,hybrid_sig,rule_conf,laya_conf,hybrid_conf,correct_rules,correct_laya,correct_hybrid,hearing_ms,partial1_ms,decode_ms,emit_to_route_ms,last_word_to_route_ms
+brightness_down__5__take1.wav,heldout,brightness_down,5,1,Decrease brightness,brightness.down,brightness.down,media.toggle,brightness.down,0.950,0.092,0.950,1,0,1,0,0,191,2592,2802
+brightness_down__5__take2.wav,heldout,brightness_down,5,1,Decrease brightness,brightness.down,brightness.down,media.toggle,brightness.down,0.950,0.092,0.950,1,0,1,0,0,180,407,615
+brightness_down__6__take1.wav,heldout,brightness_down,6,1,Screen a bit darker,brightness.down,brightness.down,open.Screen a bit darker,brightness.down,0.950,0.100,0.950,1,0,1,0,0,183,412,626
+brightness_down__6__take2.wav,heldout,brightness_down,6,1,,brightness.down,none,none,none,0.000,0.000,0.000,0,0,0,0,0,3,3,205

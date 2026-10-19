@@ -173,7 +173,8 @@ public actor ReflexSystemEngine {
                 transcript: text,
                 trace: trace,
                 confidenceValue: confidence,
-                addressed: addressed
+                addressed: addressed,
+                layaConfidence: action.confidence
             )
         }
 
@@ -184,7 +185,8 @@ public actor ReflexSystemEngine {
             transcript: text,
             trace: trace,
             confidenceValue: confidence,
-            addressed: addressed
+            addressed: addressed,
+            layaConfidence: action.confidence
         )
     }
 
