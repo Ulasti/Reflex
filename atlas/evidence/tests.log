@@ -1,209 +1,198 @@
 Building for debugging...
-[13 / 35] ArgmaxCore
-[16 / 36] WhisperKit
-[19 / 37] ReflexCore
-[34 / 52] ReflexCore
-[38 / 51] ReflexCore
-[44 / 52] reflex-cli-product
-[52 / 60] ReflexCoreTests-product
-[57 / 61] reflex-cli-product
-Build complete! (2,36 sec)
-Test Suite 'All tests' started at 2026-10-16 5:50:44.790 AM.
-Test Suite 'ReflexCoreTests.xctest' started at 2026-10-16 5:50:44.792 AM.
-Test Suite 'MisfireRegressionTests' started at 2026-10-16 5:50:44.792 AM.
+[4 / 23]
+[5 / 24] ArgmaxCore
+[8 / 25] WhisperKit
+[11 / 26] ReflexCore
+[13 / 28] ReflexCore
+[21 / 22] reflex-cli-product
+Build complete! (1,94 sec)
+Test Suite 'All tests' started at 2026-10-19 5:23:26.591 PM.
+Test Suite 'ReflexCoreTests.xctest' started at 2026-10-19 5:23:26.592 PM.
+Test Suite 'MisfireRegressionTests' started at 2026-10-19 5:23:26.592 PM.
 Test Case '-[ReflexCoreTests.MisfireRegressionTests testFiftyTimesTwentyProducesNoOp]' started.
-Test Case '-[ReflexCoreTests.MisfireRegressionTests testFiftyTimesTwentyProducesNoOp]' passed (0.001 seconds).
-Test Suite 'MisfireRegressionTests' passed at 2026-10-16 5:50:44.793 AM.
-	 Executed 1 test, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
-Test Suite 'PayloadExtractorTests' started at 2026-10-16 5:50:44.793 AM.
+Test Case '-[ReflexCoreTests.MisfireRegressionTests testFiftyTimesTwentyProducesNoOp]' passed (0.002 seconds).
+Test Suite 'MisfireRegressionTests' passed at 2026-10-19 5:23:26.594 PM.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
+Test Suite 'PayloadExtractorTests' started at 2026-10-19 5:23:26.594 PM.
 Test Case '-[ReflexCoreTests.PayloadExtractorTests testExtractsBasicSearch]' started.
 Test Case '-[ReflexCoreTests.PayloadExtractorTests testExtractsBasicSearch]' passed (0.002 seconds).
-Test Suite 'PayloadExtractorTests' passed at 2026-10-16 5:50:44.795 AM.
+Test Suite 'PayloadExtractorTests' passed at 2026-10-19 5:23:26.595 PM.
 	 Executed 1 test, with 0 failures (0 unexpected) in 0.002 (0.002) seconds
-Test Suite 'RuleRouterTests' started at 2026-10-16 5:50:44.795 AM.
+Test Suite 'RuleRouterTests' started at 2026-10-19 5:23:26.595 PM.
 Test Case '-[ReflexCoreTests.RuleRouterTests testClassifyOpenCalculator]' started.
 Test Case '-[ReflexCoreTests.RuleRouterTests testClassifyOpenCalculator]' passed (0.000 seconds).
 Test Case '-[ReflexCoreTests.RuleRouterTests testClassifySearchQuery]' started.
 Test Case '-[ReflexCoreTests.RuleRouterTests testClassifySearchQuery]' passed (0.000 seconds).
-Test Suite 'RuleRouterTests' passed at 2026-10-16 5:50:44.795 AM.
+Test Suite 'RuleRouterTests' passed at 2026-10-19 5:23:26.596 PM.
 	 Executed 2 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
-Test Suite 'ReflexCoreTests.xctest' passed at 2026-10-16 5:50:44.795 AM.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.003 (0.004) seconds
-Test Suite 'All tests' passed at 2026-10-16 5:50:44.795 AM.
-	 Executed 4 tests, with 0 failures (0 unexpected) in 0.003 (0.005) seconds
+Test Suite 'ReflexCoreTests.xctest' passed at 2026-10-19 5:23:26.596 PM.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.004 (0.004) seconds
+Test Suite 'All tests' passed at 2026-10-19 5:23:26.596 PM.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.004 (0.006) seconds
 ◇ Test run started.
 ↳ Testing Library Version: 2084
 ↳ Target Platform: arm64e-apple-macos14.0
-◇ Suite "ActionDispatcher.systemControl" started.
+◇ Suite "ActionDispatcher.runTool" started.
 ◇ Suite "PayloadExtractor" started.
+◇ Suite "CommandPlan" started.
+◇ Suite "ActionDispatcher phrase predicates" started.
+◇ Suite "Signal light states" started.
 ◇ Suite "DecisionArbiter" started.
 ◇ Suite "StreamSegmenter" started.
-◇ Suite "RuleRouter regressions" started.
+◇ Test "output larger than the pipe buffer is neither truncated nor deadlocked" started.
+◇ Test "returns the command's stdout" started.
+◇ Suite "AppleScript escaping" started.
+◇ Suite "RuleRouter contract" started.
 ◇ Suite "CompoundRouter" started.
 ◇ Suite "Test harness" started.
-◇ Test "known phrases map to their operation" started.
-◇ Suite "ActionDispatcher.runTool" started.
-◇ Test "an unrouted phrase is a no-op, not a wild guess" started.
-◇ Suite "AppResolver" started.
-◇ Test "flush emits a still-open segment" started.
-◇ Test "agreement keeps the higher confidence" started.
-◇ Test "addressed floor" started.
-◇ Suite "ActionDispatcher phrase predicates" started.
-◇ Test ""unlock the screen" must not lock it" started.
-◇ Test "an unhandled phrase reports a parse failure rather than guessing" started.
-◇ Test ""turn off the screen" is dispatchable" started.
-◇ Test "confidence floor" started.
-◇ Test "a show-desktop phrase reaches system_control" started.
-◇ Suite "RuleRouter contract" started.
-◇ Suite "AppleScript escaping" started.
-◇ Test "a strong rule overrides a weak Laya guess" started.
-◇ Test "speech followed by enough silence emits exactly one segment" started.
-◇ Test "a segment is capped so a monologue cannot grow without bound" started.
-◇ Test "room tone alone emits nothing" started.
-◇ Test "a display-sleep phrase reaches system_control" started.
-◇ Test "every phrase the router sends here is dispatchable" started.
-◇ Test "opening a browser by name is an app launch, not a web search" started.
-◇ Suite "CommandPlan" started.
-◇ Test "volume intent" started.
-◇ Test "a trailing submit phrase sets the flag and leaves the payload clean" started.
-◇ Test "ordinary words are not site tokens" started.
-◇ Test "scroll direction and amount" started.
+◇ Suite "ActionDispatcher.systemControl" started.
+◇ Suite "RuleRouter regressions" started.
 ◇ Test "site-targeted search splits host and query" started.
-◇ Test "a named payload becomes the title" started.
-◇ Test "a spoken domain is normalized" started.
-◇ Test "a burst shorter than the floor is discarded" started.
-◇ Test case passing 2 arguments phrase → "lock the screen", expected → .lockScreen to "known phrases map to their operation" started.
-◇ Test case passing 2 arguments phrase → "reveal the desktop", expected → .showDesktop to "known phrases map to their operation" started.
-◇ Test "site tokens are recognized" started.
-◇ Test "free text after a typing verb becomes the payload" started.
-◇ Test "folder aliases resolve to canonical names" started.
-◇ Test "link ordinals are zero based" started.
-◇ Test "a single action is not compound" started.
-◇ Test ""display" alone is not a media command" started.
-◇ Test ""in <non-app>" stays part of the typed text" started.
-◇ Test "a typed payload containing "and" is not split" started.
-◇ Test case passing 1 argument phrase → "show desktop" to "a show-desktop phrase reaches system_control" started.
-◇ Test case passing 2 arguments phrase → "set dark mode", expected → .darkMode(true) to "known phrases map to their operation" started.
-◇ Test case passing 1 argument phrase → "show the desktop" to "a show-desktop phrase reaches system_control" started.
-◇ Test case passing 2 arguments phrase → "turn on light mode", expected → .darkMode(false) to "known phrases map to their operation" started.
-◇ Test "a trailing "and press enter" folds into the last part" started.
-◇ Test "two real actions split and keep their order" started.
-◇ Test case passing 2 arguments phrase → "empty the trash", expected → .emptyTrash to "known phrases map to their operation" started.
-◇ Test "ReflexCore is importable and reachable" started.
-◇ Test case passing 1 argument phrase → "go to the desktop" to "a show-desktop phrase reaches system_control" started.
-◇ Test case passing 1 argument phrase → "turn off the display" to "a display-sleep phrase reaches system_control" started.
-◇ Test "returns the command's stdout" started.
-◇ Test case passing 2 arguments phrase → "empty the bin", expected → .emptyTrash to "known phrases map to their operation" started.
-◇ Test case passing 1 argument phrase → "sleep the display" to "a display-sleep phrase reaches system_control" started.
+◇ Suite "AppResolver" started.
 ◇ Test "a nonzero exit throws with the merged output" started.
-◇ Test "output larger than the pipe buffer is neither truncated nor deadlocked" started.
-◇ Test case passing 1 argument phrase → "put the display to sleep" to "a display-sleep phrase reaches system_control" started.
-◇ Test case passing 1 argument token → "morning" to "ordinary words are not site tokens" started.
-◇ Test case passing 1 argument token → "invoice" to "ordinary words are not site tokens" started.
-◇ Test "an alias resolves to the app it names" started.
-◇ Test case passing 1 argument token → "the weather" to "ordinary words are not site tokens" started.
-◇ Test "an unknown name resolves to nothing instead of a random substring" started.
-◇ Test case passing 1 argument token → "ridgeline" to "ordinary words are not site tokens" started.
-◇ Test "a spoken name matches a whole word of the app name" started.
-◇ Test "a plausible command survives" started.
-◇ Test ""find X and copy the path" is the same request to both sides" started.
+◇ Test "volume intent" started.
+◇ Test "link ordinals are zero based" started.
+◇ Test "a spoken domain is normalized" started.
+◇ Test "folder aliases resolve to canonical names" started.
+◇ Test "Loading shows the waiting light even while already listening" started.
+◇ Test ""in <non-app>" stays part of the typed text" started.
+◇ Test "Mic not live is off, no matter what else is quiet" started.
+◇ Test "ordinary words are not site tokens" started.
+◇ Test "Mic live splits into armed (nothing heard) and hearing" started.
+◇ Test "a named payload becomes the title" started.
+◇ Test "site tokens are recognized" started.
+◇ Test "An executed flash outranks the resting listening state" started.
+◇ Test "free text after a typing verb becomes the payload" started.
+◇ Test "make() carries the target, transcript and extracted payload" started.
+◇ Test "confidence floor" started.
 ◇ Test "a local search is still a file operation, but not a copy-path request" started.
 ◇ Test "a leftover article is not a command" started.
+◇ Test "scroll direction and amount" started.
+◇ Test "Failure outranks everything, including a load in progress" started.
+◇ Test "addressed floor" started.
+◇ Test "a trailing submit phrase sets the flag and leaves the payload clean" started.
+◇ Test ""find X and copy the path" is the same request to both sides" started.
+◇ Test "agreement keeps the higher confidence" started.
+◇ Test "a segment is capped so a monologue cannot grow without bound" started.
+◇ Test "an unrouted phrase is a no-op, not a wild guess" started.
+◇ Test "a plausible command survives" started.
+◇ Test "a burst shorter than the floor is discarded" started.
+◇ Test "a strong rule overrides a weak Laya guess" started.
+◇ Test "flush emits a still-open segment" started.
+◇ Test "speech followed by enough silence emits exactly one segment" started.
+◇ Test "room tone alone emits nothing" started.
+◇ Test "plain text is left alone" started.
+◇ Test "quotes and backslashes are escaped for interpolation" started.
+◇ Test case passing 1 argument token → "the weather" to "ordinary words are not site tokens" started.
+◇ Test case passing 1 argument token → "morning" to "ordinary words are not site tokens" started.
+◇ Test case passing 1 argument token → "invoice" to "ordinary words are not site tokens" started.
 ◇ Test case passing 1 argument token → "youtube" to "site tokens are recognized" started.
+◇ Test case passing 1 argument token → "ridgeline" to "ordinary words are not site tokens" started.
 ◇ Test case passing 1 argument token → "github.com" to "site tokens are recognized" started.
 ◇ Test case passing 1 argument token → "wikipedia" to "site tokens are recognized" started.
+◇ Test "a phrase no rule claims defers to Laya" started.
 ◇ Test case passing 1 argument token → "translate" to "site tokens are recognized" started.
 ◇ Test "phrase routes to the intended target" started.
-◇ Test "a phrase no rule claims defers to Laya" started.
+◇ Test "a single action is not compound" started.
+◇ Test "a typed payload containing "and" is not split" started.
+◇ Test "ReflexCore is importable and reachable" started.
+◇ Test "a trailing "and press enter" folds into the last part" started.
+◇ Test "two real actions split and keep their order" started.
+◇ Test ""turn off the screen" is dispatchable" started.
+◇ Test ""unlock the screen" must not lock it" started.
+◇ Test "every phrase the router sends here is dispatchable" started.
+◇ Test "an unhandled phrase reports a parse failure rather than guessing" started.
+◇ Test case passing 1 argument residual → "a terminal" to "a leftover article is not a command" started.
+◇ Test "known phrases map to their operation" started.
+◇ Test "a show-desktop phrase reaches system_control" started.
+◇ Test "a display-sleep phrase reaches system_control" started.
+◇ Test case passing 1 argument residual → "the terminal" to "a leftover article is not a command" started.
+◇ Test "opening a browser by name is an app launch, not a web search" started.
+◇ Test ""display" alone is not a media command" started.
+◇ Test "a spoken name matches a whole word of the app name" started.
+◇ Test case passing 1 argument residual → "my shell" to "a leftover article is not a command" started.
+◇ Test "an unknown name resolves to nothing instead of a random substring" started.
+◇ Test case passing 1 argument residual → "an app" to "a leftover article is not a command" started.
+◇ Test "an alias resolves to the app it names" started.
+◇ Test case passing 1 argument residual → "" to "a leftover article is not a command" started.
+◇ Test case passing 1 argument residual → "npm run dev" to "a plausible command survives" started.
+◇ Test case passing 1 argument residual → "ssh host" to "a plausible command survives" started.
+◇ Test case passing 1 argument residual → "top" to "a plausible command survives" started.
+◇ Test case passing 1 argument residual → "python3 -m http.server" to "a plausible command survives" started.
+✔ Test "Mic not live is off, no matter what else is quiet" passed after 0.003 seconds.
+✔ Test "site-targeted search splits host and query" passed after 0.003 seconds.
+✔ Test "Loading shows the waiting light even while already listening" passed after 0.003 seconds.
+✔ Test "a spoken domain is normalized" passed after 0.003 seconds.
+✔ Test "Mic live splits into armed (nothing heard) and hearing" passed after 0.003 seconds.
+✔ Test "An executed flash outranks the resting listening state" passed after 0.003 seconds.
+✔ Test "site tokens are recognized" with 4 test cases passed after 0.003 seconds.
+✔ Test "ordinary words are not site tokens" with 4 test cases passed after 0.003 seconds.
+✔ Test "confidence floor" passed after 0.003 seconds.
+◇ Test case passing 2 arguments phrase → "set the brightness to 50", expected → "display_control" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "turn up the brightness", expected → "display_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 1 argument phrase → "open notes" to "a single action is not compound" started.
 ◇ Test case passing 1 argument phrase → "run and gun" to "a single action is not compound" started.
 ◇ Test case passing 1 argument phrase → "lock the screen" to "a single action is not compound" started.
-◇ Test case passing 1 argument phrase → "take a screenshot" to "a single action is not compound" started.
-◇ Test "quotes and backslashes are escaped for interpolation" started.
-◇ Test "plain text is left alone" started.
-✔ Test "addressed floor" passed after 0.004 seconds.
-✔ Test "confidence floor" passed after 0.004 seconds.
-✔ Test ""unlock the screen" must not lock it" passed after 0.004 seconds.
-✔ Test "known phrases map to their operation" with 6 test cases passed after 0.005 seconds.
-✔ Test "a show-desktop phrase reaches system_control" with 3 test cases passed after 0.004 seconds.
-✔ Test ""turn off the screen" is dispatchable" passed after 0.005 seconds.
-✔ Test "an unhandled phrase reports a parse failure rather than guessing" passed after 0.005 seconds.
-◇ Test "make() carries the target, transcript and extracted payload" started.
-✔ Test "a strong rule overrides a weak Laya guess" passed after 0.005 seconds.
-✔ Test "ordinary words are not site tokens" with 4 test cases passed after 0.005 seconds.
-✔ Test "a display-sleep phrase reaches system_control" with 3 test cases passed after 0.005 seconds.
-✔ Test "site-targeted search splits host and query" passed after 0.005 seconds.
-◇ Test case passing 1 argument residual → "npm run dev" to "a plausible command survives" started.
-◇ Test case passing 1 argument residual → "ssh host" to "a plausible command survives" started.
-✔ Test "a spoken domain is normalized" passed after 0.005 seconds.
-◇ Test case passing 1 argument residual → "top" to "a plausible command survives" started.
-◇ Test case passing 1 argument residual → "python3 -m http.server" to "a plausible command survives" started.
-✔ Test "opening a browser by name is an app launch, not a web search" passed after 0.005 seconds.
-◇ Test case passing 1 argument residual → "a terminal" to "a leftover article is not a command" started.
-◇ Test case passing 1 argument residual → "the terminal" to "a leftover article is not a command" started.
-◇ Test case passing 1 argument residual → "my shell" to "a leftover article is not a command" started.
-◇ Test case passing 1 argument residual → "an app" to "a leftover article is not a command" started.
-◇ Test case passing 1 argument residual → "" to "a leftover article is not a command" started.
-✔ Test "site tokens are recognized" with 4 test cases passed after 0.005 seconds.
-✔ Test "agreement keeps the higher confidence" passed after 0.005 seconds.
-✔ Test "an unrouted phrase is a no-op, not a wild guess" passed after 0.005 seconds.
-✔ Test "every phrase the router sends here is dispatchable" passed after 0.005 seconds.
-✔ Test "a trailing submit phrase sets the flag and leaves the payload clean" passed after 0.005 seconds.
-◇ Test case passing 2 arguments phrase → "set the brightness to 50", expected → "display_control" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "turn up the brightness", expected → "display_control" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "turn the brightness up", expected → "display_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "set the volume to 30", expected → "media_control" to "phrase routes to the intended target" started.
-✔ Test "a single action is not compound" with 4 test cases passed after 0.005 seconds.
-◇ Test case passing 2 arguments phrase → "turn up the volume", expected → "media_control" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "take a screenshot" to "a single action is not compound" started.
 ◇ Test case passing 2 arguments phrase → "mute", expected → "media_control" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "turn up the volume", expected → "media_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "play some jazz", expected → "media_control" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "next song", expected → "media_control" to "phrase routes to the intended target" started.
+✔ Test "Failure outranks everything, including a load in progress" passed after 0.004 seconds.
 ◇ Test case passing 2 arguments phrase → "pause", expected → "media_control" to "phrase routes to the intended target" started.
-✔ Test "a named payload becomes the title" passed after 0.005 seconds.
+✔ Test "addressed floor" passed after 0.004 seconds.
+◇ Test case passing 2 arguments phrase → "next song", expected → "media_control" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "turn the brightness up", expected → "display_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "resume", expected → "media_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "play music", expected → "media_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "stop playing", expected → "media_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "type hello world", expected → "type_text" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "dictate a note", expected → "type_text" to "phrase routes to the intended target" started.
-✔ Test "a typed payload containing "and" is not split" passed after 0.005 seconds.
-◇ Test case passing 2 arguments phrase → "paste that", expected → "type_text" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "type buy milk in notes", expected → "type_text" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "dictate a note", expected → "type_text" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "next tab", expected → "browser_command" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "close the tab", expected → "browser_command" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "paste that", expected → "type_text" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "go back", expected → "browser_command" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "close the tab", expected → "browser_command" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "reload", expected → "browser_command" to "phrase routes to the intended target" started.
+✔ Test "a leftover article is not a command" with 5 test cases passed after 0.004 seconds.
 ◇ Test case passing 2 arguments phrase → "open the first result", expected → "browser_command" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "open the first link on the page", expected → "browser_command" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "click the second result", expected → "browser_command" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "scroll down", expected → "scroll" to "phrase routes to the intended target" started.
-✔ Test "link ordinals are zero based" passed after 0.006 seconds.
 ◇ Test case passing 2 arguments phrase → "jump to the top", expected → "scroll" to "phrase routes to the intended target" started.
-✔ Test "free text after a typing verb becomes the payload" passed after 0.006 seconds.
-◇ Test case passing 2 arguments phrase → "scroll to the bottom", expected → "scroll" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "search for cats", expected → "web_search" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "look up the weather", expected → "web_search" to "phrase routes to the intended target" started.
-✔ Test "a trailing "and press enter" folds into the last part" passed after 0.005 seconds.
+◇ Test case passing 2 arguments phrase → "lock the screen", expected → .lockScreen to "known phrases map to their operation" started.
 ◇ Test case passing 2 arguments phrase → "youtube.com search selfie", expected → "web_search" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "scroll to the bottom", expected → "scroll" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "reveal the desktop", expected → .showDesktop to "known phrases map to their operation" started.
+◇ Test case passing 2 arguments phrase → "search for cats", expected → "web_search" to "phrase routes to the intended target" started.
+✔ Test "a local search is still a file operation, but not a copy-path request" passed after 0.004 seconds.
+◇ Test case passing 2 arguments phrase → "look up the weather", expected → "web_search" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "scroll down", expected → "scroll" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "open youtube.com", expected → "open_app" to "phrase routes to the intended target" started.
-✔ Test ""display" alone is not a media command" passed after 0.006 seconds.
 ◇ Test case passing 2 arguments phrase → "open notes", expected → "open_app" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "show desktop" to "a show-desktop phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "open calculator", expected → "open_app" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "show the desktop" to "a show-desktop phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "quit calculator", expected → "quit" to "phrase routes to the intended target" started.
-✔ Test "folder aliases resolve to canonical names" passed after 0.006 seconds.
+◇ Test case passing 1 argument phrase → "go to the desktop" to "a show-desktop phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "close safari", expected → "quit" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "turn off the display" to "a display-sleep phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "create a folder called invoices", expected → "file_operation" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "sleep the display" to "a display-sleep phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "new folder called q3", expected → "file_operation" to "phrase routes to the intended target" started.
+◇ Test case passing 1 argument phrase → "put the display to sleep" to "a display-sleep phrase reaches system_control" started.
 ◇ Test case passing 2 arguments phrase → "move the pdfs into archive", expected → "file_operation" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "move invoices to the desktop", expected → "file_operation" to "phrase routes to the intended target" started.
-✔ Test "two real actions split and keep their order" passed after 0.006 seconds.
-◇ Test case passing 2 arguments phrase → "search for the invoice and copy the path", expected → "file_operation" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "find my invoice and copy the path", expected → "file_operation" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "search for the invoice and copy the path", expected → "file_operation" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "new note", expected → "new_item" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "new window", expected → "new_item" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "set dark mode", expected → .darkMode(true) to "known phrases map to their operation" started.
+◇ Test case passing 2 arguments phrase → "turn on light mode", expected → .darkMode(false) to "known phrases map to their operation" started.
 ◇ Test case passing 2 arguments phrase → "new document called q3 report", expected → "new_item" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "empty the trash", expected → .emptyTrash to "known phrases map to their operation" started.
 ◇ Test case passing 2 arguments phrase → "take a screenshot", expected → "screenshot" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "empty the bin", expected → .emptyTrash to "known phrases map to their operation" started.
 ◇ Test case passing 2 arguments phrase → "screenshot", expected → "screenshot" to "phrase routes to the intended target" started.
-✔ Test "ReflexCore is importable and reachable" passed after 0.006 seconds.
 ◇ Test case passing 2 arguments phrase → "stop listening", expected → "stop" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "stop", expected → "stop" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "halt", expected → "stop" to "phrase routes to the intended target" started.
@@ -214,54 +203,75 @@ Test Suite 'All tests' passed at 2026-10-16 5:50:44.795 AM.
 ◇ Test case passing 2 arguments phrase → "fullscreen", expected → "shortcut" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "lock the screen", expected → "system_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "reveal the desktop", expected → "system_control" to "phrase routes to the intended target" started.
-✔ Test "scroll direction and amount" passed after 0.007 seconds.
 ◇ Test case passing 2 arguments phrase → "set dark mode", expected → "system_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "turn on light mode", expected → "system_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "empty the trash", expected → "system_control" to "phrase routes to the intended target" started.
-✔ Test "a plausible command survives" with 4 test cases passed after 0.005 seconds.
 ◇ Test case passing 2 arguments phrase → "empty the bin", expected → "system_control" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "clear the trash", expected → "system_control" to "phrase routes to the intended target" started.
-◇ Test case passing 2 arguments phrase → "deploy the backend", expected → "environment_setup" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "ssh into the server", expected → "environment_setup" to "phrase routes to the intended target" started.
+◇ Test case passing 2 arguments phrase → "deploy the backend", expected → "environment_setup" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "restart the server", expected → "environment_setup" to "phrase routes to the intended target" started.
-✔ Test "volume intent" passed after 0.007 seconds.
 ◇ Test case passing 2 arguments phrase → "run the build script", expected → "environment_setup" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "open a terminal", expected → "environment_setup" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "what is the capital of france", expected → "general_query" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "who is the president", expected → "general_query" to "phrase routes to the intended target" started.
+✔ Test ""find X and copy the path" is the same request to both sides" passed after 0.006 seconds.
 ◇ Test case passing 2 arguments phrase → "explain quantum computing", expected → "general_query" to "phrase routes to the intended target" started.
 ◇ Test case passing 2 arguments phrase → "tell me about ridgeline", expected → "general_query" to "phrase routes to the intended target" started.
-✔ Test "a leftover article is not a command" with 5 test cases passed after 0.005 seconds.
-✔ Test ""find X and copy the path" is the same request to both sides" passed after 0.005 seconds.
-✔ Test "a local search is still a file operation, but not a copy-path request" passed after 0.005 seconds.
-✔ Test "a phrase no rule claims defers to Laya" passed after 0.003 seconds.
-✔ Test "flush emits a still-open segment" passed after 0.008 seconds.
-✔ Test "quotes and backslashes are escaped for interpolation" passed after 0.003 seconds.
-✔ Test "plain text is left alone" passed after 0.003 seconds.
-✔ Test "a burst shorter than the floor is discarded" passed after 0.008 seconds.
-✔ Suite "DecisionArbiter" passed after 0.008 seconds.
-✔ Suite "ActionDispatcher.systemControl" passed after 0.008 seconds.
-✔ Test "speech followed by enough silence emits exactly one segment" passed after 0.008 seconds.
-✔ Test "make() carries the target, transcript and extracted payload" passed after 0.003 seconds.
-✔ Test "a segment is capped so a monologue cannot grow without bound" passed after 0.008 seconds.
-✔ Suite "CompoundRouter" passed after 0.008 seconds.
-✔ Suite "Test harness" passed after 0.008 seconds.
-✔ Suite "RuleRouter regressions" passed after 0.008 seconds.
-✔ Suite "AppleScript escaping" passed after 0.008 seconds.
-✔ Suite "ActionDispatcher phrase predicates" passed after 0.008 seconds.
-✔ Suite "CommandPlan" passed after 0.008 seconds.
+✔ Test "make() carries the target, transcript and extracted payload" passed after 0.006 seconds.
+✔ Test "agreement keeps the higher confidence" passed after 0.006 seconds.
+✔ Test "a plausible command survives" with 4 test cases passed after 0.006 seconds.
+✔ Test "a named payload becomes the title" passed after 0.006 seconds.
+✔ Test "a trailing submit phrase sets the flag and leaves the payload clean" passed after 0.006 seconds.
+✔ Test "folder aliases resolve to canonical names" passed after 0.006 seconds.
+✔ Test "plain text is left alone" passed after 0.006 seconds.
+✔ Test "a strong rule overrides a weak Laya guess" passed after 0.006 seconds.
+✔ Test "link ordinals are zero based" passed after 0.006 seconds.
+✔ Test "quotes and backslashes are escaped for interpolation" passed after 0.006 seconds.
+✔ Test "an unrouted phrase is a no-op, not a wild guess" passed after 0.006 seconds.
+✔ Test "a single action is not compound" with 4 test cases passed after 0.006 seconds.
+✔ Test "a typed payload containing "and" is not split" passed after 0.006 seconds.
+✔ Test "free text after a typing verb becomes the payload" passed after 0.006 seconds.
+✔ Test "a phrase no rule claims defers to Laya" passed after 0.006 seconds.
+✔ Test "volume intent" passed after 0.007 seconds.
+✔ Test "two real actions split and keep their order" passed after 0.006 seconds.
+✔ Test "a trailing "and press enter" folds into the last part" passed after 0.006 seconds.
 ✔ Test "returns the command's stdout" passed after 0.007 seconds.
+✔ Test "ReflexCore is importable and reachable" passed after 0.006 seconds.
+✔ Test ""turn off the screen" is dispatchable" passed after 0.006 seconds.
+✔ Test "scroll direction and amount" passed after 0.007 seconds.
+✔ Test "an unhandled phrase reports a parse failure rather than guessing" passed after 0.006 seconds.
+✔ Test ""unlock the screen" must not lock it" passed after 0.006 seconds.
+✔ Test "known phrases map to their operation" with 6 test cases passed after 0.006 seconds.
+✔ Test "a show-desktop phrase reaches system_control" with 3 test cases passed after 0.006 seconds.
+✔ Test "every phrase the router sends here is dispatchable" passed after 0.006 seconds.
+✔ Test "a burst shorter than the floor is discarded" passed after 0.006 seconds.
+✔ Test "opening a browser by name is an app launch, not a web search" passed after 0.006 seconds.
+✔ Test "a nonzero exit throws with the merged output" passed after 0.007 seconds.
+✔ Test "flush emits a still-open segment" passed after 0.006 seconds.
+✔ Test "a segment is capped so a monologue cannot grow without bound" passed after 0.006 seconds.
+✔ Test ""display" alone is not a media command" passed after 0.006 seconds.
+✔ Test "a display-sleep phrase reaches system_control" with 3 test cases passed after 0.006 seconds.
+✔ Suite "Signal light states" passed after 0.007 seconds.
+✔ Suite "DecisionArbiter" passed after 0.007 seconds.
+✔ Suite "CommandPlan" passed after 0.007 seconds.
+✔ Suite "ActionDispatcher phrase predicates" passed after 0.007 seconds.
+✔ Suite "AppleScript escaping" passed after 0.007 seconds.
+✔ Suite "Test harness" passed after 0.007 seconds.
+✔ Suite "CompoundRouter" passed after 0.007 seconds.
+✔ Suite "ActionDispatcher.systemControl" passed after 0.007 seconds.
+✔ Suite "RuleRouter regressions" passed after 0.007 seconds.
+✔ Test "speech followed by enough silence emits exactly one segment" passed after 0.007 seconds.
+✔ Test "an alias resolves to the app it names" passed after 0.007 seconds.
+✔ Test "phrase routes to the intended target" with 69 test cases passed after 0.008 seconds.
+✔ Suite "RuleRouter contract" passed after 0.009 seconds.
+✔ Test "a spoken name matches a whole word of the app name" passed after 0.008 seconds.
+✔ Test "an unknown name resolves to nothing instead of a random substring" passed after 0.008 seconds.
+✔ Suite "AppResolver" passed after 0.010 seconds.
+✔ Test ""in <non-app>" stays part of the typed text" passed after 0.010 seconds.
+✔ Suite "PayloadExtractor" passed after 0.010 seconds.
 ✔ Test "room tone alone emits nothing" passed after 0.010 seconds.
-✔ Suite "StreamSegmenter" passed after 0.011 seconds.
-✔ Test "an alias resolves to the app it names" passed after 0.009 seconds.
-✔ Test "phrase routes to the intended target" with 69 test cases passed after 0.006 seconds.
-✔ Suite "RuleRouter contract" passed after 0.011 seconds.
-✔ Test "a nonzero exit throws with the merged output" passed after 0.010 seconds.
-✔ Test "a spoken name matches a whole word of the app name" passed after 0.009 seconds.
-✔ Test "an unknown name resolves to nothing instead of a random substring" passed after 0.009 seconds.
-✔ Suite "AppResolver" passed after 0.012 seconds.
-✔ Test ""in <non-app>" stays part of the typed text" passed after 0.011 seconds.
-✔ Suite "PayloadExtractor" passed after 0.012 seconds.
-✔ Test "output larger than the pipe buffer is neither truncated nor deadlocked" passed after 0.111 seconds.
-✔ Suite "ActionDispatcher.runTool" passed after 0.112 seconds.
-✔ Test run with 51 tests in 13 suites passed after 0.112 seconds.
+✔ Suite "StreamSegmenter" passed after 0.010 seconds.
+✔ Test "output larger than the pipe buffer is neither truncated nor deadlocked" passed after 0.107 seconds.
+✔ Suite "ActionDispatcher.runTool" passed after 0.107 seconds.
+✔ Test run with 56 tests in 14 suites passed after 0.107 seconds.

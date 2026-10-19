@@ -65,21 +65,6 @@ struct SettingsView: View {
                 }
             }
 
-            Section {
-                Toggle("Show status pill near the notch", isOn: $appModel.showNotchPill)
-                if NotchNeighbor.running {
-                    Text("Vorssaint is running. Reflex's pill sits below its Dynamic Island and steps aside while the island is expanded.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } header: {
-                Text("Status Pill")
-            } footer: {
-                Text("A capsule light that appears below the notch (or the menu bar) while Reflex is listening or busy.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
             Section("Diagnostics") {
                 Button {
                     runDiagnostics()

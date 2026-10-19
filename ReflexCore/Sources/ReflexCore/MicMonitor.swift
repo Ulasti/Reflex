@@ -204,6 +204,11 @@ public final class MicMonitor: @unchecked Sendable {
         capture.onChunk = { [weak self] chunk in
             guard let self else { return }
             self.segmenter.feed(chunk)
+            // Also emit the level per capture chunk (tens of ms) instead of
+            // only the segmenter's 100 ms window: this is the level the menu
+            // bar light follows, and the light table wants the faster response.
+            let rms = Float(AudioPreflight.rms(chunk))
+            self.segmenter.onLevel?(min(1, rms * 8), self.segmenter.speaking)
         }
         try capture.start()
         isRunning = true

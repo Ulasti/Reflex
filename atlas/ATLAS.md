@@ -26,27 +26,33 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Field | Value |
 |---|---|
 | Status | `In Progress` |
-| Last worked on | 2026-10-18 |
+| Last worked on | 2026-10-19 |
 | Branch | `atlas/menubar-ui` |
 | needs_review | true |
-| Where I left off | Converted the macOS app to a menu bar extra (`atlas/menubar-ui`, 2026-10-18): `MenuBarExtra` (.menu style) + `Settings` scene, no app window, `LSUIElement` on. Added the pill-shaped status light (`StatusPillView`) and a notch overlay (`NotchPillController`) that measures Vorssaint's/other notch apps' island windows via `CGWindowListCopyWindowInfo`, sits below them, and hides while their island covers the slot. Both app targets build, `swift test` 51/51, launch smoke test alive at 5 s. **Not yet verified visually** (pill placement vs the real notch and a running Vorssaint; `SettingsLink` from the LSUIElement menu). Evidence: `atlas/evidence/menubar-ui.txt`. Earlier: re-derived the Phase A gate on `atlas/phase-a-verify` (`--laya-ref` 126/126, `--diagnose` 0 blocking). |
+| Where I left off | Menu bar feedback light shipped (2026-10-19, `ec0ef08`): `SignalLight` (off/armed/hearing/executed/waiting/error, 5 priority tests) rendered by `MenuBarIconView` as an explicit 16 pt `NSImage` glyph — palette color, `isTemplate = false`, 30 fps opacity motion (4 s breathing, voice-level follow, 300 ms green flash retriggered per action). Notch pill **parked**: `NotchPillController` moved to `atlas/attic/`, `showNotchPill` + its Settings section removed. `MicMonitor` now emits levels per capture chunk so hearing follows the voice at capture cadence. Full gate green: 342 compile actions, 56 tests/14 suites, `--diagnose` 0 blocking, `--laya-ref` 126/126. **Unverified:** breathing/flash/amber never checked by pixel capture (screencapture unreliable this session; user checks by eye — off state + slashed glyph confirmed). Evidence: `atlas/evidence/menubar-light.txt`. Earlier: menu bar conversion 2026-10-18 (`atlas/evidence/menubar-ui.txt`); Phase A gate on `atlas/phase-a-verify`. |
 
 ---
 
 ## Last Failure
 
-None. The last session ended with all gates passing on `atlas/phase-a-wiring` (commit `1fb1beb`); no error stopped work.
+No build or test failure. The 2026-10-19 failure was tooling: `screencapture`
+returned black frames until the Screen Recording permission was granted, and
+pixel-based verification of the menu bar light was then abandoned by user
+decision — recorded as **Unverified** in `atlas/evidence/menubar-light.txt`,
+never as a pass.
 
 ---
 
 ## Next Steps
 
-1. **Verify the menubar UI on a real display (`atlas/menubar-ui`).** Launch
-   the app with Vorssaint running: check the pill sits below the notch, steps
-   down/aside when Vorssaint's Dynamic Island expands, and returns after; and
-   that `Settings…` from the menu bar extra opens the Settings window while
-   the app is an LSUIElement agent. Builds/tests only so far —
-   `evidence/menubar-ui.txt`.
+1. **Eyeball the menu bar light's motion (`atlas/menubar-ui`), then decide on
+   the merge.** Off + slashed glyph confirmed by the user 2026-10-19; still to
+   confirm by eye: dim-white 4 s breathing while armed, level-following while
+   hearing, the green flash per action, amber while the model loads. If it
+   feels right, hand off for merge into `dev`. The notch pill is parked in
+   `atlas/attic/NotchPillController.swift` — restoring it means moving the file
+   back and re-adding `showNotchPill` plus its Settings section. Pixel-capture
+   verification was abandoned 2026-10-19; do not spend another session on it.
 2. **Phase A is verified — done (2026-10-16).** `--laya-ref` 126/126,
    `--diagnose` 0 blocking issues, and the A-log phrases behave. The plan's own
    gate passes. Evidence: `evidence/phase-a-verify.txt`.
@@ -72,8 +78,8 @@ None. The last session ended with all gates passing on `atlas/phase-a-wiring` (c
 ## Blockers
 
 - **No dedicated test suite (self-imposed), largely addressed.** A
-  `ReflexCoreTests` target exists and now runs **51 tests in 13 suites**, all
-  passing (`evidence/tests.log`, 2026-10-16). Phase A–B files outside that net
+  `ReflexCoreTests` target exists and now runs **56 tests in 14 suites**, all
+  passing (`evidence/tests.log`, 2026-10-19). Phase A–B files outside that net
   (the AppModel live path, the dispatcher side effects) remain the main project
   risk. See D1.
 - **`atlas/docs/implementation-plan.md` still refers to `DecisionArbiter.swift`**
@@ -244,12 +250,12 @@ Every check is run and evidenced. Pass/Fail reflects what actually ran.
 
 | # | Check | Evidence | Result |
 |---|---|---|---|
-| 1 | macOS target builds | `evidence/build-macos.log` — `** BUILD SUCCEEDED **`, 320 compile actions | **Pass** (re-run 2026-10-16; falsifier: a log with 0 compile actions fails the script's `require_compile_actions`) |
-| 2 | iOS/iPadOS target builds | `evidence/build-ios.log` — `** BUILD SUCCEEDED **` | **Pass** (re-run 2026-10-16) |
-| 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — `Build complete! (21.62 sec)` | **Pass** (re-run from a fresh `.build` on 2026-10-16; 0 stale-path warnings) |
-| 4 | Every CoreML bundle compiles via `reflex-cli --verify` | `evidence/verify-models.log` — `verify OK`, exit 0 | **Pass** (re-run 2026-10-16) |
+| 1 | macOS target builds | `evidence/build-macos.log` — `** BUILD SUCCEEDED **`, 342 compile actions | **Pass** (re-run 2026-10-19; falsifier: a log with 0 compile actions fails the script's `require_compile_actions`) |
+| 2 | iOS/iPadOS target builds | `evidence/build-ios.log` — `** BUILD SUCCEEDED **` | **Pass** (re-run 2026-10-19) |
+| 3 | SPM package and `reflex-cli` build in release | `evidence/build-cli.log` — release build, `Build complete!` | **Pass** (re-run from a fresh `.build` on 2026-10-19; 0 stale-path warnings) |
+| 4 | Every CoreML bundle compiles via `reflex-cli --verify` | `evidence/verify-models.log` — `verify OK`, exit 0 | **Pass** (re-run 2026-10-19) |
 | 5 | `--verify` genuinely fails when models are absent | `evidence/verify-models-negative.txt` — empty dir → exit 1, `No model packages found` | **Pass** (falsifier shown: the negative control fails as required) |
-| 6 | Automated unit tests pass | `evidence/tests.log` — `Test run with 51 tests in 13 suites passed` | **Pass** (re-run 2026-10-16; the figure moved from 4 to 51 as coverage grew) |
+| 6 | Automated unit tests pass | `evidence/tests.log` — `Test run with 56 tests in 14 suites passed` | **Pass** (re-run 2026-10-19; the figure moved from 4 to 56 as coverage grew) |
 | 7 | No load-bearing asset lives outside the project | `evidence/self-containment.txt`, `evidence/integrity-audit-2026-10-02.txt` | **Pass (2026-10-02, not re-derived 2026-10-16).** This change touches no path resolver. Falsifier: a home-directory API hit resolving a model path. |
 | 8 | Gitignored heavy assets disclosed with committed placeholders | `Models/MANIFEST.md` (tracked); `Models/` gitignored via `Models/*` | **Pass.** Verified this session: `Models/` (4.8 GB) is gitignored, `Models/MANIFEST.md` is the only tracked file there and carries sizes + re-acquire commands. Note: `.gitignore` also force-includes `Models/.gitkeep`, which does not exist — dead rule (MANIFEST.md already guarantees the directory on clone). Noted under D5. |
 | 9 | No secrets or credentials committed | `evidence/security-scan.txt` | **Pass** (created 2026-10-16; 0 secret hits, negative control 3 hits proves the scan can fail). Falsifier: any private-key/token/password pattern. |
