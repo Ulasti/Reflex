@@ -1,0 +1,16 @@
+# Security scan (tracked files, excluding Models/, .venv/, .cache/, .build/)
+Date: 2026-10-16T02:50:43Z
+
+## Pattern hits (private keys, tokens, passwords, AWS keys)
+(none)
+secret hit count: 0
+
+## Negative control: the same engine on a pattern that must match
+README.md
+atlas/ATLAS.md
+atlas/docs/audit-2026-10-14.md
+control hit count: 3  (non-zero proves the grep engine works; a zero here would make the scan above meaningless)
+
+## Credential files
+ls: .env: No such file or directory
+no credential files tracked

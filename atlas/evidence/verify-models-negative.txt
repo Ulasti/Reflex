@@ -1,0 +1,12 @@
+# --verify negative control (proves the gate can fail)
+Date: 2026-10-16T02:51:52Z
+Command: reflex-cli --verify <empty-dir>
+Empty dir: /var/folders/xr/t6xp49m55_51mbsshr3fnykw0000gn/T/tmp.zVfctqN36S (no .mlpackage inside)
+
+--- stdout+stderr ---
+error: No model packages found in /var/folders/xr/t6xp49m55_51mbsshr3fnykw0000gn/T/tmp.zVfctqN36S — nothing was verified. Run the conversion toolchain (see Models/MANIFEST.md).
+verifying all packages...
+--- exit status ---
+exit=1
+
+Expected: exit 1 with 'No model packages found'. A 0 here would make DoD row 4 meaningless.
