@@ -49,3 +49,8 @@ this session — docs/branch only.
 - corpus/{train,heldout,ambient}/ created as the recording destinations.
 - corpus/.gitignore — *.wav/*.m4a/*.mp3/*.flac ignored; audio never committed.
 - 132 phrasings total; 2 takes minimum = 264 clips, 4 takes = 528 clips.
+- corpus/record.swift — dependency-free Swift recorder (AVAudioRecorder):
+  parses PHRASES.md, prompts per line, beeps, records 2 x 5 s take windows to
+  corpus/<folder>/<stem>__take<N>.wav (16 kHz mono PCM), resumable, skip/quit.
+  `--list` self-check passes: 132 = 91 train + 41 heldout. Not yet exercised
+  against a live mic (mic TCC untested from the agent shell; user runs it).

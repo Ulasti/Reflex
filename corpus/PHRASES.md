@@ -11,7 +11,8 @@ change it here too (this file is the reading copy).
 - One file per take. Line stem `volume_up__1` → files `volume_up__1__take1.wav`,
   `volume_up__1__take2.wav`, …
 - Repeat the phrase with a ~1 s pause between takes, tick the line, move on.
-- Format: `.wav` or `.m4a`, anything the Mac records.
+- Format: the script writes 16 kHz mono `.wav`. Manual recordings (`.wav`/`.m4a`)
+  are accepted too, but the script is faster.
 - Say the words exactly as written — the train phrasings become the rules-lane list.
 
 ## Where to save
@@ -26,9 +27,15 @@ change it here too (this file is the reading copy).
 **Part 2 lines are the heldout test set.** Record them now, but never say them
 while building rules, prompts, or aliases — the Laya lane is judged on them.
 
-Recording tool: ask me for the prompt-and-name recorder script (it prints the
-next line, records on enter, saves under the right name), or record manually in
-Voice Memos/QuickTime and rename on export to the stems below.
+Recording tool: `swift corpus/record.swift` — it walks this file top to bottom,
+prints the next line, beeps, records take1 then take2, and saves under the stems
+below with no renaming. First run asks for Microphone permission.
+
+- `swift corpus/record.swift --list` — print the queue and counts, record nothing.
+- `--seconds 6` — longer take window (default 5 s; a take is a fixed window, so
+  say the phrase once and stop).
+- Resume any time: lines whose two takes exist are skipped. To redo a clip,
+  delete its file and rerun.
 
 ---
 
