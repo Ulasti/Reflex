@@ -1,0 +1,42 @@
+# Evidence: atlas/menubar-ui merged into dev
+
+Date: 2026-10-19
+Requested by: the user — "commit and merge this menubar ui for now … a working
+prototype which does at least report our intended status colors … so that we
+can focus on the actual engine".
+Merge: `git merge --no-ff atlas/menubar-ui` on `dev`, LOCAL ONLY, not pushed
+(Agent Instructions forbid pushing `dev`; DoD row 13 remains Not pushed).
+
+## Commits merged (dev..atlas/menubar-ui, 9)
+
+16b3c2a feat(ui): circle state-light glyph; widen hearing response
+1b96a36 feat(ui): menu bar light per state table; notch pill parked
+ec0ef08 feat(ui): menu bar icon state + signal light model
+fbc9d3d chore(xcodeproj): regenerate for menubar UI sources
+5d0d463 feat(ui): menubar app, settings scene, notch status pill
+d99ffad docs(atlas): record commit evidence
+e1cad76 docs(atlas): correct D5/.gitkeep and DoD row 8 claims
+9d6a9a8 docs(atlas): record commit evidence
+c262720 docs(atlas): verify Phase A, restore DoD evidence, fix Doctor drift
+
+Note: the last four are the Phase A verification/docs commits that never
+reached `dev` (the branch was cut from that lineage); they ride along.
+
+## State at merge time
+
+- Working tree clean except untracked `AGENTS.md`, `CLAUDE.md` (not part of
+  this work, left alone).
+- Full gate green immediately before the merge (2026-10-19): 342 compile
+  actions, 56 tests in 14 suites, `reflex-cli --verify` OK, `--diagnose` 0
+  blocking, `--laya-ref` 126/126 — evidence/build-macos.log, build-ios.log,
+  build-cli.log, tests.log, verify-models.log, diagnose.txt, laya-ref.txt.
+- `git log atlas/menubar-ui..dev` empty: dev had no commits missing from the
+  branch, so the merge cannot lose dev-side work.
+
+## Accepted as prototype (Unverified, tracked in ATLAS Next Steps 3)
+
+- Circle shape, hollow-ring Off, armed breathing, voice level-following,
+  green flash, amber load — never verified by pixel capture (abandoned 2026-10-19);
+  the user accepts the current build as a working status-color prototype and
+  will eyeball the rest during later polish.
+- Notch pill parked at `atlas/attic/NotchPillController.swift`, not deleted.
