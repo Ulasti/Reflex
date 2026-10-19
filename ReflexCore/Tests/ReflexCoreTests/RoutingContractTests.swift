@@ -28,7 +28,10 @@ struct RoutingContractTests {
         ("type hello world", "type_text"),
         ("type buy milk in notes", "type_text"),
         ("dictate a note", "type_text"),
-        ("paste that", "type_text"),
+        // Clipboard-only phrases are the paste shortcut; free text after the
+        // verb is still dictation (plan Phase 3.1).
+        ("paste that", "shortcut"),
+        ("paste hello world", "type_text"),
         // Browser
         ("next tab", "browser_command"),
         ("close the tab", "browser_command"),

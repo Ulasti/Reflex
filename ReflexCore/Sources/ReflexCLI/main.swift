@@ -66,10 +66,32 @@ struct ReflexCLI {
             do {
                 let router = try makeLayaRouter()
                 try await router.preload()
-                let start = Date()
-                for _ in 0..<iterations { _ = try await router.route(transcript: transcript) }
-                let ms = Date().timeIntervalSince(start) * 1000
-                print(String(format: "%d routes in %.1f ms (%.1f ms/route)", iterations, ms, ms / Double(iterations)))
+                var times: [Double] = []
+                for _ in 0..<iterations {
+                    let start = Date()
+                    _ = try await router.route(transcript: transcript)
+                    times.append(Date().timeIntervalSince(start) * 1000)
+                }
+                // Plan Phase 4 asks for p50/p95 of one forward pass, not a mean.
+                let sorted = times.sorted()
+                func percentile(_ p: Double) -> Double {
+                    sorted[min(sorted.count - 1, Int(p * Double(sorted.count - 1)))]
+                }
+                let mean = times.reduce(0, +) / Double(times.count)
+                print(String(format: "%d routes  mean %.1f ms  p50 %.1f  p95 %.1f  min %.1f  max %.1f",
+                             iterations, mean, percentile(0.5), percentile(0.95), sorted[0], sorted[sorted.count - 1]))
+            } catch {
+                print("error: \(error.localizedDescription)")
+            }
+            return
+        }
+
+        if args.count >= 2, args[1] == "--oracle" {
+            let phrases = args.count > 2 ? args[2] : "corpus/PHRASES.md"
+            var csv: String?
+            if let index = args.firstIndex(of: "--csv"), args.count > index + 1 { csv = args[index + 1] }
+            do {
+                try await ReplayHarness.runOracle(phrasesPath: phrases, csvPath: csv)
             } catch {
                 print("error: \(error.localizedDescription)")
             }
@@ -273,7 +295,7 @@ struct ReflexCLI {
                 let engine = try makeEngine()
                 let segmenter = StreamSegmenter()
                 nonisolated(unsafe) var segments: [[Float]] = []
-                segmenter.onSegment = { segments.append($0) }
+                segmenter.onSegment = { segment, reason, audioDuration in segments.append(segment) }
 
                 if useWK {
                     try await runVliveWK(
@@ -375,6 +397,7 @@ struct ReflexCLI {
                    reflex-cli --laya-ref <reference.json>
                    reflex-cli --vlive <audio-file> [variant] [--run] [--wk]
                    reflex-cli --replay <corpus-dir> [--variant small] [--limit N] [--csv out.csv]
+                   reflex-cli --oracle [PHRASES.md] [--csv out.csv]
                    reflex-cli --listen [variant] [--run] [--wk]
                    reflex-cli --wk-install [variant] [models-dir]
                    reflex-cli --tokenize <text...>
@@ -460,7 +483,7 @@ struct ReflexCLI {
             layaRouter: layaRouter
         )
         let monitor = MicMonitor()
-        monitor.onSegment = { segment in
+        monitor.onSegment = { segment, reason, audioDuration in
             Task {
                 do {
                     try await runSegment(engine, segment, kind, runRequested: runRequested)
@@ -563,7 +586,7 @@ struct ReflexCLI {
         case "small.compressed": "openai_whisper-small_216MB"
         case "m", "medium": "openai_whisper-medium"
         case "medium.en": "openai_whisper-medium.en"
-        case "turbo": "openai_whisper-large-v3-v20240930_turbo"
+        case "turbo", "large-v3-turbo": "openai_whisper-large-v3-v20240930_turbo"
         default: requested
         }
     }
@@ -620,7 +643,7 @@ struct ReflexCLI {
         monitor.onPartial = { partial in
             Task { await live.consumePartial(partial) }
         }
-        monitor.onSegment = { segment in
+        monitor.onSegment = { segment, reason, audioDuration in
             Task {
                 do {
                     let text = try await live.finalizeUtterance()
@@ -673,7 +696,7 @@ struct ReflexCLI {
         }
         nonisolated(unsafe) var spoken = 0
         nonisolated(unsafe) var processed = 0
-        segmenter.onSegment = { _ in
+        segmenter.onSegment = { segment, reason, audioDuration in
             spoken += 1
             Task {
                 do {

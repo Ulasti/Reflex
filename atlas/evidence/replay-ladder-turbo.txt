@@ -1,0 +1,1 @@
+error: no WhisperKit pack for 'large-v3-turbo' — install: reflex-cli --wk-install large-v3-turbo

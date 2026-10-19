@@ -82,7 +82,16 @@ final class AppModel: ObservableObject {
     private var processing = false
     private var currentSession: SessionLog?
     private var lastActionTime: Date?
-    private let feedbackCooldown: TimeInterval = 1.0
+    /// 0.3 s still covers the feedback tone/shutter; it used to be 1.0 s, which
+    /// ate the first command of any two spoken back to back (plan Phase 1).
+    private let feedbackCooldown: TimeInterval = 0.3
+    /// FIFO of captured segments awaiting route + dispatch (plan Phase 1).
+    private var pendingSegments: [PendingSegment] = []
+    /// Live-latency bookkeeping: when the current utterance's speech started,
+    /// when its last voiced frame was seen (set from the level stream, reset
+    /// per segment).
+    private var speechStartedAt: Date?
+    private var lastVoicedAt: Date?
 
     #if os(macOS)
     private let hotKeyID: UInt32 = 1
@@ -296,12 +305,21 @@ final class AppModel: ObservableObject {
             #else
             monitor = MicMonitor()
             #endif
-            monitor.onSegment = { [weak self] samples in
-                Task { @MainActor in self?.handleSegment(samples) }
+            monitor.onSegment = { [weak self] samples, reason, audioDuration in
+                Task { @MainActor in self?.handleSegment(samples, reason: reason, audioDuration: audioDuration) }
             }
             monitor.onLevel = { [weak self] level, speaking in
                 Task { @MainActor in
                     self?.liveLevel = level
+                    if speaking {
+                        if self?.speechStartedAt == nil { self?.speechStartedAt = Date() }
+                        // Only a window whose audio crossed the speech floor is a
+                        // voiced frame: `speaking` stays true through the silence
+                        // gate, so using it would measure the gate, not the voice.
+                        if level >= StreamSegmenter.speechLevelFloor {
+                            self?.lastVoicedAt = Date()
+                        }
+                    }
                     self?.isSpeaking = speaking
                 }
             }
@@ -353,49 +371,112 @@ final class AppModel: ObservableObject {
             : "Stopped — ⌘P to re-arm"
     }
 
-    /// A finalized speech segment arrived. Runs it through the pipeline and
-    /// auto-executes the resulting action. Segments heard while a prior one is
-    /// still being processed are dropped; the mic keeps listening regardless.
-    private func handleSegment(_ samples: [Float]) {
-        if let t = lastActionTime, Date().timeIntervalSince(t) < feedbackCooldown {
-            modelStatus = "Cooldown, ignoring feedback"
-            return
+    /// A queued segment: live mode already captured the transcript at arrival;
+    /// segmented mode still carries the raw samples.
+    private enum PendingSegment {
+        case liveText(String, timing: SegmentTiming)
+        case samples([Float])
+    }
+
+    /// When each live utterance happened, so the session log can report live
+    /// latency: speech onset → segment emit ("hearing"), the final decode, the
+    /// route, the dispatch, and last-voiced-frame → dispatched.
+    private struct SegmentTiming {
+        let speechStart: Date?
+        let lastVoiced: Date?
+        let segAt: Date
+        let decodeMs: Double
+    }
+
+    /// A finalized speech segment arrived. Live mode captures the transcript
+    /// here — the transcriber's rolling buffer belongs to the next utterance as
+    /// soon as speech resumes — then queues the work FIFO. Segments arriving
+    /// mid-drain are queued instead of dropped (plan Phase 1); the mic keeps
+    /// listening regardless.
+    private func handleSegment(_ samples: [Float], reason: String, audioDuration: Double) {
+        Task { @MainActor in
+            let segAt = Date()
+            let speechStart = speechStartedAt
+            let lastVoiced = lastVoicedAt
+            speechStartedAt = nil
+            lastVoicedAt = nil
+            let pending: PendingSegment
+            if let live = liveTranscriber {
+                let decodeStart = Date()
+                let text: String
+                do {
+                    text = try await live.finalizeUtterance()
+                } catch {
+                    modelStatus = "Pipeline: \(error.localizedDescription)"
+                    return
+                }
+                let timing = SegmentTiming(
+                    speechStart: speechStart,
+                    lastVoiced: lastVoiced,
+                    segAt: segAt,
+                    decodeMs: Date().timeIntervalSince(decodeStart) * 1000
+                )
+                guard !text.isEmpty else {
+                    modelStatus = "No speech detected"
+                    return
+                }
+                // No text de-duplication here: identical text is only a repeat
+                // if it came from a new audio segment, and `finalizeUtterance`
+                // clears the rolling buffer, so it always did. Skipping it
+                // swallowed a deliberate repeat ("volume up, volume up").
+                pending = .liveText(text, timing: timing)
+            } else {
+                pending = .samples(samples)
+            }
+            pendingSegments.append(pending)
+            guard !processing else { return }
+            processing = true
+            modelStatus = "Deciding…"
+            await drainSegments()
+            processing = false
+            if isListening {
+                modelStatus = "Listening — ⌘P to kill"
+            }
         }
-        guard !processing else {
-            modelStatus = "Busy, dropped a segment"
-            return
-        }
-        processing = true
-        modelStatus = "Deciding…"
-        Task {
+    }
+
+    /// Drains queued segments one at a time, in arrival order. The green flash
+    /// retriggers once per dispatched action (flashExecuted, in `dispatch`).
+    private func drainSegments() async {
+        while !pendingSegments.isEmpty {
+            let pending = pendingSegments.removeFirst()
+            var decisiveRule = false
+            if case .liveText(let text, _) = pending {
+                // A decisive rule means the speaker, not system audio: music
+                // never classifies at >= 0.9. Without this check the media
+                // suppression below dropped "volume up" and "open Safari" too.
+                decisiveRule = RuleRouter().classify(text)?.isDecisive == true
+            }
 #if os(macOS)
             // System audio (Music, Safari, YouTube) is loud enough to trip the
             // VAD and gets dictated as "bell dings" etc. When media is actually
-            // playing, drop the segment rather than route it.
-            //
-            // Below the busy guard and off the main actor: `NowPlaying.status()`
-            // blocks on a semaphore for up to 3 s, which must never happen on the
-            // main actor, and a segment about to be dropped should not pay for
-            // it either (atlas/docs/audit-2026-10-14.md, M2).
-            if suppressWhileMediaPlaying, await mediaIsPlaying() {
+            // playing, skip the non-decisive segments rather than route them.
+            // Off the main actor: NowPlaying.status() blocks on a semaphore for
+            // up to 3 s (atlas/docs/audit-2026-10-14.md, M2).
+            if suppressWhileMediaPlaying, !decisiveRule, await mediaIsPlaying() {
                 modelStatus = "Media playing, ignoring system audio"
-                processing = false
-                return
+                continue
             }
 #endif
+            // Cooldown delays instead of dropping: the previous action's
+            // ding/shutter is audible and must not re-trigger. Shrunk 1.0 → 0.3 s.
+            if let t = lastActionTime {
+                let wait = feedbackCooldown - Date().timeIntervalSince(t)
+                if wait > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+                }
+            }
             do {
-                if let live = liveTranscriber {
-                    // Live mode: WhisperKit finalized the text already; route
-                    // once here (partials shown in the UI are never routed).
-                    let text = try await live.finalizeUtterance()
-                    if text.isEmpty {
-                        modelStatus = "No speech detected"
-                    } else {
-                        await resolveLiveTranscript(text)
-                    }
-                } else {
+                if case .liveText(let text, let timing) = pending {
+                    await resolveLiveTranscript(text, timing: timing)
+                } else if case .samples(let sampleArray) = pending {
                     let decisions = try await engine.resolveCommandStreamCompound(
-                        samples: samples,
+                        samples: sampleArray,
                         modelKind: activeModel,
                         forcedLanguage: forcedEnglish ? "en" : "auto"
                     )
@@ -408,10 +489,6 @@ final class AppModel: ObservableObject {
                 }
             } catch {
                 modelStatus = "Pipeline: \(error.localizedDescription)"
-            }
-            processing = false
-            if isListening {
-                modelStatus = "Listening — ⌘P to kill"
             }
         }
     }
@@ -427,13 +504,15 @@ final class AppModel: ObservableObject {
     /// Routes a WhisperKit-finalized transcript through Laya and executes.
     /// Compound utterances ("new note ... then open ...") expand into one gated
     /// decision per clause (A4) and execute in order.
-    private func resolveLiveTranscript(_ text: String) async {
+    private func resolveLiveTranscript(_ text: String, timing: SegmentTiming?) async {
         do {
+            let routeStart = Date()
             let decisions = try await engine.resolveCompoundTranscript(text)
+            let routeMs = Date().timeIntervalSince(routeStart) * 1000
             for decision in decisions {
                 lastTranscript = decision.transcript
                 lastDecision = decision
-                await dispatch(decision, mode: .live)
+                await dispatch(decision, mode: .live, timing: timing, routeMs: routeMs)
                 if case .stopped = lastResult { break }
             }
         } catch {
@@ -444,8 +523,14 @@ final class AppModel: ObservableObject {
     /// Runs the macOS `ActionDispatcher` for a decision, surfaces the result,
     /// and — in verbose mode — records the whole decision + outcome into the
     /// current session log.
-    private func dispatch(_ decision: ReflexDecision, mode: SessionLog.Mode) async {
+    private func dispatch(
+        _ decision: ReflexDecision,
+        mode: SessionLog.Mode,
+        timing: SegmentTiming? = nil,
+        routeMs: Double? = nil
+    ) async {
         #if os(macOS)
+        let dispatchStart = Date()
         let outcome = await Task.detached(priority: .userInitiated) {
             do {
                 return (try ActionDispatcher().dispatch(decision), nil) as (ReflexActionResult?, String?)
@@ -456,7 +541,13 @@ final class AppModel: ObservableObject {
         let (result, failure) = outcome
         // Phase C feedback: a short ding on done, a lower tone on failure so
         // the user knows (without watching the screen) whether it acted.
-        if let result {
+        if let result, result.isNoOp {
+            // A gated no-op ("not sure what you meant") did nothing and did not
+            // fail: no green flash, no red — red is reserved for mic, model and
+            // capture failures — so the light returns to Armed. No ding either.
+            lastResult = result
+            modelStatus = result.summary
+        } else if let result {
             lastResult = result
             modelStatus = result.summary
             flashExecuted()
@@ -467,12 +558,15 @@ final class AppModel: ObservableObject {
                 lastActionTime = Date()
             }
         } else {
+            // The transcript did not resolve to anything runnable. Not green
+            // (nothing was executed) and not red (the mic and model are fine).
             modelStatus = "Execute failed: \(failure ?? "unknown error")"
             lastActionTime = Date()
             if shouldPlayFeedbackSounds {
                 playFeedback(named: "Sosumi")
             }
         }
+        let dispatchMs = Date().timeIntervalSince(dispatchStart) * 1000
 
         guard verboseLogging, var session = currentSession else { return }
         let outcomeText = result?.summary ?? "Execute failed: \(failure ?? "unknown error")"
@@ -489,7 +583,12 @@ final class AppModel: ObservableObject {
             ruleTarget: decision.trace?.ruleTarget,
             chosen: decision.trace?.chosen,
             ambiguous: decision.trace?.ambiguous ?? false,
-            result: outcomeText
+            result: outcomeText,
+            hearingMs: timing.map { $0.segAt.timeIntervalSince($0.speechStart ?? $0.segAt) * 1000 },
+            decodeMs: timing?.decodeMs,
+            routeMs: routeMs,
+            dispatchMs: dispatchMs,
+            voiceToDispatchMs: timing?.lastVoiced.map { Date().timeIntervalSince($0) * 1000 }
         ))
         currentSession = session
         #else

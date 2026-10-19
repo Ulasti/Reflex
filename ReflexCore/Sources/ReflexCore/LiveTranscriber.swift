@@ -192,7 +192,9 @@ public actor LiveTranscriber {
         if !inUtterance { beginUtterance() }
         rolling = samples
 
-        let now = floor(Date().timeIntervalSinceReferenceDate)
+        // Sub-second clock: floor() quantized this to whole seconds, so the
+        // 0.35 s interval actually fired about once per second (plan Phase 1).
+        let now = Date().timeIntervalSinceReferenceDate
         guard lastDecodeTimestamp == 0 || now - lastDecodeTimestamp >= partialInterval else {
             return
         }
@@ -205,6 +207,16 @@ public actor LiveTranscriber {
     public func finalizeUtterance() async throws -> String {
         guard inUtterance else { return "" }
         defer { inUtterance = false }
+        // Nothing from this utterance may survive it. The VAD can start the
+        // next speech run before the app has dispatched this text, and a stale
+        // rolling buffer decoded twice is how the previous utterance's words
+        // turned up inside the next transcript (live session log: "Open
+        // YouTube.com. Open a new tab" arrived as one carried-over line).
+        defer {
+            rolling = []
+            stablePartial = ""
+            lastPartialEmitted = ""
+        }
         guard !rolling.isEmpty else {
             emitComponent(.init(text: "", isFinal: true))
             return ""
@@ -226,11 +238,8 @@ public actor LiveTranscriber {
 
     // MARK: - Decode
 
-    /// Runs one WhisperKit decode pass over the current rolling window.
-    /// With `publishPartial`, yields a stabilized partial on the stream.
-    @discardableResult
     private func decodeOnce(publishPartial: Bool) async throws -> String {
-        lastDecodeTimestamp = floor(Date().timeIntervalSinceReferenceDate)
+        lastDecodeTimestamp = Date().timeIntervalSinceReferenceDate
         guard let wk else { throw LiveError.unavailable("not loaded") }
         guard !rolling.isEmpty else {
             if publishPartial { emitComponent(.init(text: "", isFinal: false)) }
@@ -247,11 +256,10 @@ public actor LiveTranscriber {
             suppressBlank: true
         )
         options.language = "en"
-
         let results: [TranscriptionResult]
         do {
             results = try await wk.transcribe(
-                audioArray: rolling,
+                audioArray: Self.decodeAudio(rolling),
                 decodeOptions: options,
                 callback: nil
             )
@@ -259,8 +267,7 @@ public actor LiveTranscriber {
             throw LiveError.decodeFailed(error.localizedDescription)
         }
 
-        let full = (results.first?.text ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let full = Self.clean((results.first?.text ?? ""))
 
         if publishPartial {
             // Local-agreement stabilization: only surface text that survives
@@ -287,6 +294,25 @@ public actor LiveTranscriber {
             count += 1
         }
         return count == 0 ? "" : String(lhs[0..<count])
+    }
+
+    /// WhisperKit decodes nothing for windows under ~1.1 s (verified: 1.00 s
+    /// and 1.05 s return empty, 1.10 s decodes), so short commands like
+    /// "copy" or "pause" were silently dropped. Whisper pads to 30 s anyway,
+    /// so padding here costs nothing.
+    static func decodeAudio(_ window: [Float]) -> [Float] {
+        let minimum = 48_000 // 3 s of headroom
+        return window.count >= minimum
+            ? window
+            : window + Array(repeating: 0, count: minimum - window.count)
+    }
+
+    /// Whisper emits non-speech markers ("[BLANK_AUDIO]", "[MUSIC]") that are
+    /// not transcript; drop them so routing never sees them.
+    static func clean(_ text: String) -> String {
+        text.replacingOccurrences(of: "\\[[^\\]]*\\]", with: "", options: .regularExpression)
+            .replacingOccurrences(of: "  ", with: " ")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private func emitComponent(_ update: LiveTextUpdate) {

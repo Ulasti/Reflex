@@ -51,4 +51,16 @@ struct SignalLightTests {
         #expect(resolve() == .off)
         #expect(resolve(listening: false, hearing: true) == .off)
     }
+
+    /// After a failed dispatch — or a gated no-op ("not sure what you meant")
+    /// — the light must return to Armed: no green flash, and no red, which is
+    /// reserved for mic, model and capture failures.
+    @Test("A failed or no-op dispatch returns to armed, not green and not red")
+    func failedDispatchReturnsToArmed() {
+        #expect(resolve(listening: true) == .armed)
+        #expect(resolve(listening: true, hearing: false) != .executed)
+        #expect(resolve(listening: true) != .error)
+        // Only a real failure lights red.
+        #expect(resolve(failure: "Microphone access denied", listening: true) == .error)
+    }
 }

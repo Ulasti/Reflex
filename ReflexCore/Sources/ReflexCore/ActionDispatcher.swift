@@ -33,6 +33,13 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
     case noOp(reason: String)
     case failed(error: String)
 
+    /// Whether nothing was done: the gate refused it ("not sure what you
+    /// meant"). The feedback light must not flash green for a no-op.
+    public var isNoOp: Bool {
+        if case .noOp = self { return true }
+        return false
+    }
+
     public var summary: String {
         switch self {
         case .launched(let app): "Launched \(app)"
@@ -216,18 +223,7 @@ public struct ActionDispatcher: Sendable {
             return try Self.performVolume(op)
         }
 
-        let kind: Self.MediaKind
-        if lower.contains("pause") || lower.contains("stop the music") {
-            kind = .pause
-        } else if lower.contains("resume") || lower.contains("play") || lower.contains("continue") {
-            kind = .play
-        } else if lower.contains("next") || lower.contains("skip") || lower.contains("forward") {
-            kind = .next
-        } else if lower.contains("previous") || lower.contains("back") {
-            kind = .previous
-        } else {
-            kind = .toggle
-        }
+        let kind = Self.mediaOperation(for: plan.transcript)
 
         // An explicit app in the phrase ("play music", "play on spotify")
         // targets that app directly instead of the current now-playing source.
@@ -279,32 +275,40 @@ public struct ActionDispatcher: Sendable {
         return .noOp(reason: "nothing is playing")
     }
 
-    private func brightnessControl(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
-        if let percent = Self.extractPercent(from: plan.transcript) {
-            let applied = try BrightnessController.set(percent)
-            return .brightnessSet(percent: applied)
-        }
-        if lower.contains("maximum") || lower.contains("full") || lower.contains("max") {
-            let applied = try BrightnessController.set(100)
-            return .brightnessSet(percent: applied)
-        }
-        if lower.contains("minimum") || lower.contains("lowest") {
-            let applied = try BrightnessController.set(0)
-            return .brightnessSet(percent: applied)
-        }
+    public enum BrightnessOperation: Equatable, Sendable {
+        case percent(Int)
+        case maximum
+        case minimum
+        case up
+        case down
+    }
+
+    /// Phrase → brightness op, in the order the executor's chain used. Pure
+    /// and separated from execution like `systemOperation(for:)`, so the replay
+    /// harness scores the exact op the dispatcher would run.
+    public static func brightnessOperation(for transcript: String) -> BrightnessOperation? {
+        let lower = transcript.lowercased()
+        if let percent = extractPercent(from: transcript) { return .percent(percent) }
+        if lower.contains("maximum") || lower.contains("full") || lower.contains("max") { return .maximum }
+        if lower.contains("minimum") || lower.contains("lowest") { return .minimum }
         if lower.contains("brighter") || lower.contains("brighten") || lower.contains("up")
-            || lower.contains("increase") || lower.contains("raise") || lower.contains("highest") {
-            let applied = try BrightnessController.adjust(by: +10)
-            return .brightnessChanged(delta: applied)
-        }
+            || lower.contains("increase") || lower.contains("raise") || lower.contains("highest")
+            || lower.contains("more light") { return .up }
         if lower.contains("dimmer") || lower.contains("dim") || lower.contains("down")
             || lower.contains("decrease") || lower.contains("lower") || lower.contains("darker")
-            || lower.contains("reduce") {
-            let applied = try BrightnessController.adjust(by: -10)
-            return .brightnessChanged(delta: applied)
+            || lower.contains("reduce") || lower.contains("less light") { return .down }
+        return nil
+    }
+
+    private func brightnessControl(plan: CommandPlan) throws -> ReflexActionResult {
+        switch Self.brightnessOperation(for: plan.transcript) {
+        case .percent(let percent): return .brightnessSet(percent: try BrightnessController.set(percent))
+        case .maximum: return .brightnessSet(percent: try BrightnessController.set(100))
+        case .minimum: return .brightnessSet(percent: try BrightnessController.set(0))
+        case .up: return .brightnessChanged(delta: try BrightnessController.adjust(by: +10))
+        case .down: return .brightnessChanged(delta: try BrightnessController.adjust(by: -10))
+        case nil: throw ActionExecutionError.parseFailure
         }
-        throw ActionExecutionError.parseFailure
     }
 
     private func typeText(plan: CommandPlan) throws -> ReflexActionResult {
@@ -450,7 +454,7 @@ public struct ActionDispatcher: Sendable {
     /// What a transcript asks `system_control` to do. Pure and separate from
     /// execution so the routing contract tests can assert that every phrase the
     /// router sends here is actually handleable (atlas/docs/audit-2026-10-14.md, M3).
-    enum SystemOperation: Equatable {
+    public enum SystemOperation: Equatable, Sendable {
         case lockScreen
         case sleepDisplay
         case showDesktop
@@ -459,8 +463,10 @@ public struct ActionDispatcher: Sendable {
     }
 
     /// Phrase to operation, in the original if-chain's order.
-    static func systemOperation(for transcript: String) -> SystemOperation? {
-        let lower = transcript.lowercased()
+    public static func systemOperation(for transcript: String) -> SystemOperation? {
+        // Same filler stripping the router applies, so a phrase it matched
+        // ("desktop, please") parses here too.
+        let lower = PayloadExtractor.normalizeIntent(transcript).lowercased()
         // Word boundaries, not substrings: "unlock the screen" must not lock
         // (and macOS cannot unlock it anyway).
         if lower.containsWord("lock") { return .lockScreen }
@@ -468,13 +474,21 @@ public struct ActionDispatcher: Sendable {
             || lower.contains("turn off the display") {
             return .sleepDisplay
         }
+        let bare = lower.trimmingCharacters(in: CharacterSet(charactersIn: " \t.,!?;"))
         if lower.contains("show desktop") || lower.contains("show the desktop")
-            || lower.contains("reveal the desktop") || lower.contains("go to the desktop") {
+            || lower.contains("reveal the desktop") || lower.contains("go to the desktop")
+            || lower.contains("go to desktop") || lower.contains("show me the desktop")
+            || lower.contains("clear the screen") || lower.contains("minimize everything")
+            || bare == "desktop" {
             return .showDesktop
         }
         if lower.contains("dark mode") || lower.contains("light mode") || lower.contains("dark theme")
-            || lower.contains("light theme") {
-            return .darkMode(lower.contains("dark"))
+            || lower.contains("light theme") || lower.contains("night mode")
+            || lower.contains("switch to dark") || lower.contains("make it dark")
+            || lower.contains("switch to light") {
+            let wantsLight = lower.contains("light mode") || lower.contains("light theme")
+                || lower.contains("switch to light")
+            return .darkMode(!wantsLight)
         }
         if lower.contains("trash") || lower.contains("bin") { return .emptyTrash }
         return nil
@@ -763,7 +777,23 @@ public struct ActionDispatcher: Sendable {
         return nil
     }
 
-    enum MediaKind { case play, pause, toggle, next, previous }
+    public enum MediaKind: Sendable { case play, pause, toggle, next, previous }
+
+    /// Phrase → playback op, in the order the dispatcher's if-chain used. Pure
+    /// and separated from execution like `systemOperation(for:)`, so the replay
+    /// harness scores the exact op the dispatcher would run
+    /// (atlas/docs/live-demo-v1-plan.md, Phase 0.4).
+    public static func mediaOperation(for transcript: String) -> MediaKind {
+        let lower = transcript.lowercased()
+        if lower.contains("pause") || lower.contains("stop the music") { return .pause }
+        // Track change before playback verbs: "play the last one" is previous,
+        // and "playback" must not read as "back" (word boundary).
+        if lower.contains("previous") || lower.contains("last song") || lower.contains("last one")
+            || lower.containsWord("back") { return .previous }
+        if lower.contains("next") || lower.contains("skip") || lower.contains("forward") { return .next }
+        if lower.contains("resume") || lower.contains("play") || lower.contains("continue") { return .play }
+        return .toggle
+    }
 
     private static func actionLabel(_ kind: MediaKind, command: String) -> String {
         switch kind {

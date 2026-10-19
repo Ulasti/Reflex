@@ -25,8 +25,61 @@ public enum CompoundRouter {
     }
 
     /// Returns the parts of a compound utterance, or an empty array when the
-    /// phrase is single-action (no supportive `and`/`then` connective).
+    /// phrase is single-action (no supportive `and`/`then` connective and no
+    /// sentence boundary).
     public static func split(_ transcript: String) -> [Part] {
+        // Sentence boundaries are hard splits: Whisper puts two back-to-back
+        // commands in one segment ("Open YouTube.com. Open a new tab") because
+        // the VAD gate can be longer than the pause, and only the second clause
+        // used to execute. A domain period is never followed by a space, so a
+        // period at the end of a word is a sentence end here. Both sides must
+        // look like actions, so ordinary prose stays whole.
+        let sentences = sentenceParts(transcript)
+        if sentences.count > 1, sentences.allSatisfy({ looksLikeClauseStart($0) }) {
+            return sentences.flatMap { sentence -> [Part] in
+                let clause = sentence.trimmingCharacters(in: CharacterSet(charactersIn: " \t.!?"))
+                guard !clause.isEmpty else { return [] }
+                let inner = splitConnectives(clause)
+                if !inner.isEmpty { return inner }
+                // A single-clause sentence keeps the trailing "and press enter"
+                // fold the whole-utterance path applies.
+                let submit = trailingSubmit(from: clause)
+                let trimmed = stripTrailingSubmit(clause)
+                return [Part(transcript: trimmed.isEmpty ? clause : trimmed, submit: submit)]
+            }
+        }
+        return splitConnectives(transcript)
+    }
+
+    /// Sentence boundaries need a weaker test than the connective split: the
+    /// second sentence may legitimately begin with a payload verb ("Type buy
+    /// milk"), which the connective path rejects because there the left side is
+    /// the text being typed. Prose still fails — "hello" and "what" are not
+    /// command verbs, so "hello. what is the capital of France?" stays whole.
+    private static func looksLikeClauseStart(_ clause: String) -> Bool {
+        if looksLikeActionStart(clause) { return true }
+        let lower = clause.lowercased()
+        return payloadVerbs.contains { lower.hasPrefix($0) }
+    }
+
+    /// Splits on ". ", "! " and "? " (the whitespace is already consumed by the
+    /// word split).
+    private static func sentenceParts(_ transcript: String) -> [String] {
+        var out: [String] = []
+        var current: [String] = []
+        for unit in transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+            .split(separator: " ", omittingEmptySubsequences: true) {
+            current.append(String(unit))
+            if unit.hasSuffix(".") || unit.hasSuffix("!") || unit.hasSuffix("?") {
+                out.append(current.joined(separator: " "))
+                current = []
+            }
+        }
+        if !current.isEmpty { out.append(current.joined(separator: " ")) }
+        return out
+    }
+
+    private static func splitConnectives(_ transcript: String) -> [Part] {
         var text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
         var foldedSubmit = false

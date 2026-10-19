@@ -30,6 +30,33 @@ struct CompoundRouterTests {
         #expect(parts.map(\.transcript) == ["open notes", "type buy milk"])
         #expect(parts.last?.submit == true)
     }
+
+    @Test("two sentences in one transcript split at the boundary")
+    func sentenceBoundarySplits() {
+        // The live session log: the VAD gate merged two commands, Whisper
+        // returned one line, and only the second clause executed.
+        let parts = CompoundRouter.split("Open YouTube.com. Open a new tab")
+        #expect(parts.map(\.transcript) == ["Open YouTube.com", "Open a new tab"])
+        #expect(parts.allSatisfy { !$0.submit })
+    }
+
+    @Test("a domain period never splits")
+    func domainPeriodDoesNotSplit() {
+        #expect(!CompoundRouter.isCompound("open youtube.com"))
+        #expect(!CompoundRouter.isCompound("go to google.com"))
+    }
+
+    @Test("two sentences that are not both actions stay whole")
+    func proseDoesNotSplit() {
+        #expect(!CompoundRouter.isCompound("hello. what is the capital of France?"))
+    }
+
+    @Test("each sentence still splits on its own connective")
+    func sentenceThenConnective() {
+        let parts = CompoundRouter.split("Open notes. Type buy milk and press enter")
+        #expect(parts.map(\.transcript) == ["Open notes", "Type buy milk"])
+        #expect(parts.last?.submit == true)
+    }
 }
 
 /// The gate that stands between a guess and an action. Jev's
@@ -76,7 +103,9 @@ struct DecisionArbiterTests {
             layaTarget: "open_app", layaConfidence: 0.3, transcript: "open notes"
         )
         #expect(decision.target == "open_app")
-        #expect(decision.confidence == 0.9)
+        // "open notes" is an exact app alias, so the rule's graded certainty
+        // (0.95) outranks Laya's guess and is what the arbiter keeps.
+        #expect(decision.confidence == 0.95)
     }
 }
 

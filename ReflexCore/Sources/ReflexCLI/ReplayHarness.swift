@@ -88,6 +88,85 @@ enum ReplayHarness {
         }
     }
 
+    // MARK: - Oracle (plan step 1)
+
+    /// Ground-truth ASR test: feeds the *intended phrasing text* straight into
+    /// `resolveCompoundTranscript`, skipping audio and Whisper entirely. A
+    /// phrase that fails here is a router failure (missing rule, wrong payload,
+    /// arbitration); one that passes is an ASR failure no router can fix.
+    static func runOracle(phrasesPath: String, csvPath: String?) async throws {
+        let lines = try loadPhrases(phrasesPath)
+        guard !lines.isEmpty else {
+            throw CLIError(message: "no phrasings parsed from \(phrasesPath)")
+        }
+        let engine = try ReflexCLI.makeEngine()
+        print("oracle: \(lines.count) phrasings, no audio\n")
+
+        var rows: [Row] = []
+        for (index, line) in lines.enumerated() {
+            let text = line.text
+            let expected = expectations[line.commandID] ?? []
+            let rule = RuleRouter().classify(text)
+            let ruleSig = rule.map { signature(target: $0.target, transcript: text) } ?? "none"
+            let decisions = try? await engine.resolveCompoundTranscript(text)
+            let target = decisions?.first?.actionTarget.identifier
+            let hybridSig = target.map { signature(target: $0, transcript: text) } ?? "error"
+            let ok = matches(hybridSig, expected)
+            let ruleOk = matches(ruleSig, expected)
+            rows.append(Row(
+                file: "\(line.commandID)/\(line.phraseID)", split: line.split,
+                commandID: line.commandID, phraseID: line.phraseID, transcript: text,
+                segments: 1, expected: expected.first ?? "—", ruleSig: ruleSig,
+                layaSig: "—", hybridSig: hybridSig,
+                ruleConfidence: rule?.confidence ?? 0, layaConfidence: 0,
+                hybridConfidence: 0, correctRules: ruleOk, correctLaya: false,
+                correctHybrid: ok, hearingMs: 0, partial1Ms: -1, decodeMs: 0,
+                emitToRouteMs: 0, routeMs: 0
+            ))
+            let mark = ok ? "ok  " : (ruleOk ? "MISS" : "MISS")
+            print("\(mark) \(index + 1)/\(lines.count) \(line.commandID)/\(line.phraseID) rule=\(ruleSig) got=\(hybridSig) want \(expected.first ?? "—")")
+        }
+
+        let correct = rows.filter(\.correctHybrid).count
+        let ruleCorrect = rows.filter(\.correctRules).count
+        print("\noracle accuracy: \(correct)/\(rows.count) (\(String(format: "%.1f", 100 * Double(correct) / Double(rows.count)))%)")
+        print("oracle rule-only:  \(ruleCorrect)/\(rows.count)")
+        if let csvPath {
+            writeCSV(rows, to: csvPath)
+            print("\nwrote \(csvPath)")
+        }
+    }
+
+    struct PhraseLine {
+        let split: String
+        let commandID: String
+        let phraseID: String
+        let text: String
+    }
+
+    /// Parses the reading copy of the corpus (`corpus/PHRASES.md`):
+    /// `- [ ] "volume up" — volume_up__1`, split by the Part 1 / Part 2 headers.
+    static func loadPhrases(_ path: String) throws -> [PhraseLine] {
+        let body = try String(contentsOfFile: path, encoding: .utf8)
+        var split = "train"
+        var out: [PhraseLine] = []
+        let regex = try NSRegularExpression(pattern: #"^- \[[ x]\] "(.*)" — ([a-z_]+)__(\d+)$"#)
+        for raw in body.split(separator: "\n") {
+            let line = raw.trimmingCharacters(in: .whitespaces)
+            if line.hasPrefix("## Part 2") { split = "heldout"; continue }
+            if line.hasPrefix("## Part 1") { split = "train"; continue }
+            let range = NSRange(line.startIndex..., in: line)
+            guard let match = regex.firstMatch(in: line, range: range) else { continue }
+            func group(_ i: Int) -> String? {
+                guard let r = Range(match.range(at: i), in: line) else { return nil }
+                return String(line[r])
+            }
+            guard let text = group(1), let command = group(2), let phrase = group(3) else { continue }
+            out.append(PhraseLine(split: split, commandID: command, phraseID: phrase, text: text))
+        }
+        return out
+    }
+
     // MARK: - One clip
 
     private final class SegmentState: @unchecked Sendable {
@@ -132,20 +211,25 @@ enum ReplayHarness {
         let state = SegmentState()
         let segmenter = StreamSegmenter()
         segmenter.onPartial = { queue.push($0) }
-        segmenter.onSegment = { segment in
+        segmenter.onSegment = { segment, reason, audioDuration in
             state.segments.append(segment)
             state.emitTimes.append(Date())
-        }
-        segmenter.onLevel = { _, speaking in
-            if speaking { state.lastVoiced = Date() }
         }
 
         let start = Date()
         var firstVoiced: Date?
         var offset = 0
         while offset < samples.count {
-            segmenter.feed(Array(samples[offset..<min(offset + 1600, samples.count)]))
+            let window = Array(samples[offset..<min(offset + 1600, samples.count)])
+            segmenter.feed(window)
             offset += 1600
+            // The last window whose audio actually crossed the speech floor.
+            // `speaking` stays true all through the trailing silence the gate
+            // waits out, so it marks the end of the gate, not the last spoken
+            // frame — which is the term the 500/700 ms target is stated in.
+            if Float(AudioPreflight.rms(window)) >= StreamSegmenter.speechFloor {
+                state.lastVoiced = Date()
+            }
             if firstVoiced == nil, let voiced = state.lastVoiced { firstVoiced = voiced }
             // Real-time pace: one 100 ms window per 100 ms.
             try? await Task.sleep(nanoseconds: 100_000_000)
@@ -298,10 +382,20 @@ enum ReplayHarness {
     /// would actually open (AppResolver / normalizeSpokenDomain).
     static func canonicalEntity(_ name: String) -> String {
         let lowered = name.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        // The dispatcher's openApp checks looksLikeURL *before* AppResolver, so
+        // "go to google" opens google.com, not Chrome. Score that.
+        let domain = PayloadExtractor.normalizeSpokenDomain(lowered)
+        if domain.contains("."), PayloadExtractor.isSiteToken(domain) {
+            return stripTLD(domain)
+        }
         if let url = AppResolver.url(for: lowered) {
             return url.deletingPathExtension().lastPathComponent.lowercased()
         }
-        var e = lowered.replacingOccurrences(of: "www.", with: "")
+        return stripTLD(lowered)
+    }
+
+    static func stripTLD(_ raw: String) -> String {
+        var e = raw.replacingOccurrences(of: "www.", with: "")
         for tld in [".com", ".org", ".net", ".io", ".co"] where e.hasSuffix(tld) {
             e = String(e.dropLast(tld.count))
             break

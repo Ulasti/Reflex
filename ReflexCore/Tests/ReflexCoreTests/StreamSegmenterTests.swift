@@ -21,7 +21,7 @@ struct StreamSegmenterTests {
     private static func recorder() -> (StreamSegmenter, LockedBox<[[Float]]>) {
         let segmenter = StreamSegmenter()
         let collected = LockedBox<[[Float]]>([])
-        segmenter.onSegment = { segment in collected.withLock { $0.append(segment) } }
+        segmenter.onSegment = { segment, reason, audioDuration in collected.withLock { $0.append(segment) } }
         return (segmenter, collected)
     }
 
@@ -64,12 +64,54 @@ struct StreamSegmenterTests {
     func segmentIsCapped() {
         let segmenter = StreamSegmenter(maxSegmentSamples: 6 * StreamSegmenter().window)
         let collected = LockedBox<[[Float]]>([])
-        segmenter.onSegment = { segment in collected.withLock { $0.append(segment) } }
+        segmenter.onSegment = { segment, reason, audioDuration in collected.withLock { $0.append(segment) } }
 
         for _ in 0..<10 { segmenter.feed(Self.tone(windows: 1)) }
 
         let segments = collected.withLock { $0 }
         #expect(segments.count == 1)
         #expect(segments.first?.count == 6 * segmenter.window)
+    }
+
+    /// Two commands spoken back to back are two segments only if the pause
+    /// between them reaches the silence gate. This is the boundary the Phase 2
+    /// sweep moves.
+    @Test("two commands separated by a pause at the gate emit two segments")
+    func twoCommandsEmitTwoSegments() {
+        let gate = StreamSegmenter().maxSilenceWindows
+        let (segmenter, collected) = Self.recorder()
+        segmenter.feed(Self.tone(windows: 8))
+        segmenter.feed(Self.silence(windows: gate))
+        #expect(collected.withLock { $0 }.count == 1)
+        segmenter.feed(Self.tone(windows: 8))
+        segmenter.feed(Self.silence(windows: gate))
+        #expect(collected.withLock { $0 }.count == 2)
+    }
+
+    @Test("a pause one window short of the gate merges into one segment")
+    func pauseShortOfGateMerges() {
+        let gate = StreamSegmenter().maxSilenceWindows
+        let (segmenter, collected) = Self.recorder()
+        segmenter.feed(Self.tone(windows: 8))
+        segmenter.feed(Self.silence(windows: gate - 1))
+        segmenter.feed(Self.tone(windows: 8))
+        #expect(collected.withLock { $0 }.isEmpty)
+        segmenter.feed(Self.silence(windows: gate))
+        let segments = collected.withLock { $0 }
+        #expect(segments.count == 1)
+        // The merged segment holds both speech runs around the short pause.
+        #expect(segments.first!.count > 8 * segmenter.window)
+    }
+
+    @Test("the gate boundary holds at every swept length", arguments: [3, 4, 5, 7])
+    func gateBoundaryIsExact(gate: Int) {
+        let segmenter = StreamSegmenter(maxSilenceWindows: gate)
+        let collected = LockedBox<[[Float]]>([])
+        segmenter.onSegment = { segment, reason, audioDuration in collected.withLock { $0.append(segment) } }
+        segmenter.feed(Self.tone(windows: 8))
+        segmenter.feed(Self.silence(windows: gate - 1))
+        #expect(collected.withLock { $0 }.isEmpty)
+        segmenter.feed(Self.silence(windows: 1))
+        #expect(collected.withLock { $0 }.count == 1)
     }
 }
