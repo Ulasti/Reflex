@@ -28,12 +28,12 @@ change it here too (this file is the reading copy).
 while building rules, prompts, or aliases — the Laya lane is judged on them.
 
 Recording tool: `swift corpus/record.swift` — it walks this file top to bottom,
-prints the next line, beeps, records take1 then take2, and saves under the stems
-below with no renaming. First run asks for Microphone permission.
+prints the next line, and records take1 then take2 under the stems below with no
+renaming. First run asks for Microphone permission.
 
+- Per take: press Enter to start, speak the phrase once, press Enter to stop.
+  A beep marks each boundary and the saved length is printed after every take.
 - `swift corpus/record.swift --list` — print the queue and counts, record nothing.
-- `--seconds 6` — longer take window (default 5 s; a take is a fixed window, so
-  say the phrase once and stop).
 - Resume any time: lines whose two takes exist are skipped. To redo a clip,
   delete its file and rerun.
 

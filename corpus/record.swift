@@ -3,7 +3,6 @@
 // per line, saving corpus/<folder>/<stem>__take<N>.wav.
 // Usage: swift corpus/record.swift [--list] [--seconds N]
 
-import AppKit
 import AVFoundation
 import Darwin
 import Foundation
@@ -38,14 +37,15 @@ func fileURL(_ item: Item, take: Int) -> URL {
 }
 
 func beep(_ name: String) {
-    NSSound(named: NSSound.Name(name))?.play()
-    usleep(400_000)
+    let p = Process()
+    p.executableURL = URL(fileURLWithPath: "/usr/bin/afplay")
+    p.arguments = ["/System/Library/Sounds/\(name).aiff"]
+    try? p.run()
+    p.waitUntilExit()
 }
 
 let args = Array(CommandLine.arguments.dropFirst())
 let listOnly = args.contains("--list")
-var seconds = 5.0
-if let i = args.firstIndex(of: "--seconds"), i + 1 < args.count, let s = Double(args[i + 1]) { seconds = s }
 
 guard let text = try? String(contentsOf: here.appendingPathComponent("PHRASES.md"), encoding: .utf8) else {
     FileHandle.standardError.write(Data("cannot read PHRASES.md next to the script\n".utf8))
@@ -84,7 +84,7 @@ default:
     exit(3)
 }
 
-func record(_ url: URL) {
+func recordTake(_ url: URL) -> Double {
     let settings: [String: Any] = [
         AVFormatIDKey: kAudioFormatLinearPCM,
         AVSampleRateKey: 16_000,
@@ -95,31 +95,36 @@ func record(_ url: URL) {
     ]
     do {
         let rec = try AVAudioRecorder(url: url, settings: settings)
-        guard rec.prepareToRecord(), rec.record(forDuration: seconds) else {
-            print("  ! recorder did not start for \(url.lastPathComponent)")
-            return
+        guard rec.prepareToRecord() else {
+            print("  ! recorder did not prepare for \(url.lastPathComponent)")
+            return 0
         }
-        while rec.isRecording { usleep(50_000) }
+        beep("Tink")
+        print("  ● recording — press Enter to stop")
+        fflush(stdout)
+        guard rec.record() else {
+            print("  ! recorder did not start for \(url.lastPathComponent)")
+            return 0
+        }
+        _ = readLine()
         rec.stop()
+        beep("Pop")
+        return rec.currentTime
     } catch {
         print("  ! \(error.localizedDescription)")
+        return 0
     }
 }
 
 print("Corpus recorder — \(items.count) lines (\(trainCount) train, \(heldoutCount) heldout)")
-print("Each line: take1 then take2, \(Int(seconds)) s each, beeps mark start/end.")
+print("Each take: Enter starts the recording, Enter again stops it, beeps mark both.")
 print("Enter = record, s = skip line, q = quit. Rerun any time to resume.")
 var saved = 0
-for (n, item) in items.enumerated() {
+outer: for (n, item) in items.enumerated() {
     let have1 = FileManager.default.fileExists(atPath: fileURL(item, take: 1).path)
     let have2 = FileManager.default.fileExists(atPath: fileURL(item, take: 2).path)
     if have1 && have2 { continue }
     print("\n[\(n + 1)/\(items.count)] \(item.folder)/\(item.stem)  \"\(item.phrase)\"")
-    print("  Enter = record, s = skip, q = quit: ", terminator: "")
-    fflush(stdout)
-    guard let answer = readLine() else { print(""); break }
-    if answer.lowercased() == "q" { break }
-    if answer.lowercased() == "s" { continue }
     try? FileManager.default.createDirectory(
         at: here.appendingPathComponent(item.folder), withIntermediateDirectories: true)
     for take in 1...2 {
@@ -128,11 +133,22 @@ for (n, item) in items.enumerated() {
             print("  take\(take) already recorded, skipped")
             continue
         }
-        print("  take\(take) — speak after the beep")
-        beep("Tink")
-        record(url)
-        beep("Pop")
-        saved += 1
+        print("  take\(take): Enter = record, s = skip line, q = quit: ", terminator: "")
+        fflush(stdout)
+        guard let answer = readLine() else { break outer }
+        switch answer.lowercased() {
+        case "q": break outer
+        case "s": print("  line skipped"); continue outer
+        default: break
+        }
+        let duration = recordTake(url)
+        if duration < 0.5 {
+            try? FileManager.default.removeItem(at: url)
+            print("  too short (\(String(format: "%.2f", duration)) s) — discarded, redo this take")
+        } else {
+            saved += 1
+            print("  ✓ \(item.stem)__take\(take) (\(String(format: "%.1f", duration)) s)")
+        }
     }
 }
 print("\n\(saved) new takes saved. Rerun to resume.")

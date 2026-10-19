@@ -54,3 +54,13 @@ this session — docs/branch only.
   corpus/<folder>/<stem>__take<N>.wav (16 kHz mono PCM), resumable, skip/quit.
   `--list` self-check passes: 132 = 91 train + 41 heldout. Not yet exercised
   against a live mic (mic TCC untested from the agent shell; user runs it).
+- recorder v2 (same day, after first user run): fixed 5 s window replaced with
+  press-Enter-to-start / press-Enter-to-stop takes (user asked how to end a
+  recording; the window was invisible without audio feedback); beeps moved from
+  NSSound (silent in a CLI process — needs an app run loop) to afplay of
+  /System/Library/Sounds/{Tink,Pop}.aiff (verified present + afplay exit 0);
+  the start beep fires just before capture starts so clips carry speech only.
+  takes under 0.5 s are discarded with a message; saved duration printed per
+  take. --seconds flag removed.
+  First user run left one 0.0 s file (corpus/train/volume_up__1__take1.wav):
+  to be deleted by the user before recording for real.
