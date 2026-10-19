@@ -14,7 +14,10 @@ struct ReflexApp: App {
             MenuBarView()
                 .environmentObject(appModel)
         } label: {
-            Image(systemName: "capsule.fill")
+            // The icon is the status display itself (color + motion), so it
+            // needs the model, not just the static glyph.
+            MenuBarIconView()
+                .environmentObject(appModel)
         }
         .menuBarExtraStyle(.menu)
 

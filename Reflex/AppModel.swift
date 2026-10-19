@@ -61,6 +61,13 @@ final class AppModel: ObservableObject {
     @Published var showNotchPill: Bool {
         didSet { UserDefaults.standard.set(showNotchPill, forKey: Self.notchPillKey) }
     }
+    /// True once the mic permission has actually been refused. Holds until a
+    /// later request succeeds; drives the red error light on its own, since
+    /// "you must fix this" is not a model-load problem.
+    @Published private(set) var micDenied = false
+    /// When the last successful action fired, nil when no flash is in flight.
+    /// Drives the green flash window on the menu bar light.
+    @Published private(set) var actionFlashStart: Date?
     /// Completed sessions, newest first (persisted on disk).
     @Published var sessions: [SessionLog] = []
     /// The most recently completed session (what "copy last session" copies).
@@ -76,6 +83,8 @@ final class AppModel: ObservableObject {
     private var micMonitor: MicMonitor?
     private var liveTranscriber: LiveTranscriber?
     private var liveUpdatesTask: Task<Void, Never>?
+    /// Cleared by the green flash 300 ms after the last action (see flashExecuted).
+    private var flashTask: Task<Void, Never>?
     private var processing = false
     private var currentSession: SessionLog?
     private var lastActionTime: Date?
@@ -106,6 +115,37 @@ final class AppModel: ObservableObject {
             failure: failure,
             ready: loadState.isReady
         )
+    }
+
+    /// The menu bar icon's light. Derived from published state only, so every
+    /// model-load, mic and dispatch change re-renders the icon on its own.
+    var menuBarLight: SignalLight {
+        let failure: String?
+        if case .failed(let reason) = loadState {
+            failure = reason
+        } else {
+            failure = micDenied ? "Microphone access denied" : nil
+        }
+        return SignalLight.resolve(
+            failure: failure,
+            loading: loadState.isLoading,
+            flashActive: actionFlashStart != nil,
+            listening: isListening,
+            hearing: isSpeaking
+        )
+    }
+
+    /// Green "it acted" flash on the menu bar light. Re-triggering restarts the
+    /// window, so a queue draining three commands stays green until 300 ms
+    /// after the last one rather than flickering into one blur.
+    private func flashExecuted() {
+        actionFlashStart = Date()
+        flashTask?.cancel()
+        flashTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            self?.actionFlashStart = nil
+        }
     }
 
     init() {
@@ -231,6 +271,7 @@ final class AppModel: ObservableObject {
         guard !isListening else { return }
         Task {
             let granted = await requestMicrophoneAccess()
+            micDenied = !granted
             guard granted else {
                 modelStatus = "Microphone access denied"
                 return
@@ -430,6 +471,7 @@ final class AppModel: ObservableObject {
         if let result {
             lastResult = result
             modelStatus = result.summary
+            flashExecuted()
             if shouldPlayFeedbackSounds, result.summary != "Stopped listening" {
                 lastActionTime = Date()
                 playFeedback(named: "Glass")
