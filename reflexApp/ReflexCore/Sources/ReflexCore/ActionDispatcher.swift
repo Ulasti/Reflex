@@ -376,6 +376,9 @@ public struct ActionDispatcher: Sendable {
         // In-page link click — "open the first result/link" (ordinal in the plan).
         if let index = plan.candidates.linkIndex {
             let label = try BrowserController.clickLink(at: index)
+            if label.isEmpty {
+                return .browserActed(action: "No-op")
+            }
             return .browserActed(action: "Opened \(label)")
         }
 

@@ -66,7 +66,7 @@ fi
 # 4. ReflexCore unit tests. A suite no gate runs is not evidence, so the summary
 #    line is required and any failure symbol fails the run.
 echo "==> [4/5] swift test ReflexCore"
-swift test --package-path ReflexCore > "$LOG_DIR/tests.log" 2>&1 \
+swift test --package-path reflexApp/ReflexCore > "$LOG_DIR/tests.log" 2>&1 \
   || fail "tests (see $LOG_DIR/tests.log)"
 grep -q "Test run with" "$LOG_DIR/tests.log" || fail "swift test wrote no summary line"
 if grep -qE "✘|error:" "$LOG_DIR/tests.log"; then
@@ -75,11 +75,11 @@ fi
 
 # 5. SPM package + CLI, then verify every CoreML bundle actually compiles.
 echo "==> [5/5] swift build ReflexCore + reflex-cli --verify"
-swift build --package-path ReflexCore -c release > "$LOG_DIR/build-cli.log" 2>&1 \
+swift build --package-path reflexApp/ReflexCore -c release > "$LOG_DIR/build-cli.log" 2>&1 \
   || fail "SPM build (see $LOG_DIR/build-cli.log)"
 grep -q "Build complete!" "$LOG_DIR/build-cli.log" || fail "SPM build did not report success"
 
-CLI="ReflexCore/.build/out/Products/Release/reflex-cli"
+CLI="reflexApp/ReflexCore/.build/out/Products/Release/reflex-cli"
 [[ -x "$CLI" ]] || fail "reflex-cli release binary not found at $CLI"
 
 # --verify exits non-zero when models are missing or nothing was found.

@@ -41,6 +41,8 @@ final class AppModel: ObservableObject {
     #if os(macOS)
     @Published var micDevices: [MicDevice] = []
     @Published var selectedMicID: String?
+    private var dictationArmed = false
+    private var dictationArmedTimer: Timer?
     #endif
 
     /// Verbose mode: log every decision + action of a session as it happens.
@@ -386,6 +388,8 @@ final class AppModel: ObservableObject {
         let lastVoiced: Date?
         let segAt: Date
         let decodeMs: Double
+        let emitReason: String
+        let audioDuration: Double
     }
 
     /// A finalized speech segment arrived. Live mode captures the transcript
@@ -414,7 +418,9 @@ final class AppModel: ObservableObject {
                     speechStart: speechStart,
                     lastVoiced: lastVoiced,
                     segAt: segAt,
-                    decodeMs: Date().timeIntervalSince(decodeStart) * 1000
+                    decodeMs: Date().timeIntervalSince(decodeStart) * 1000,
+                    emitReason: reason,
+                    audioDuration: audioDuration
                 )
                 guard !text.isEmpty else {
                     modelStatus = "No speech detected"
@@ -570,6 +576,30 @@ final class AppModel: ObservableObject {
 
         guard verboseLogging, var session = currentSession else { return }
         let outcomeText = result?.summary ?? "Execute failed: \(failure ?? "unknown error")"
+        // Check for bare "type" to arm dictation.
+        if decision.transcript.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == "type" {
+            dictationArmed = true
+        }
+        let dictationDecision: ReflexDecision
+        if dictationArmed {
+            // The user has armed dictation with a bare "type".
+            // Treat the transcript as the payload to be typed.
+            dictationArmed = false
+            dictationArmedTimer?.invalidate()
+            dictationArmedTimer = nil
+            dictationDecision = ReflexDecision(
+                actionTarget: ReflexChoice("dictation"),
+                urgencyScore: ReflexScore(0),
+                confidence: ReflexNoul(lowerBound: 1.0, upperBound: 1.0),
+                transcript: decision.transcript,
+                trace: nil,
+                confidenceValue: 1.0,
+                addressed: 1.0,
+                layaConfidence: 0.0
+            )
+        } else {
+            dictationDecision = decision
+        }
         session.entries.append(SessionLog.Entry(
             id: UUID(),
             time: Date(),
@@ -588,7 +618,9 @@ final class AppModel: ObservableObject {
             decodeMs: timing?.decodeMs,
             routeMs: routeMs,
             dispatchMs: dispatchMs,
-            voiceToDispatchMs: timing?.lastVoiced.map { Date().timeIntervalSince($0) * 1000 }
+            voiceToDispatchMs: timing?.lastVoiced.map { Date().timeIntervalSince($0) * 1000 },
+            emitReason: timing?.emitReason,
+            audioDuration: timing?.audioDuration
         ))
         currentSession = session
         #else

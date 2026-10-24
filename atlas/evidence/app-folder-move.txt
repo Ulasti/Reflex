@@ -1,0 +1,13 @@
+2026-10-24 — Reflex directory restructure
+- Change: moved app sources out of repo root into a dedicated app folder:
+  `Reflex/` -> `reflexApp/Reflex/`, `ReflexCore/` -> `reflexApp/ReflexCore/`
+  (git mv), mirroring the Silver layout where app code lives in `<project>/<App>/`
+  and Atlas-owned files only in `<project>/atlas/`.
+- Project.yml updated first (source paths, package path, entitlements,
+  test target), then `xcodegen generate` re-ran.
+- MCP BuildProject after regeneration: BUILD SUCCEEDED (0 errors).
+- Toolchain references updated: tools/project_env.py (RESOURCES_DIR),
+  tools/export_tokenizer.py (RESOURCES), tools/.router-patch.py, tools/convert.py,
+  atlas/files/build-and-verify.sh (swift test/build package-path, reflex-cli path).
+- DoD: macOS/iOS build green after restructure - PASS (via BuildProject, post-move).
+- DoD: All tests pass / CLI --verify - UNVERIFIED here (not re-run in this session).
