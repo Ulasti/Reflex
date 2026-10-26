@@ -74,6 +74,7 @@ extension SessionLog {
         return formatter
     }
     
+    #if os(macOS)
     private static let gitCommit: String = {
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
@@ -89,6 +90,9 @@ extension SessionLog {
         }
         return "unknown"
     }()
+#else
+    private static let gitCommit: String = "unknown"
+#endif
     
     private static let buildDate: String = {
         let executablePath = Bundle.main.executablePath ?? ""

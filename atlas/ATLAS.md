@@ -165,8 +165,8 @@ xcodebuild -project Reflex.xcodeproj -scheme Reflex-iOS -configuration Debug \
   build CODE_SIGNING_ALLOWED=NO
 
 swift build --package-path ReflexCore -c release
-./reflexApp/ReflexCore/.build/out/Products/Release/reflex-cli --help
-./reflexApp/ReflexCore/.build/out/Products/Release/reflex-cli --verify   # exits 1 if models are missing
+./ReflexCore/.build/out/Products/Release/reflex-cli --help
+./ReflexCore/.build/out/Products/Release/reflex-cli --verify   # exits 1 if models are missing
 
 # Model conversion (see Models/MANIFEST.md for the full matrix)
 cd tools && python3.10 -m venv .venv && .venv/bin/pip install -r requirements.txt
@@ -191,7 +191,7 @@ The loop for a change to Reflex.
 
 1. Read `ATLAS.md`. Confirm the branch is `atlas/<feature>`, created from `dev`.
 2. `atlas/files/build-and-verify.sh` if you touched `atlas/project.yml`,
-   `reflexApp/Reflex/`, or `reflexApp/ReflexCore/` — the `.xcodeproj` is
+   `Reflex/`, or `ReflexCore/` — the `.xcodeproj` is
    generated from the spec, so never hand-edit it.
 3. That script builds both app targets, the CLI and the test suite.
 4. It runs `ReflexCore/.build/out/Products/Release/reflex-cli --verify`.
