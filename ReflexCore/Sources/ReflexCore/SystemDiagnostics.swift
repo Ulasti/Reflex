@@ -212,4 +212,3 @@ public static func run(
     }
 }
 #endif
-        return names[bundleID] ?? bundleID

@@ -7,19 +7,8 @@ import Foundation
 public struct CommandPlan: Sendable, Equatable {
     /// Which action kind should run ("open_app", "web_search", "shortcut", ...).
     public let action: String
-    /// Whole-plan confidence: the minimum over the judgements/extractions the
-    /// plan relied on. Below `DecisionArbiter.minConfidence` the dispatcher
-    /// no-ops instead of guessing.
-    public let confidence: Double
     /// Trailing "and press enter / hit submit" → press return after typing.
     public let submit: Bool
-    /// The payload should land in a specific named app ("type hello in notes").
-    public let inApp: Bool
-    /// This plan is one segment of a compound utterance (executed in order).
-    public let compound: Bool
-    /// Continuous confidence in [0,1] that the user was actually addressing
-    /// Reflex (results of the "addressed" gate in always-on/vocal mode).
-    public let addressed: Double
     /// Typed action arguments (site, folder, direction, amount, percent, ...).
     public let args: [String: String]
     /// The verbatim payload candidates cut out of the transcript.
@@ -29,23 +18,15 @@ public struct CommandPlan: Sendable, Equatable {
 
     public init(
         action: String,
-        confidence: Double,
         candidates: Candidates,
         transcript: String,
         submit: Bool = false,
-        inApp: Bool = false,
-        compound: Bool = false,
-        addressed: Double = 1.0,
         args: [String: String] = [:]
     ) {
         self.action = action
-        self.confidence = confidence
         self.candidates = candidates
         self.transcript = transcript
         self.submit = submit
-        self.inApp = inApp
-        self.compound = compound
-        self.addressed = addressed
         self.args = args
     }
 
@@ -54,18 +35,14 @@ public struct CommandPlan: Sendable, Equatable {
     /// whether it acts at all.
     public static func make(
         target: String,
-        confidence: Double,
         transcript: String
     ) -> CommandPlan {
         let candidates = PayloadExtractor.extract(from: transcript, target: target)
         return CommandPlan(
             action: target,
-            confidence: confidence,
             candidates: candidates,
             transcript: transcript,
             submit: candidates.submit,
-            inApp: candidates.inApp != nil,
-            addressed: confidence,
             args: Self.planArgs(for: target, candidates: candidates)
         )
     }

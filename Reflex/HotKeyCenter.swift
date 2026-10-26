@@ -38,7 +38,7 @@ enum HotKeyCenter {
             }
 
             var hotKeyRef: EventHotKeyRef?
-            var hotKeyID = EventHotKeyID(signature: signature, id: id)
+            let hotKeyID = EventHotKeyID(signature: signature, id: id)
             let status = RegisterEventHotKey(
                 keyCode,
                 modifiers,

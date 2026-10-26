@@ -32,6 +32,8 @@ public enum BrowserController {
         "com.brave.Browser",
         "com.operasoftware.Opera",
     ]
+    /// For v1 mode, disable open Nth website.
+    public static let isV1Mode = true
 
     /// The browser to drive: the frontmost qualifying browser if one is
     /// running, otherwise the OS default browser (from LaunchServices). This
@@ -90,8 +92,8 @@ public enum BrowserController {
                 activate
                 if (count of windows) is 0 then make new window
                 \(strategy == "new tab"
-                    ? "make new tab with properties {URL:\"\(escape(target))\"} in front window"
-                    : "set URL of current tab of front window to \"\(escape(target))\"")
+                    ? "make new tab with properties {URL:\"\(target.appleScriptEscaped)\"} in front window"
+                    : "set URL of current tab of front window to \"\(target.appleScriptEscaped)\"")
             end tell
             """
         } else {
@@ -100,8 +102,8 @@ public enum BrowserController {
                 activate
                 if (count of windows) is 0 then make new window
                 \(strategy == "new tab"
-                    ? "make new tab with properties {URL:\"\(escape(target))\"} in front window"
-                    : "set URL of active tab of front window to \"\(escape(target))\"")
+                    ? "make new tab with properties {URL:\"\(target.appleScriptEscaped)\"} in front window"
+                    : "set URL of active tab of front window to \"\(target.appleScriptEscaped)\"")
             end tell
             """
         }
@@ -132,14 +134,14 @@ public enum BrowserController {
             tell application id "\(bundleID)"
                 activate
                 if (count of windows) is 0 then make new window
-                return (do JavaScript "\(escape(code))" in current tab of front window)
+                return (do JavaScript "\(code.appleScriptEscaped)" in current tab of front window)
             end tell
             """
             : """
             tell application id "\(bundleID)"
                 activate
                 if (count of windows) is 0 then make new window
-                return (execute active tab of front window javascript "\(escape(code))")
+                return (execute active tab of front window javascript "\(code.appleScriptEscaped)")
             end tell
             """
         let out = try runOSA(script)
@@ -156,34 +158,37 @@ public enum BrowserController {
     /// label+href, or throws with a reason when nothing clickable exists.
     @discardableResult
     public static func clickLink(at index: Int, in browser: String? = nil) throws -> String {
+    if BrowserController.isV1Mode {
+        return ""
+    }
         let js = """
         (function() {
-            // Selector for interactive elements
-            var selector = 'a[href], button, input:not([type=hidden]), textarea, select, summary, ' +
-                           '[role=button], [role=link], [role=tab], [role=menuitem], [role=option], ' +
-                           '[role=checkbox], [role=radio], [role=switch], [role=searchbox], ' +
-                           '[role=combobox], [role=textbox], [contenteditable=true], [onclick]';
-            var elements = document.querySelectorAll(selector);
-            var out = [];
-            var nextId = 1;
-            for (var i = 0; i < elements.length && out.length < 400; i++) {
-                var el = elements[i];
-                var rect = el.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) continue;
-                if (!el.offsetParent) continue;
-                var label = (el.textContent || '').replace(/\\\\s+/g, ' ').trim();
-                if (!label) continue;
-                var href = el.getAttribute('href') || '';
-                if (href === '#' || href.indexOf('#') === 0 || href.indexOf('javascript:') === 0) continue;
-                var id = el.getAttribute('data-reflex-id');
-                if (!id) {
-                    id = 'r' + String(nextId++);
-                    el.setAttribute('data-reflex-id', id);
+            function chrome(a) {
+                var n = a;
+                while (n && n !== document.body) {
+                    var tag = (n.tagName || '').toLowerCase();
+                    if (tag === 'header' || tag === 'nav' || tag === 'footer' ||
+                        tag === 'button' || tag === 'menu') return true;
+                    n = n.parentElement;
                 }
-                var role = el.getAttribute('role') || '';
-                if (!role) {
-                    var tag = el.tagName.toLowerCase();
-                    var type = (el.getAttribute('type') || '').toLowerCase();
+                return false;
+            }
+            // Skip links inside Google's AI response / "knowledge panel" sections
+            function inAIResponse(a) {
+                var n = a;
+                while (n && n !== document.body) {
+                    var className = (n.className || '').toString();
+                    var id = (n.id || '').toString();
+                    // Common AI response container classes/ids
+                    if (className.includes('kno-rdesc') ||      // knowledge panel description
+                        className.includes('g-blk') ||         // knowledge block
+                        className.includes('V3FYCf') ||        // AI overview
+                        className.includes('ULSxyf') ||        // AI response
+                        className.includes('yDYNvb') ||        // AI answer
+                        className.includes('e24Kjd') ||        // AI snippet
+                        className.includes('bkWMgd') ||        // AI box
+                        id.includes('kno-') ||                 // knowledge panel
+                        className.includes('mnr-c') ||         // "People also ask" / AI
                         className.includes('Wt5Tfe') ||        // AI featured snippet
                         className.includes('Gx5Zad')) {        // AI overview wrapper
                         return true;
@@ -526,12 +531,6 @@ public enum BrowserController {
         }
     }
 
-    private static func escape(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: "\\", with: "\\\\")
-            .replacingOccurrences(of: "\"", with: "\\\"")
-    }
-
     private static func keystroke(key: String, modifiers: String, bundleID: String) throws {
         let script = """
         tell application id "\(bundleID)"
@@ -542,92 +541,6 @@ public enum BrowserController {
         end tell
         """
         _ = try runOSA(script)
-    }
-
-    /// Waits for the current page to finish loading (`document.readyState === 'complete'`).
-    /// Useful after `open(_:)` before running click/scroll JS.
-    /// Polls from the Swift side to avoid blocking the browser's JS thread.
-    /// - Parameters:
-    ///   - browser: optional bundle ID (uses preferred if nil)
-    ///   - timeout: maximum seconds to wait (default 3.0)
-    ///   - pollInterval: how often to poll (default 0.2 s)
-    /// - Returns: `true` if the page reached `complete`; `false` if timeout hit.
-    @discardableResult
-    public static func waitForLoad(in browser: String? = nil, timeout: TimeInterval = 3.0, pollInterval: TimeInterval = 0.2) -> Bool {
-        let bundleID = browser ?? preferredBundleID()
-        let start = Date()
-        while Date().timeIntervalSince(start) < timeout {
-            do {
-                let ready = try runJavaScript("document.readyState", in: bundleID)
-                if ready.trimmingCharacters(in: .whitespacesAndNewlines) == "complete" {
-                    return true
-                }
-            } catch {
-                // If JS execution fails (e.g., permissions), be permissive and assume loaded
-                return true
-            }
-            Thread.sleep(forTimeInterval: pollInterval)
-        }
-        return false
-    }
-
-    /// Waits for Google search result links to appear in the DOM.
-    /// Google often reports `readyState === 'complete'` before injecting results via JS.
-    /// This polls for ANY visible anchors (no AI filter here — clickLink does that).
-    /// - Parameters:
-    ///   - browser: optional bundle ID (uses preferred if nil)
-    ///   - timeout: maximum seconds to wait (default 8.0)
-    ///   - pollInterval: how often to poll (default 0.3 s)
-    /// - Returns: `true` if result links found; `false` if timeout hit.
-    @discardableResult
-    public static func waitForSearchResults(in browser: String? = nil, timeout: TimeInterval = 8.0, pollInterval: TimeInterval = 0.3) -> Bool {
-        let bundleID = browser ?? preferredBundleID()
-        let start = Date()
-        let js = """
-        (function() {
-            var links = document.querySelectorAll('a[href]');
-            var count = 0;
-            for (var i = 0; i < links.length; i++) {
-                var a = links[i];
-                var rect = a.getBoundingClientRect();
-                if (rect.width === 0 || rect.height === 0) continue;
-                var href = a.getAttribute('href') || '';
-                if (href === '#' || href.indexOf('#') === 0 || href.indexOf('javascript:') === 0) continue;
-                var label = (a.textContent || '').replace(/\\s+/g, ' ').trim();
-                if (!label) continue;
-                count++;
-            }
-            return count;
-        })()
-        """
-        while Date().timeIntervalSince(start) < timeout {
-            do {
-                let result = try runJavaScript(js, in: bundleID)
-                let count = Int(result.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
-                if count >= 1 { // even a single valid link means page loaded
-                    return true
-                }
-            } catch {
-                // If JS fails, fall back to readyState check
-                do {
-                    let ready = try runJavaScript("document.readyState", in: bundleID)
-                    if ready.trimmingCharacters(in: .whitespacesAndNewlines) == "complete" {
-                        Thread.sleep(forTimeInterval: 1.0)
-                        return true
-                    }
-                } catch {
-                    return true // permissive
-                }
-            }
-            Thread.sleep(forTimeInterval: pollInterval)
-        }
-        // Last resort: check if page has any content at all
-        do {
-            let bodyText = try runJavaScript("document.body.innerText.length", in: bundleID)
-            let len = Int(bodyText.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
-            if len > 500 { return true }
-        } catch {}
-        return false
     }
 }
 #endif

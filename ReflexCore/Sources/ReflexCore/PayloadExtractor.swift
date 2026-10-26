@@ -67,39 +67,49 @@ public enum AppResolver {
         "viber": "Viber",
     ]
 
-    /// Resolves a spoken app name to an installed bundle URL. Exact match
-    /// first, then a fuzzy prefix on any name ≥ 3 chars (keeps "calculator"
-    /// matching "Calculator.app" and not half the /Applications folder).
+    /// Where macOS keeps app bundles, most specific first.
+    private static let directories = [
+        "/System/Applications",
+        "/System/Applications/Utilities",
+        "/System/Library/CoreServices",
+        "/Applications",
+        "/Applications/Utilities",
+        NSHomeDirectory() + "/Applications",
+    ]
+
+    /// Installed app bundles by lowercased name, built once. `url(for:)` used to
+    /// rescan six directories twice per call, and `RuleRouter.classify` asks
+    /// about every token in a transcript (atlas/docs/audit-2026-10-14.md, N4).
+    private static let installedApps: [String: URL] = {
+        var index: [String: URL] = [:]
+        for directory in directories {
+            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
+            for entry in entries where entry.hasSuffix(".app") {
+                let base = (entry as NSString).deletingPathExtension.lowercased()
+                // First directory wins, so a system app shadows a duplicate.
+                if index[base] == nil {
+                    index[base] = URL(fileURLWithPath: directory).appendingPathComponent(entry)
+                }
+            }
+        }
+        return index
+    }()
+
+    /// Resolves a spoken app name to an installed bundle URL: the alias table,
+    /// then an exact name, then the spoken name as a whole word ("code" →
+    /// "Visual Studio Code"), then a prefix only when it is unambiguous. Names
+    /// are sorted, so the pick never depends on directory read order
+    /// (atlas/docs/audit-2026-10-14.md, N6).
     public static func url(for name: String) -> URL? {
         #if os(macOS)
-        let match = aliases[name.lowercased()] ?? name
-        let directories = [
-            "/System/Applications",
-            "/System/Applications/Utilities",
-            "/System/Library/CoreServices",
-            "/Applications",
-            "/Applications/Utilities",
-            NSHomeDirectory() + "/Applications",
-        ]
-        for directory in directories {
-            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
-            for entry in entries where entry.hasSuffix(".app") {
-                let base = (entry as NSString).deletingPathExtension
-                if base.caseInsensitiveCompare(match) == .orderedSame {
-                    return URL(fileURLWithPath: directory).appendingPathComponent(entry)
-                }
-            }
+        let match = (aliases[name.lowercased()] ?? name).lowercased()
+        if let exact = installedApps[match] { return exact }
+        let names = installedApps.keys.sorted()
+        if let word = names.first(where: { $0.split(separator: " ").contains(Substring(match)) }) {
+            return installedApps[word]
         }
-        for directory in directories {
-            guard let entries = try? FileManager.default.contentsOfDirectory(atPath: directory) else { continue }
-            for entry in entries where entry.hasSuffix(".app") {
-                let base = (entry as NSString).deletingPathExtension
-                if base.count >= 3, base.lowercased().hasPrefix(match.lowercased()) {
-                    return URL(fileURLWithPath: directory).appendingPathComponent(entry)
-                }
-            }
-        }
-        return nil
+        let prefixed = names.filter { $0.count >= 3 && $0.hasPrefix(match) }
+        return prefixed.count == 1 ? installedApps[prefixed[0]] : nil
         #else
         return nil
         #endif
@@ -107,6 +117,26 @@ public enum AppResolver {
 
     public static func isInstalled(_ name: String) -> Bool {
         url(for: name) != nil
+    }
+
+    /// How firmly a spoken name names an app, for confidence grading. 1.0 = an
+    /// alias or exact bundle name; 0.5 = the whole-word or unique-prefix guess
+    /// ("note" → Notes); 0 = it resolves to nothing. `url(for:)` deliberately
+    /// stays permissive for dispatch, but a *decisive* rule (one that skips
+    /// Laya) must know the difference: "go to the forward page" resolves to
+    /// nothing and used to be dispatched anyway, then failed as "Execute
+    /// failed".
+    public static func matchQuality(_ name: String) -> Double {
+        #if os(macOS)
+        let match = (aliases[name.lowercased()] ?? name).lowercased()
+        if installedApps[match] != nil { return 1.0 }
+        let names = installedApps.keys.sorted()
+        if names.contains(where: { $0.split(separator: " ").contains(Substring(match)) }) { return 0.5 }
+        let prefixed = names.filter { $0.count >= 3 && $0.hasPrefix(match) }
+        return prefixed.count == 1 ? 0.5 : 0
+        #else
+        return 0
+        #endif
     }
 }
 
@@ -123,18 +153,78 @@ public enum PayloadExtractor {
         "youtube", "google", "wikipedia", "github", "reddit", "maps", "amazon",
         "imdb", "netflix", "twitter", "x", "spotify", "instagram", "facebook",
         "linkedin", "news", "translate", "gmail", "drive", "docs", "calendar",
-        "chatgpt", "claude", "notion", "hacker news", "hackernews", "twitch",
+        "chatgpt", "claude", "notion", "hackernews", "twitch",
         "figma", "perplexity", "whatsapp", "pinterest", "tumblr",
     ]
 
     public static let webVerbs = ["search for", "search", "google for", "google", "look up", "look for", "find me", "find"]
-    public static let openVerbs = ["open up", "open", "launch", "start", "go to", "bring up", "pull up", "show me", "show", "run"]
+
+    /// Bare site names resolved to a real host. Without this "go to github"
+    /// opens https://github, which does not resolve (plan Phase 3.3).
+    public static let siteDomains: [String: String] = [
+        "github": "github.com", "google": "google.com",
+        "youtube": "youtube.com", "wikipedia": "wikipedia.org",
+    ]
+    public static let openVerbs = ["open up", "open", "launch", "start", "go to", "bring up", "pull up",
+                                   "show me", "show", "run", "visit"]
 
     /// One-pass extraction. `target` sharpens interpretation when several
     /// extractions could be the payload (type_text wants text, open_app the app).
+    /// Phase 3.1 intent normalization: strips spoken filler that carries no
+    /// command meaning (leading "hey/ok/okay/um/uh", a trailing "please")
+    /// before routing and extraction. Case stays as spoken; only the filler
+    /// goes, so the same text can still be typed verbatim.
+    /// Train-only mishearings. Each entry has to be a mistake that cannot
+    /// change meaning anywhere else, and it may only be justified by a *train*
+    /// clip — heldout phrasings judge the table, they never build it. Kept
+    /// deliberately tiny; the rejected candidates ("no" → mute, "who" → visit,
+    /// "that mode", "taste" → paste, single-clip guesses) are listed in
+    /// atlas/evidence/alias-table.md.
+    public static let mishearings: [String: String] = [
+        "skull": "scroll",
+        "pulse": "pause",
+        "under": "undo",
+        "lover": "louder",
+    ]
+
+    /// Rewrites known mishearings word by word. Dictation is exempt: those
+    /// words are the user's payload, not a command ("type this under the
+    /// heading" must stay as spoken).
+    private static func applyMishearings(_ text: String) -> String {
+        let lower = text.lowercased()
+        for dictation in ["type ", "write ", "dictate ", "note down "] where lower.hasPrefix(dictation) {
+            return text
+        }
+        var words = text.split(separator: " ", omittingEmptySubsequences: true).map(String.init)
+        var changed = false
+        for (index, word) in words.enumerated() {
+            if let fixed = mishearings[word.lowercased()] {
+                words[index] = fixed
+                changed = true
+            }
+        }
+        return changed ? words.joined(separator: " ") : text
+    }
+
+    public static func normalizeIntent(_ transcript: String) -> String {
+        var t = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: CharacterSet(charactersIn: " \t.,!?;"))
+        let lower = t.lowercased()
+        for filler in ["hey ", "okay ", "ok ", "um ", "uh "] where lower.hasPrefix(filler) {
+            t = String(t.dropFirst(filler.count)).trimmingCharacters(in: .whitespaces)
+            break
+        }
+        for suffix in [", please", " please"] where t.lowercased().hasSuffix(suffix) {
+            t = String(t.dropLast(suffix.count))
+                .trimmingCharacters(in: CharacterSet(charactersIn: " \t.,!?;"))
+            break
+        }
+        return applyMishearings(t)
+    }
+
     public static func extract(from transcript: String, target: String?) -> Candidates {
         var c = Candidates()
-        let t = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        let t = normalizeIntent(transcript)
         let cleaned = t
             .replacingOccurrences(of: ",", with: " ")
             .replacingOccurrences(of: ";", with: " ")
@@ -381,7 +471,7 @@ public enum PayloadExtractor {
             t = t.split(separator: " ").map { $0 == "dot" ? "." : String($0) }
                 .joined(separator: "")
         }
-        return t
+        return siteDomains[t] ?? t
     }
 
     // MARK: - App
@@ -435,7 +525,9 @@ public enum PayloadExtractor {
 
     private static func extractVolume(in lower: String) -> VolumeOp? {
         guard lower.contains("volume") || lower.contains("mute") || lower.contains("louder")
-            || lower.contains("quieter") || lower.contains("turn the volume")
+            || lower.contains("quieter") || lower.contains("turn up") || lower.contains("turn down")
+            || lower.contains("turn the volume") || lower.contains("turn it up") || lower.contains("turn it down")
+            || lower.contains("too loud") || lower.contains("silence") || lower.contains("crank it up")
         else { return nil }
         if lower.contains("max") || lower.contains("all the way up") || lower.contains("full volume") {
             return .max
@@ -446,17 +538,22 @@ public enum PayloadExtractor {
         if lower.contains("unmute") || lower.contains("sound back on") {
             return .unmute
         }
-        if lower.contains("mute") { return .mute }
+        if lower.contains("mute") || lower.contains("silence") || lower.contains("volume off")
+            || lower.contains("sound off") { return .mute }
         if let percent = Self.extractPercent(in: lower) {
             if percent == 0 { return .mute }
             return .percent(percent)
         }
-        if lower.contains("louder") || lower.contains("turn it up") || lower.contains(" turn up")
-            || lower.contains("increase") || lower.contains("raise") {
+        // "turn up" has to match at the start of a transcript too, not only with
+        // a leading space ("turn up the volume" is the common phrasing).
+        if lower.contains("louder") || lower.contains("turn up") || lower.contains("turn it up")
+            || lower.contains("volume up") || lower.contains("increase") || lower.contains("raise")
+            || lower.contains("higher") || lower.contains("crank it up") {
             return .up(delta: 15)
         }
-        if lower.contains("quieter") || lower.contains("turn it down") || lower.contains(" turn down")
-            || lower.contains("decrease") || lower.contains("lower") {
+        if lower.contains("quieter") || lower.contains("turn down") || lower.contains("turn it down")
+            || lower.contains("volume down") || lower.contains("decrease") || lower.contains("lower")
+            || lower.contains("too loud") || lower.contains("less loud") {
             return .down(delta: 15)
         }
         return nil
@@ -486,11 +583,14 @@ public enum PayloadExtractor {
             || lower.contains("go to the bottom") || lower.contains("bottom of the page") {
             return "bottom"
         }
-        if lower.contains("scroll up") || lower.contains("back up") || lower.contains("up the page") {
+        if lower.contains("scroll up") || lower.contains("back up") || lower.contains("up the page")
+            || lower.contains("page up") || lower.contains("go up") || lower.contains("move up")
+            || lower.contains("more up") {
             return "up"
         }
         if lower.contains("scroll down") || lower.contains("further down") || lower.contains("down the page")
-            || lower.contains("lower on the page") {
+            || lower.contains("lower on the page") || lower.contains("page down") || lower.contains("go down")
+            || lower.contains("move down") || lower.contains("more down") {
             return "down"
         }
         return nil
@@ -544,12 +644,14 @@ public enum PayloadExtractor {
 
     private static func extractTitle(_ t: String) -> String? {
         // "called/titled/named/that says" + quoted span or a bare run.
-        let pattern = #"((called|titled|named|that says|that is called)\s+"[^"]+"|(called|titled|named|that says)\s+[^.,!?;]+)"#
+        // The payload must be its own capture group: reading a group index the
+        // pattern does not have raises an NSException that terminates the app.
+        let pattern = #"(?:called|titled|named|that says|that is called)\s+(?:"([^"]+)"|([^.,!?;]+))"#
         guard let regex = try? NSRegularExpression(pattern: pattern, options: [.caseInsensitive]) else { return nil }
         let ns = t as NSString
         guard let match = regex.firstMatch(in: t, range: NSRange(location: 0, length: ns.length)) else { return nil }
-        let quoted = match.range(at: 3).location != NSNotFound ? ns.substring(with: match.range(at: 3)) : ""
-        let bare = match.range(at: 5).location != NSNotFound ? ns.substring(with: match.range(at: 5)) : ""
+        let quoted = match.range(at: 1).location != NSNotFound ? ns.substring(with: match.range(at: 1)) : ""
+        let bare = match.range(at: 2).location != NSNotFound ? ns.substring(with: match.range(at: 2)) : ""
         let result = (!quoted.isEmpty ? quoted : bare)
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .trimmingCharacters(in: CharacterSet(charactersIn: ".,!?;"))

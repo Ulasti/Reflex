@@ -1,0 +1,32 @@
+# Atlas v2 upgrade — reflex
+Date: 2026-10-16T02:03:00Z
+Branch: atlas/atlas-upgrade-v2
+Base: 1fb1beb (P2–P3: satisfy N1–N8, fix cross-platform bug, harden AppReso)
+
+## What changed (docs-only: atlas/ATLAS.md)
+- Added v2 sections: Original Intent (frozen from the user's Purpose line, confirmed 2026-10-16), Last Failure, Rule Ledger.
+- Fixed stale Doctor D2 (remote exists) and D20 (host copy now byte-identical); added D24, D25, D26.
+- Restored the Definition of Done table under its own header.
+
+## Verification (commands run)
+$ git rev-parse --abbrev-ref HEAD
+atlas/atlas-upgrade-v2
+$ git remote -v
+origin	git@github.com:Ulasti/Reflex.git (fetch)
+origin	git@github.com:Ulasti/Reflex.git (push)
+$ git rev-list --count dev..atlas/phase-a-wiring
+12
+$ git log --oneline -1 dev
+a74e26b chore: initialize git for reflex project - evidence: ATLAS.md
+$ git branch --list "atlas/integrate-reflex" "atlas/fix-model-path-resolver"
+  (empty above = the branches named in the old Next Steps do not exist)
+$ shasum -a 256 SKILL.md (workspace) vs host copy
+822765b2ed82fc6b3f16df0452d341da2f06e4aab581dffc981078e43c0784e2  /Users/emir/Documents/Atlas/SKILL.md
+822765b2ed82fc6b3f16df0452d341da2f06e4aab581dffc981078e43c0784e2  /Users/emir/.config/opencode/skills/atlas/SKILL.md
+
+## DoD for this change (docs-only: no source touched)
+| Check | Result | Falsifier |
+|---|---|---|
+| ATLAS.md status/branch/next steps current | Pass | fails if Status.Branch != checked-out branch (atlas/atlas-upgrade-v2) |
+| No secrets introduced | Pass | fails if the diff contains a key/token |
+| Build/test rows 1-10,12 | N/A | no source changed in this commit |

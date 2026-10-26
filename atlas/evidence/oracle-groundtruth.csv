@@ -1,0 +1,133 @@
+file,split,command_id,phrase_id,segments,transcript,expected,rule_sig,laya_sig,hybrid_sig,rule_conf,laya_conf,hybrid_conf,correct_rules,correct_laya,correct_hybrid,hearing_ms,partial1_ms,decode_ms,emit_to_route_ms,last_word_to_route_ms
+volume_up/1,train,volume_up,1,1,volume up,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_up/2,train,volume_up,2,1,turn it up,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_up/3,train,volume_up,3,1,louder,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_up/4,train,volume_up,4,1,raise the volume,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/1,train,volume_down,1,1,volume down,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/2,train,volume_down,2,1,turn it down,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/3,train,volume_down,3,1,quieter,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/4,train,volume_down,4,1,lower the volume,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_mute/1,train,volume_mute,1,1,mute,volume.mute,volume.mute,—,volume.mute,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_mute/2,train,volume_mute,2,1,mute the volume,volume.mute,volume.mute,—,volume.mute,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_mute/3,train,volume_mute,3,1,silence it,volume.mute,volume.mute,—,error,0.950,0.000,0.000,1,0,0,0,,0,0,0
+volume_mute/4,train,volume_mute,4,1,volume off,volume.mute,volume.mute,—,volume.mute,0.950,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/1,train,play_pause,1,1,pause,media.play,media.pause,—,media.pause,0.900,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/2,train,play_pause,2,1,play,media.play,media.play,—,media.play,0.900,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/3,train,play_pause,3,1,pause the music,media.play,media.pause,—,media.pause,0.900,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/4,train,play_pause,4,1,resume,media.play,media.play,—,media.play,0.900,0.000,0.000,1,0,1,0,,0,0,0
+next_track/1,train,next_track,1,1,next track,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+next_track/2,train,next_track,2,1,next song,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+next_track/3,train,next_track,3,1,skip,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+next_track/4,train,next_track,4,1,skip this one,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+prev_track/1,train,prev_track,1,1,previous track,media.previous,media.previous,—,media.previous,0.900,0.000,0.000,1,0,1,0,,0,0,0
+prev_track/2,train,prev_track,2,1,go back,media.previous,browser_command,—,browser_command,0.900,0.000,0.000,0,0,0,0,,0,0,0
+prev_track/3,train,prev_track,3,1,last song,media.previous,media.previous,—,media.previous,0.900,0.000,0.000,1,0,1,0,,0,0,0
+prev_track/4,train,prev_track,4,1,previous song,media.previous,media.previous,—,media.previous,0.900,0.000,0.000,1,0,1,0,,0,0,0
+scroll_up/1,train,scroll_up,1,1,scroll up,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_up/2,train,scroll_up,2,1,go up,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_up/3,train,scroll_up,3,1,page up,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_up/4,train,scroll_up,4,1,move up,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/1,train,scroll_down,1,1,scroll down,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/2,train,scroll_down,2,1,go down,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/3,train,scroll_down,3,1,page down,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/4,train,scroll_down,4,1,move down,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/1,train,screenshot,1,1,screenshot,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/2,train,screenshot,2,1,take a screenshot,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/3,train,screenshot,3,1,capture the screen,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/4,train,screenshot,4,1,screen capture,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/1,train,dark_mode,1,1,dark mode,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/2,train,dark_mode,2,1,toggle dark mode,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/3,train,dark_mode,3,1,switch to dark,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/4,train,dark_mode,4,1,turn on dark mode,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+copy/1,train,copy,1,1,copy,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+copy/2,train,copy,2,1,copy that,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+copy/3,train,copy,3,1,copy this,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+copy/4,train,copy,4,1,put it on the clipboard,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/1,train,paste,1,1,paste,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/2,train,paste,2,1,paste that,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/3,train,paste,3,1,paste it here,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/4,train,paste,4,1,put it here,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/1,train,undo,1,1,undo,shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/2,train,undo,2,1,undo that,shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/3,train,undo,3,1,take it back,shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/4,train,undo,4,1,undo it,shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/1,train,show_desktop,1,1,show desktop,system.showDesktop,system.showDesktop,—,system.showDesktop,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/2,train,show_desktop,2,1,minimize everything,system.showDesktop,system.showDesktop,—,system.showDesktop,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/3,train,show_desktop,3,1,go to the desktop,system.showDesktop,system.showDesktop,—,system.showDesktop,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/4,train,show_desktop,4,1,show me the desktop,system.showDesktop,system.showDesktop,—,system.showDesktop,0.900,0.000,0.000,1,0,1,0,,0,0,0
+brightness_up/1,train,brightness_up,1,1,brightness up,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_up/2,train,brightness_up,2,1,brighter,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_up/3,train,brightness_up,3,1,turn up the brightness,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_up/4,train,brightness_up,4,1,more light,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/1,train,brightness_down,1,1,brightness down,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/2,train,brightness_down,2,1,dimmer,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/3,train,brightness_down,3,1,turn down the brightness,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/4,train,brightness_down,4,1,less light,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+open_safari/1,train,open_safari,1,1,open safari,open.Safari,open.safari,—,open.safari,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_safari/2,train,open_safari,2,1,launch safari,open.Safari,open.safari,—,open.safari,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_safari/3,train,open_safari,3,1,start safari,open.Safari,open.safari,—,open.safari,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_terminal/1,train,open_terminal,1,1,open terminal,open.Terminal,open.terminal,—,open.terminal,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_terminal/2,train,open_terminal,2,1,launch terminal,open.Terminal,open.terminal,—,open.terminal,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_terminal/3,train,open_terminal,3,1,start terminal,open.Terminal,open.terminal,—,open.terminal,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_notes/1,train,open_notes,1,1,open notes,open.Notes,open.notes,—,open.notes,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_notes/2,train,open_notes,2,1,launch notes,open.Notes,open.notes,—,open.notes,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_notes/3,train,open_notes,3,1,start notes,open.Notes,open.notes,—,open.notes,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_music/1,train,open_music,1,1,open music,open.Music,open.music,—,open.music,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_music/2,train,open_music,2,1,launch music,open.Music,open.music,—,open.music,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_music/3,train,open_music,3,1,start music,open.Music,open.music,—,open.music,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_calendar/1,train,open_calendar,1,1,open calendar,open.Calendar,open.calendar,—,open.calendar,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_calendar/2,train,open_calendar,2,1,launch calendar,open.Calendar,open.calendar,—,open.calendar,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_calendar/3,train,open_calendar,3,1,open my calendar,open.Calendar,open.calendar,—,open.calendar,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_github/1,train,go_github,1,1,go to github,open.github,open.github,—,open.github,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_github/2,train,go_github,2,1,open github,open.github,open.github,—,open.github,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_github/3,train,go_github,3,1,visit github,open.github,open.github,—,open.github,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_youtube/1,train,go_youtube,1,1,go to youtube,open.youtube,open.youtube,—,open.youtube,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_youtube/2,train,go_youtube,2,1,open youtube,open.youtube,open.youtube,—,open.youtube,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_youtube/3,train,go_youtube,3,1,visit youtube,open.youtube,open.youtube,—,open.youtube,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_wikipedia/1,train,go_wikipedia,1,1,go to wikipedia,open.wikipedia,open.wikipedia,—,open.wikipedia,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_wikipedia/2,train,go_wikipedia,2,1,open wikipedia,open.wikipedia,open.wikipedia,—,open.wikipedia,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_wikipedia/3,train,go_wikipedia,3,1,visit wikipedia,open.wikipedia,open.wikipedia,—,open.wikipedia,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_google/1,train,go_google,1,1,go to google,open.google,open.google chrome,—,open.google chrome,0.900,0.000,0.000,0,0,0,0,,0,0,0
+go_google/2,train,go_google,2,1,open google,open.google,open.google chrome,—,open.google chrome,0.900,0.000,0.000,0,0,0,0,,0,0,0
+go_google/3,train,go_google,3,1,visit google,open.google,open.google chrome,—,open.google chrome,0.900,0.000,0.000,0,0,0,0,,0,0,0
+volume_up/5,heldout,volume_up,5,1,crank it up,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_up/6,heldout,volume_up,6,1,volume a bit higher,volume.up,volume.up,—,volume.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/5,heldout,volume_down,5,1,bring the volume down,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_down/6,heldout,volume_down,6,1,it's way too loud,volume.down,volume.down,—,volume.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_mute/5,heldout,volume_mute,5,1,put it on mute,volume.mute,volume.mute,—,volume.mute,0.950,0.000,0.000,1,0,1,0,,0,0,0
+volume_mute/6,heldout,volume_mute,6,1,mute everything,volume.mute,volume.mute,—,volume.mute,0.950,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/5,heldout,play_pause,5,1,toggle playback,media.play,media.play,—,media.play,0.900,0.000,0.000,1,0,1,0,,0,0,0
+play_pause/6,heldout,play_pause,6,1,stop for a second,media.play,none,—,general_query,0.000,0.000,0.000,0,0,0,0,,0,0,0
+next_track/5,heldout,next_track,5,1,go to the next song,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+next_track/6,heldout,next_track,6,1,skip ahead,media.next,media.next,—,media.next,0.900,0.000,0.000,1,0,1,0,,0,0,0
+prev_track/5,heldout,prev_track,5,1,play the last one,media.previous,media.previous,—,media.previous,0.900,0.000,0.000,1,0,1,0,,0,0,0
+prev_track/6,heldout,prev_track,6,1,back to the previous one,media.previous,none,—,general_query,0.000,0.000,0.000,0,0,0,0,,0,0,0
+scroll_up/5,heldout,scroll_up,5,1,scroll up a bit,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_up/6,heldout,scroll_up,6,1,take me to the top,scroll.up,scroll.up,—,scroll.up,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/5,heldout,scroll_down,5,1,scroll down a bit,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+scroll_down/6,heldout,scroll_down,6,1,take me to the bottom,scroll.down,scroll.down,—,scroll.down,0.920,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/5,heldout,screenshot,5,1,grab the screen,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+screenshot/6,heldout,screenshot,6,1,take a picture of the screen,screenshot,screenshot,—,screenshot,0.950,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/5,heldout,dark_mode,5,1,make it dark,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+dark_mode/6,heldout,dark_mode,6,1,night mode,system.darkMode(true),system.darkMode(true),—,system.darkMode(true),0.850,0.000,0.000,1,0,1,0,,0,0,0
+copy/5,heldout,copy,5,1,copy the selection,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+copy/6,heldout,copy,6,1,copy everything,shortcut.copy,shortcut.copy,—,shortcut.copy,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/5,heldout,paste,5,1,paste from the clipboard,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+paste/6,heldout,paste,6,1,drop it in here,shortcut.paste,shortcut.paste,—,shortcut.paste,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/5,heldout,undo,5,1,undo the last change,shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+undo/6,heldout,undo,6,1,"never mind, undo",shortcut.undo,shortcut.undo,—,shortcut.undo,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/5,heldout,show_desktop,5,1,clear the screen,system.showDesktop,system.showDesktop,—,system.showDesktop,0.900,0.000,0.000,1,0,1,0,,0,0,0
+show_desktop/6,heldout,show_desktop,6,1,desktop please,system.showDesktop,system.none,—,system.none,0.900,0.000,0.000,0,0,0,0,,0,0,0
+brightness_up/5,heldout,brightness_up,5,1,increase brightness,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_up/6,heldout,brightness_up,6,1,screen a bit brighter,brightness.up,brightness.up,—,brightness.up,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/5,heldout,brightness_down,5,1,decrease brightness,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+brightness_down/6,heldout,brightness_down,6,1,screen a bit darker,brightness.down,brightness.down,—,brightness.down,0.950,0.000,0.000,1,0,1,0,,0,0,0
+open_safari/4,heldout,open_safari,4,1,safari please,open.Safari,open.safari,—,open.safari,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_terminal/4,heldout,open_terminal,4,1,open the terminal,open.Terminal,open.terminal,—,open.terminal,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_notes/4,heldout,open_notes,4,1,open the notes app,open.Notes,open.notes,—,open.notes,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_music/4,heldout,open_music,4,1,open the music app,open.Music,open.music,—,open.music,0.900,0.000,0.000,1,0,1,0,,0,0,0
+open_calendar/4,heldout,open_calendar,4,1,start calendar,open.Calendar,open.calendar,—,open.calendar,0.900,0.000,0.000,1,0,1,0,,0,0,0
+go_github/4,heldout,go_github,4,1,github dot com,open.github,none,—,general_query,0.000,0.000,0.000,0,0,0,0,,0,0,0
+go_youtube/4,heldout,go_youtube,4,1,youtube dot com,open.youtube,none,—,general_query,0.000,0.000,0.000,0,0,0,0,,0,0,0
+go_wikipedia/4,heldout,go_wikipedia,4,1,wikipedia dot com,open.wikipedia,none,—,general_query,0.000,0.000,0.000,0,0,0,0,,0,0,0
+go_google/4,heldout,go_google,4,1,google dot com,open.google,web.dot com,—,web.dot com,0.850,0.000,0.000,0,0,0,0,,0,0,0

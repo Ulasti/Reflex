@@ -1,0 +1,324 @@
+loading openai_whisper-base…
+replaying 264 clip(s)
+
+ok   1/264 brightness_down/5/take1  444 ms  "decrease brightness"
+MISS 2/264 brightness_down/5/take2  371 ms  "the grease brightness"  want brightness.down got brightness.unknown
+ok   3/264 brightness_down/6/take1  382 ms  "Screen a bit darker"
+ok   4/264 brightness_down/6/take2  501 ms  "green a bit darker"
+ok   5/264 brightness_up/5/take1  377 ms  "increased brightness"
+ok   6/264 brightness_up/5/take2  378 ms  "Increase brightness"
+ok   7/264 brightness_up/6/take1  382 ms  "Screen a bit brighter"
+ok   8/264 brightness_up/6/take2  373 ms  "Screen a bit brighter"
+ok   9/264 copy/5/take1  376 ms  "Copy the selection"
+ok   10/264 copy/5/take2  376 ms  "Copy the selection"
+ok   11/264 copy/6/take1  368 ms  "Copy everything"
+ok   12/264 copy/6/take2  366 ms  "Copy everything"
+ok   13/264 dark_mode/5/take1  2788 ms  "Make it dark"
+ok   14/264 dark_mode/5/take2  596 ms  "Make it dark"
+ok   15/264 dark_mode/6/take1  588 ms  "Night mode"
+ok   16/264 dark_mode/6/take2  584 ms  "Night mode"
+MISS 17/264 go_github/4/take1  515 ms  "giraup.com"  want open.github got open.giraup
+MISS 18/264 go_github/4/take2  772 ms  "Get up that come"  want open.github got general_query
+ok   19/264 go_google/4/take1  373 ms  "Google.com"
+ok   20/264 go_google/4/take2  365 ms  "Google.com"
+ok   21/264 go_wikipedia/4/take1  370 ms  "Wikipedia.com"
+ok   22/264 go_wikipedia/4/take2  362 ms  "Wikipedia.com"
+ok   23/264 go_youtube/4/take1  367 ms  "youtube.com"
+MISS 24/264 go_youtube/4/take2  480 ms  "Easy.com"  want open.youtube got open.easy
+ok   25/264 next_track/5/take1  392 ms  "Go to the next song"
+MISS 26/264 next_track/5/take2  386 ms  "Go to the next one"  want media.next got open.next one
+ok   27/264 next_track/6/take1  367 ms  "Skip ahead"
+ok   28/264 next_track/6/take2  466 ms  "Skip ahead"
+MISS 29/264 open_calendar/4/take1  646 ms  "Kellundir"  want open.Calendar got general_query
+ok   30/264 open_calendar/4/take2  367 ms  "Start calendar"
+ok   31/264 open_music/4/take1  374 ms  "Open the music app"
+ok   32/264 open_music/4/take2  375 ms  "Open the music app"
+ok   33/264 open_notes/4/take1  373 ms  "Open the notes app"
+MISS 34/264 open_notes/4/take2  384 ms  "Open the notes up"  want open.Notes got open.notes up
+ok   35/264 open_safari/4/take1  367 ms  "Safari please"
+MISS 36/264 open_safari/4/take2  623 ms  "It's fire, please"  want open.Safari got general_query
+ok   37/264 open_terminal/4/take1  370 ms  "Open the terminal"
+ok   38/264 open_terminal/4/take2  372 ms  "Open the terminal"
+ok   39/264 paste/5/take1  382 ms  "Paste from the clipboard"
+ok   40/264 paste/5/take2  382 ms  "Paste from the clipboard"
+ok   41/264 paste/6/take1  377 ms  "Drop it in here"
+ok   42/264 paste/6/take2  376 ms  "Drop it in here"
+ok   43/264 play_pause/5/take1  470 ms  "toggle playback"
+ok   44/264 play_pause/5/take2  365 ms  "toggle playback"
+ok   45/264 play_pause/6/take1  378 ms  "Stop for a second"
+ok   46/264 play_pause/6/take2  375 ms  "Stop for a second"
+ok   47/264 prev_track/5/take1  386 ms  "Play the last one"
+ok   48/264 prev_track/5/take2  370 ms  "Play the last one"
+ok   49/264 prev_track/6/take1  382 ms  "Back to the previous one"
+ok   50/264 prev_track/6/take2  378 ms  "Back to the previous one"
+ok   51/264 screenshot/5/take1  371 ms  "Grab the screen"
+ok   52/264 screenshot/5/take2  369 ms  "Grab the screen"
+MISS 53/264 screenshot/6/take1  739 ms  "to the screen"  want screenshot got general_query
+ok   54/264 screenshot/6/take2  376 ms  "Take a picture of the screen"
+ok   55/264 scroll_down/5/take1  372 ms  "Scroll down a bit"
+MISS 56/264 scroll_down/5/take2  615 ms  "School of Public"  want scroll.down got general_query
+ok   57/264 scroll_down/6/take1  379 ms  "Take me to the bottom"
+MISS 58/264 scroll_down/6/take2  631 ms  "Take me to the bar"  want scroll.down got general_query
+MISS 59/264 scroll_up/5/take1  627 ms  "Let's crawl up a bit"  want scroll.up got general_query
+ok   60/264 scroll_up/5/take2  381 ms  "Scroll up a bit"
+ok   61/264 scroll_up/6/take1  379 ms  "Take me to the top"
+ok   62/264 scroll_up/6/take2  384 ms  "Take me to the top"
+ok   63/264 show_desktop/5/take1  384 ms  "Clear the screen"
+ok   64/264 show_desktop/5/take2  370 ms  "Clear the screen"
+MISS 65/264 show_desktop/6/take1  622 ms  "Let's talk please"  want system.showDesktop got general_query
+MISS 66/264 show_desktop/6/take2  604 ms  "That's tough please"  want system.showDesktop got general_query
+MISS 67/264 undo/5/take1  627 ms  "And do the last change"  want shortcut.undo got general_query
+ok   68/264 undo/5/take2  387 ms  "Undo the"
+MISS 69/264 undo/6/take1  631 ms  "Never mind and do"  want shortcut.undo got general_query
+MISS 70/264 undo/6/take2  613 ms  "Never mind and do"  want shortcut.undo got general_query
+ok   71/264 volume_down/5/take1  382 ms  "Bring the volume down"
+ok   72/264 volume_down/5/take2  365 ms  "Bring the volume down"
+ok   73/264 volume_down/6/take1  377 ms  "It's way too loud"
+ok   74/264 volume_down/6/take2  376 ms  "It's way too loud"
+ok   75/264 volume_mute/5/take1  377 ms  "Put it on mute"
+ok   76/264 volume_mute/5/take2  463 ms  "Put it on mute"
+MISS 77/264 volume_mute/6/take1  628 ms  "Mew everything"  want volume.mute got general_query
+ok   78/264 volume_mute/6/take2  366 ms  "mute everything"
+ok   79/264 volume_up/5/take1  366 ms  "crank it up"
+MISS 80/264 volume_up/5/take2  624 ms  "Get up"  want volume.up got general_query
+MISS 81/264 volume_up/6/take1  631 ms  "Wall you my bit higher"  want volume.up got general_query
+ok   82/264 volume_up/6/take2  383 ms  "Volume a bit higher"
+ok   83/264 brightness_down/1/take1  606 ms  "Brightness down"
+MISS 84/264 brightness_down/1/take2  789 ms  "Bret is down"  want brightness.down got general_query
+MISS 85/264 brightness_down/2/take1  596 ms  "Bimmer"  want brightness.down got general_query
+MISS 86/264 brightness_down/2/take2  508 ms  ""  want brightness.down got none
+ok   87/264 brightness_down/3/take1  368 ms  "Turn down the brightness"
+ok   88/264 brightness_down/3/take2  480 ms  "Turn down the brightness"
+MISS 89/264 brightness_down/4/take1  614 ms  "Let's light"  want brightness.down got general_query
+MISS 90/264 brightness_down/4/take2  596 ms  "Let's light"  want brightness.down got general_query
+ok   91/264 brightness_up/1/take1  370 ms  "Brightness up"
+ok   92/264 brightness_up/1/take2  378 ms  "Brightens up"
+ok   93/264 brightness_up/2/take1  366 ms  "Brighter"
+ok   94/264 brightness_up/2/take2  361 ms  "Brighter"
+ok   95/264 brightness_up/3/take1  383 ms  "Turn up the brightness"
+ok   96/264 brightness_up/3/take2  381 ms  "Turn up the brightness"
+ok   97/264 brightness_up/4/take1  362 ms  "More light"
+ok   98/264 brightness_up/4/take2  369 ms  "More light"
+ok   99/264 copy/1/take1  361 ms  "Copy"
+ok   100/264 copy/1/take2  373 ms  "Copy"
+ok   101/264 copy/2/take1  374 ms  "Copy that"
+ok   102/264 copy/2/take2  372 ms  "Copy that"
+ok   103/264 copy/3/take1  364 ms  "Copy this"
+MISS 104/264 copy/3/take2  704 ms  "Capi this"  want shortcut.copy got general_query
+ok   105/264 copy/4/take1  392 ms  "Put it on the clipboard"
+ok   106/264 copy/4/take2  383 ms  "Put it on the clipboard"
+MISS 107/264 dark_mode/1/take1  614 ms  "Dot Mode"  want system.darkMode(true) got general_query
+MISS 108/264 dark_mode/1/take2  589 ms  "That mode"  want system.darkMode(true) got general_query
+MISS 109/264 dark_mode/2/take1  608 ms  "toggle.mode"  want system.darkMode(true) got general_query
+MISS 110/264 dark_mode/2/take2  796 ms  "Toggle that mong"  want system.darkMode(true) got general_query
+ok   111/264 dark_mode/3/take1  718 ms  "Switch to dark"
+ok   112/264 dark_mode/3/take2  707 ms  "Switch to dark"
+ok   113/264 dark_mode/4/take1  625 ms  "Turn on dark mode"
+ok   114/264 dark_mode/4/take2  621 ms  "Turn on dark mode"
+ok   115/264 go_github/1/take1  370 ms  "Go to GitHub"
+MISS 116/264 go_github/1/take2  376 ms  "Go to get up"  want open.github got open.get up
+MISS 117/264 go_github/2/take1  373 ms  "Open it up"  want open.github got open.it up
+MISS 118/264 go_github/2/take2  376 ms  "Open gear up"  want open.github got open.gear up
+ok   119/264 go_github/3/take1  366 ms  "Visit GitHub"
+MISS 120/264 go_github/3/take2  623 ms  "Wizard kid up"  want open.github got general_query
+ok   121/264 go_google/1/take1  377 ms  "Go to Google"
+ok   122/264 go_google/1/take2  473 ms  "Go to Google"
+ok   123/264 go_google/2/take1  396 ms  "Open Google"
+ok   124/264 go_google/2/take2  388 ms  "Open Google"
+MISS 125/264 go_google/3/take1  973 ms  "Where's it Google"  want open.google got web.Where's it Google
+MISS 126/264 go_google/3/take2  669 ms  "Who's it Google"  want open.google got web.Who's it Google
+ok   127/264 go_wikipedia/1/take1  384 ms  "Go to Wikipedia"
+ok   128/264 go_wikipedia/1/take2  390 ms  "Go to Wikipedia"
+ok   129/264 go_wikipedia/2/take1  373 ms  "Open Wikipedia"
+ok   130/264 go_wikipedia/2/take2  371 ms  "Open Wikipedia"
+MISS 131/264 go_wikipedia/3/take1  678 ms  "With it Wikipedia"  want open.wikipedia got general_query
+MISS 132/264 go_wikipedia/3/take2  822 ms  "Wizard Wikipedia"  want open.wikipedia got general_query
+ok   133/264 go_youtube/1/take1  491 ms  "Go to YouTube"
+MISS 134/264 go_youtube/1/take2  398 ms  "Go to uni"  want open.youtube got open.uni
+ok   135/264 go_youtube/2/take1  479 ms  "Open YouTube"
+ok   136/264 go_youtube/2/take2  392 ms  "Open YouTube"
+ok   137/264 go_youtube/3/take1  393 ms  "Visit YouTube"
+ok   138/264 go_youtube/3/take2  384 ms  "Visit YouTube"
+ok   139/264 next_track/1/take1  377 ms  "Next track"
+MISS 140/264 next_track/1/take2  646 ms  "Next check"  want media.next got general_query
+ok   141/264 next_track/2/take1  379 ms  "Next song"
+MISS 142/264 next_track/2/take2  637 ms  "Next on"  want media.next got general_query
+ok   143/264 next_track/3/take1  381 ms  "Skip"
+ok   144/264 next_track/3/take2  377 ms  "Skip"
+ok   145/264 next_track/4/take1  377 ms  "Skip this one"
+ok   146/264 next_track/4/take2  396 ms  "Skip this one"
+ok   147/264 open_calendar/1/take1  373 ms  "Open calendar"
+ok   148/264 open_calendar/1/take2  381 ms  " calendar"
+MISS 149/264 open_calendar/2/take1  662 ms  "Lounge calendar"  want open.Calendar got general_query
+ok   150/264 open_calendar/2/take2  483 ms  "Launch calendar"
+ok   151/264 open_calendar/3/take1  398 ms  "Open my calendar"
+ok   152/264 open_calendar/3/take2  381 ms  "Open my calendar"
+ok   153/264 open_music/1/take1  378 ms  "Open Music"
+ok   154/264 open_music/1/take2  377 ms  "Open Music"
+ok   155/264 open_music/2/take1  476 ms  "Launch music"
+ok   156/264 open_music/2/take2  366 ms  "Launch Music"
+ok   157/264 open_music/3/take1  398 ms  "Start music"
+ok   158/264 open_music/3/take2  382 ms  "Start music"
+ok   159/264 open_notes/1/take1  378 ms  "Open Notes"
+ok   160/264 open_notes/1/take2  377 ms  "Open notes"
+ok   161/264 open_notes/2/take1  387 ms  "Launch notes"
+MISS 162/264 open_notes/2/take2  667 ms  "Longs notes"  want open.Notes got general_query
+ok   163/264 open_notes/3/take1  380 ms  "Start notes"
+ok   164/264 open_notes/3/take2  374 ms  "Start notes"
+ok   165/264 open_safari/1/take1  378 ms  "Open Safari"
+ok   166/264 open_safari/1/take2  377 ms  "Open Safari"
+MISS 167/264 open_safari/2/take1  658 ms  "Long safari"  want open.Safari got general_query
+MISS 168/264 open_safari/2/take2  694 ms  "Long story short, thanks for watching"  want open.Safari got general_query
+ok   169/264 open_safari/3/take1  375 ms  "Start Safari"
+ok   170/264 open_safari/3/take2  385 ms  "Start Safari"
+ok   171/264 open_terminal/1/take1  380 ms  "Open terminal"
+ok   172/264 open_terminal/1/take2  387 ms  "Open Terminal"
+ok   173/264 open_terminal/2/take1  376 ms  "Launch terminal"
+MISS 174/264 open_terminal/2/take2  667 ms  "Long termino"  want open.Terminal got general_query
+MISS 175/264 open_terminal/3/take1  390 ms  "Start turning up"  want open.Terminal got open.turning up
+MISS 176/264 open_terminal/3/take2  662 ms  "Stark terminal"  want open.Terminal got general_query
+MISS 177/264 paste/1/take1  615 ms  "Paced"  want shortcut.paste got general_query
+ok   178/264 paste/1/take2  383 ms  "Paste"
+ok   179/264 paste/2/take1  382 ms  "Paste that"
+ok   180/264 paste/2/take2  383 ms  "Paste that"
+ok   181/264 paste/3/take1  388 ms  "Pasted here"
+ok   182/264 paste/3/take2  387 ms  "Pasted here"
+ok   183/264 paste/4/take1  388 ms  "Put it here"
+ok   184/264 paste/4/take2  389 ms  "Put it here"
+ok   185/264 play_pause/1/take1  378 ms  "Pause"
+ok   186/264 play_pause/1/take2  369 ms  "Pause"
+ok   187/264 play_pause/2/take1  376 ms  "Play"
+MISS 188/264 play_pause/2/take2  628 ms  "Bye"  want media.play got general_query
+ok   189/264 play_pause/3/take1  390 ms  "Pause the music"
+MISS 190/264 play_pause/3/take2  749 ms  "Piano music"  want media.play got general_query
+ok   191/264 play_pause/4/take1  384 ms  "Resume"
+ok   192/264 play_pause/4/take2  382 ms  "Resume"
+MISS 193/264 prev_track/1/take1  649 ms  "previous check"  want media.previous got general_query
+MISS 194/264 prev_track/1/take2  609 ms  "check"  want media.previous got general_query
+MISS 195/264 prev_track/2/take1  387 ms  "Go back"  want media.previous got browser_command
+MISS 196/264 prev_track/2/take2  383 ms  "Go back"  want media.previous got browser_command
+ok   197/264 prev_track/3/take1  388 ms  "Last song"
+ok   198/264 prev_track/3/take2  374 ms  "Last song"
+ok   199/264 prev_track/4/take1  375 ms  "previous song"
+ok   200/264 prev_track/4/take2  460 ms  "Previous song"
+ok   201/264 screenshot/1/take1  373 ms  "Screenshot"
+ok   202/264 screenshot/1/take2  374 ms  "Screenshot"
+ok   203/264 screenshot/2/take1  381 ms  "Take a screenshot"
+ok   204/264 screenshot/2/take2  398 ms  "Take a screenshot"
+ok   205/264 screenshot/3/take1  395 ms  "Capture the screen"
+ok   206/264 screenshot/3/take2  367 ms  "Capture the screen"
+ok   207/264 screenshot/4/take1  378 ms  "Screen capture"
+ok   208/264 screenshot/4/take2  386 ms  "Screen capture"
+ok   209/264 scroll_down/1/take1  378 ms  "Scroll down"
+MISS 210/264 scroll_down/1/take2  636 ms  "Skoda"  want scroll.down got general_query
+ok   211/264 scroll_down/2/take1  408 ms  "Go down"
+ok   212/264 scroll_down/2/take2  387 ms  "Go down"
+ok   213/264 scroll_down/3/take1  380 ms  "Page down"
+ok   214/264 scroll_down/3/take2  376 ms  "Page down"
+MISS 215/264 scroll_down/4/take1  754 ms  "All down"  want scroll.down got general_query
+ok   216/264 scroll_down/4/take2  477 ms  "Move down"
+ok   217/264 scroll_up/1/take1  379 ms  "Scroll up"
+MISS 218/264 scroll_up/1/take2  652 ms  "Scorup"  want scroll.up got general_query
+ok   219/264 scroll_up/2/take1  374 ms  "Go up"
+ok   220/264 scroll_up/2/take2  367 ms  "Go up"
+ok   221/264 scroll_up/3/take1  370 ms  "Page up"
+ok   222/264 scroll_up/3/take2  364 ms  "Page up"
+ok   223/264 scroll_up/4/take1  361 ms  "Move up"
+MISS 224/264 scroll_up/4/take2  653 ms  "whoop"  want scroll.up got general_query
+ok   225/264 show_desktop/1/take1  365 ms  "Show desktop"
+ok   226/264 show_desktop/1/take2  473 ms  "Show desktop"
+ok   227/264 show_desktop/2/take1  374 ms  "Minimize everything"
+ok   228/264 show_desktop/2/take2  369 ms  "Minimize everything"
+ok   229/264 show_desktop/3/take1  379 ms  "Go to desktop"
+ok   230/264 show_desktop/3/take2  380 ms  "Go to desktop"
+ok   231/264 show_desktop/4/take1  381 ms  "Show me the desktop"
+ok   232/264 show_desktop/4/take2  387 ms  "Show me the desktop"
+ok   233/264 undo/1/take1  371 ms  "Undo"
+ok   234/264 undo/1/take2  374 ms  "Undo"
+MISS 235/264 undo/2/take1  744 ms  "And do that"  want shortcut.undo got general_query
+MISS 236/264 undo/2/take2  599 ms  "And do that"  want shortcut.undo got general_query
+ok   237/264 undo/3/take1  364 ms  "Take it back"
+MISS 238/264 undo/3/take2  745 ms  "Take you back"  want shortcut.undo got general_query
+MISS 239/264 undo/4/take1  608 ms  "and do it"  want shortcut.undo got general_query
+ok   240/264 undo/4/take2  376 ms  "undo it"
+ok   241/264 volume_down/1/take1  384 ms  "Volume down"
+MISS 242/264 volume_down/1/take2  735 ms  "Welcome home"  want volume.down got general_query
+ok   243/264 volume_down/2/take1  369 ms  "Turn it down"
+ok   244/264 volume_down/2/take2  481 ms  "Turn it down"
+MISS 245/264 volume_down/3/take1  636 ms  "Quiet"  want volume.down got general_query
+MISS 246/264 volume_down/3/take2  695 ms  "Quinn"  want volume.down got general_query
+ok   247/264 volume_down/4/take1  387 ms  "Lower the volume"
+MISS 248/264 volume_down/4/take2  487 ms  "load the volume"  want volume.down got media.toggle
+ok   249/264 volume_mute/1/take1  368 ms  "mute"
+MISS 250/264 volume_mute/1/take2  731 ms  "Yes"  want volume.mute got general_query
+ok   251/264 volume_mute/2/take1  371 ms  "mute the volume"
+MISS 252/264 volume_mute/2/take2  667 ms  "METOAL"  want volume.mute got general_query
+ok   253/264 volume_mute/3/take1  368 ms  "Silence it"
+ok   254/264 volume_mute/3/take2  401 ms  "Silence it"
+ok   255/264 volume_mute/4/take1  370 ms  "Volume off"
+MISS 256/264 volume_mute/4/take2  764 ms  "Wadimafu"  want volume.mute got general_query
+ok   257/264 volume_up/1/take1  472 ms  "volume up"
+ok   258/264 volume_up/1/take2  533 ms  "Volume up"
+ok   259/264 volume_up/2/take1  396 ms  "Turn it up"
+ok   260/264 volume_up/2/take2  389 ms  "Turn it up"
+MISS 261/264 volume_up/3/take1  711 ms  "LOWER"  want volume.up got general_query
+MISS 262/264 volume_up/3/take2  725 ms  "Lover"  want volume.up got general_query
+ok   263/264 volume_up/4/take1  456 ms  "Raise the volume"
+ok   264/264 volume_up/4/take2  383 ms  "Raise the volume"
+
+== Accuracy ==
+  rules only    192/264   72.7%
+  laya only       1/264    0.4%
+  rules + laya  192/264   72.7%
+
+== Latency (ms) ==
+  hearing          p50     0   p95     0
+  first partial    p50   875   p95  1306
+  decode           p50   278   p95   392
+  emit→route       p50   282   p95   629
+  last word→route  p50   384   p95   731
+
+== Misses (72) ==
+  brightness_down/5: "the grease brightness" want brightness.down got brightness.unknown [rule brightness.unknown / laya skipped]
+  go_github/4: "giraup.com" want open.github got open.giraup [rule open.giraup / laya skipped]
+  go_github/4: "Get up that come" want open.github got general_query [rule none / laya file_operation]
+  go_youtube/4: "Easy.com" want open.youtube got open.easy [rule open.easy / laya skipped]
+  next_track/5: "Go to the next one" want media.next got open.next one [rule open.next one / laya skipped]
+  open_calendar/4: "Kellundir" want open.Calendar got general_query [rule none / laya file_operation]
+  open_notes/4: "Open the notes up" want open.Notes got open.notes up [rule open.notes up / laya skipped]
+  open_safari/4: "It's fire, please" want open.Safari got general_query [rule none / laya open.it's fire]
+  screenshot/6: "to the screen" want screenshot got general_query [rule none / laya open.to the screen]
+  scroll_down/5: "School of Public" want scroll.down got general_query [rule none / laya file_operation]
+  scroll_down/6: "Take me to the bar" want scroll.down got general_query [rule none / laya open.take me]
+  scroll_up/5: "Let's crawl up a bit" want scroll.up got general_query [rule none / laya open.let's crawl up a bit]
+  show_desktop/6: "Let's talk please" want system.showDesktop got general_query [rule none / laya general_query]
+  show_desktop/6: "That's tough please" want system.showDesktop got general_query [rule none / laya general_query]
+  undo/5: "And do the last change" want shortcut.undo got general_query [rule none / laya file_operation]
+  undo/6: "Never mind and do" want shortcut.undo got general_query [rule none / laya open.never mind]
+  undo/6: "Never mind and do" want shortcut.undo got general_query [rule none / laya open.never mind]
+  volume_mute/6: "Mew everything" want volume.mute got general_query [rule none / laya file_operation]
+  volume_up/5: "Get up" want volume.up got general_query [rule none / laya file_operation]
+  volume_up/6: "Wall you my bit higher" want volume.up got general_query [rule none / laya file_operation]
+  brightness_down/1: "Bret is down" want brightness.down got general_query [rule none / laya file_operation]
+  brightness_down/2: "Bimmer" want brightness.down got general_query [rule none / laya file_operation]
+  brightness_down/2: "" want brightness.down got none [rule none / laya none]
+  brightness_down/4: "Let's light" want brightness.down got general_query [rule none / laya open.let's light]
+  brightness_down/4: "Let's light" want brightness.down got general_query [rule none / laya open.let's light]
+  copy/3: "Capi this" want shortcut.copy got general_query [rule none / laya file_operation]
+  dark_mode/1: "Dot Mode" want system.darkMode(true) got general_query [rule none / laya file_operation]
+  dark_mode/1: "That mode" want system.darkMode(true) got general_query [rule none / laya file_operation]
+  dark_mode/2: "toggle.mode" want system.darkMode(true) got general_query [rule none / laya file_operation]
+  dark_mode/2: "Toggle that mong" want system.darkMode(true) got general_query [rule none / laya file_operation]
+  go_github/1: "Go to get up" want open.github got open.get up [rule open.get up / laya skipped]
+  go_github/2: "Open it up" want open.github got open.it up [rule open.it up / laya skipped]
+  go_github/2: "Open gear up" want open.github got open.gear up [rule open.gear up / laya skipped]
+  go_github/3: "Wizard kid up" want open.github got general_query [rule none / laya open.wizard kid up]
+  go_google/3: "Where's it Google" want open.google got web.Where's it Google [rule web.Where's it Google / laya web.Where's it Google]
+  go_google/3: "Who's it Google" want open.google got web.Who's it Google [rule web.Who's it Google / laya general_query]
+  go_wikipedia/3: "With it Wikipedia" want open.wikipedia got general_query [rule none / laya web.With it Wikipedia]
+  go_wikipedia/3: "Wizard Wikipedia" want open.wikipedia got general_query [rule none / laya web.Wizard Wikipedia]
+  go_youtube/1: "Go to uni" want open.youtube got open.uni [rule open.uni / laya skipped]
+  next_track/1: "Next check" want media.next got general_query [rule none / laya file_operation]
+  … and 32 more (see CSV)
+
+wrote atlas/evidence/replay-ladder-base.csv

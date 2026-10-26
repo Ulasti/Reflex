@@ -22,6 +22,24 @@ public final class StreamSegmenter: @unchecked Sendable {
     /// Windows skipped after a segment ends before the next may start.
     public let rearmWindows: Int
 
+    /// The RMS a window must reach to count as speech. Exposed because the
+    /// replay harness and the app both need to know which window was the last
+    /// *voiced* one: the segmenter keeps reporting `speaking == true` all
+    /// through the trailing silence it is waiting out, so "last speaking
+    /// window" is the end of the gate, not the last spoken frame.
+    public static let speechFloor: Float = 0.0012
+    /// `speechFloor` in the units `onLevel` reports (`min(1, rms * 8)`).
+    public static let speechLevelFloor: Float = speechFloor * 8
+
+    /// The end-of-utterance gate in windows (one window = 100 ms): how long a
+    /// pause must last before the segment closes. `REFLEX_SILENCE_WINDOWS`
+    /// overrides it so the Phase 2 sweep can move the gate without a rebuild.
+    public static let defaultSilenceWindows: Int = {
+        guard let raw = ProcessInfo.processInfo.environment["REFLEX_SILENCE_WINDOWS"],
+              let value = Int(raw), value >= 2 else { return 7 }
+        return value
+    }()
+
     private var carry: [Float] = []
     private var speech: [Float] = []
     private var speechWindows = 0
@@ -29,22 +47,44 @@ public final class StreamSegmenter: @unchecked Sendable {
     private var lastSpeechEnd = 0
     private var rearm = 0
     private var noiseFloor: Float = 0.0005
+private var lastEmitReason: String = "unknown"
+private var lastEmitAudioDuration: Double = 0.0
+
+    /// These callbacks are assigned from the main thread (`MicMonitor.start`)
+    /// and fired from the audio thread, so both sides go through `lock`. The
+    /// stored closure is returned before it is called, never under the lock
+    /// (atlas/docs/audit-2026-10-14.md, N8).
+    private let lock = NSLock()
+    private var storedOnSegment: (@Sendable ([Float], String, Double) -> Void)?
+    private var storedOnLevel: (@Sendable (Float, Bool) -> Void)?
+    private var storedOnPartial: (@Sendable ([Float]) -> Void)?
 
     /// Called on the audio thread with each finalized speech segment.
-    public var onSegment: (@Sendable ([Float]) -> Void)?
+    public var onSegment: (@Sendable ([Float], String, Double) -> Void)? {
+        get { lock.withLock { storedOnSegment } }
+        set { lock.withLock { storedOnSegment = newValue } }
+    }
     /// Called on the audio thread ~every 100 ms with (normalized rms, speaking).
-    public var onLevel: (@Sendable (Float, Bool) -> Void)?
+    public var onLevel: (@Sendable (Float, Bool) -> Void)? {
+        get { lock.withLock { storedOnLevel } }
+        set { lock.withLock { storedOnLevel = newValue } }
+    }
     /// Called on the audio thread with the current rolling speech window each
     /// time a speech window is processed (~100 ms cadence). Consumers feed it
     /// to a streaming transcriber for live partials; throttle downstream.
-    public var onPartial: (@Sendable ([Float]) -> Void)?
+    public var onPartial: (@Sendable ([Float]) -> Void)? {
+        get { lock.withLock { storedOnPartial } }
+        set { lock.withLock { storedOnPartial = newValue } }
+    }
 
     public init(
         window: Int = 1600,
-        maxSilenceWindows: Int = 7,
+        maxSilenceWindows: Int = StreamSegmenter.defaultSilenceWindows,
         minSpeechWindows: Int = 4,
-        maxSegmentSamples: Int = 160_000,
-        rearmWindows: Int = 4
+        maxSegmentSamples: Int = 64_000,
+        // 200 ms of dead air after a segment; 400 ms truncated the first window
+        // of a command spoken right after the previous one (plan Phase 1).
+        rearmWindows: Int = 2
     ) {
         self.window = window
         self.maxSilenceWindows = maxSilenceWindows
@@ -71,7 +111,7 @@ public final class StreamSegmenter: @unchecked Sendable {
         carry = Array(buffer[offset...])
 
         if speech.count >= maxSegmentSamples {
-            finalize()
+            finalize(reason: "maxLengthCap")
         }
     }
 
@@ -79,7 +119,7 @@ public final class StreamSegmenter: @unchecked Sendable {
     /// source ends (stream closed, input final).
     public func flush() {
         if speechWindows >= minSpeechWindows {
-            finalize()
+            finalize(reason: "endOfStream")
         } else {
             reset()
         }
@@ -97,7 +137,7 @@ public final class StreamSegmenter: @unchecked Sendable {
         }
 
         let rms = Float(AudioPreflight.rms(win))
-        let threshold = max(noiseFloor * 2.2, 0.0012)
+        let threshold = max(noiseFloor * 2.2, Self.speechFloor)
 
         if rms >= threshold {
             speech.append(contentsOf: win)
@@ -112,7 +152,7 @@ public final class StreamSegmenter: @unchecked Sendable {
                 speech.append(contentsOf: win)
                 silenceWindows += 1
                 if silenceWindows >= maxSilenceWindows {
-                    finalize()
+                    finalize(reason: "silenceGate")
                 }
             } else {
                 speaking = false
@@ -120,17 +160,20 @@ public final class StreamSegmenter: @unchecked Sendable {
         }
     }
 
-    private func finalize() {
-        guard speechWindows >= minSpeechWindows, lastSpeechEnd > 0 else {
-            reset()
-            return
-        }
-        let segment = Array(speech[0..<lastSpeechEnd])
+private func finalize(reason: String) {
+    guard speechWindows >= minSpeechWindows, lastSpeechEnd > 0 else {
         reset()
-        if segment.count >= minSpeechWindows * window {
-            onSegment?(segment)
-        }
+        return
     }
+    let segment = Array(speech[0..<lastSpeechEnd])
+    let audioDuration = Double(segment.count) / 16000.0
+    lastEmitReason = reason
+    lastEmitAudioDuration = audioDuration
+    reset()
+    if segment.count >= minSpeechWindows * window {
+        onSegment?(segment, reason, audioDuration)
+    }
+}
 
     private func reset() {
         speech = []
@@ -144,46 +187,6 @@ public final class StreamSegmenter: @unchecked Sendable {
     public private(set) var speaking = false
 }
 
-/// Offline variant of `StreamSegmenter` for files: splits a whole capture into
-/// speech sections so the CLI can replay the exact streaming path headlessly.
-public enum SpeechSegmentifier {
-    public struct Section: Sendable, Equatable {
-        public let sampleRange: Range<Int>
-    }
-
-    public static func sections(in samples: [Float], window: Int = 1600) -> [Section] {
-        guard samples.count >= window else { return [] }
-        let peak = AudioPreflight.peak(samples)
-        let threshold = max(Double(peak) * 0.02, 0.0005)
-
-        var result: [Section] = []
-        var start: Int?
-        var lastSpeechEnd = -1
-        var silenceRuns = 0
-        var offset = 0
-        while offset + window <= samples.count {
-            let slice = samples[offset..<(offset + window)]
-            let energy = slice.reduce(0.0) { $0 + Double($1) * Double($1) }
-            let rms = (energy / Double(window)).squareRoot()
-            if rms >= threshold {
-                if start == nil { start = offset }
-                lastSpeechEnd = offset + window
-                silenceRuns = 0
-            } else if start != nil {
-                silenceRuns += 1
-                if silenceRuns >= 6 {
-                    result.append(Section(sampleRange: start!..<lastSpeechEnd))
-                    start = nil
-                    silenceRuns = 0
-                }
-            }
-            offset += window
-        }
-        if let start { result.append(Section(sampleRange: start..<max(lastSpeechEnd, start))) }
-        return result
-    }
-}
-
 /// Bounded-memory live mic wrapper around `StreamSegmenter`. Owns the
 /// `AudioCaptureManager`, runs the VAD on the audio thread, and forwards
 /// segment + level events to caller-provided sendable closures.
@@ -192,7 +195,7 @@ public final class MicMonitor: @unchecked Sendable {
     private let segmenter: StreamSegmenter
 
     /// Called on the audio thread with each finalized speech segment.
-    public var onSegment: (@Sendable ([Float]) -> Void)? {
+    public var onSegment: (@Sendable ([Float], String, Double) -> Void)? {
         get { segmenter.onSegment }
         set { segmenter.onSegment = newValue }
     }
@@ -226,6 +229,11 @@ public final class MicMonitor: @unchecked Sendable {
         capture.onChunk = { [weak self] chunk in
             guard let self else { return }
             self.segmenter.feed(chunk)
+            // Also emit the level per capture chunk (tens of ms) instead of
+            // only the segmenter's 100 ms window: this is the level the menu
+            // bar light follows, and the light table wants the faster response.
+            let rms = Float(AudioPreflight.rms(chunk))
+            self.segmenter.onLevel?(min(1, rms * 8), self.segmenter.speaking)
         }
         try capture.start()
         isRunning = true

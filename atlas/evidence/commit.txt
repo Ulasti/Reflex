@@ -1,0 +1,9 @@
+# Commit evidence
+Date: 2026-10-16T02:55:08Z
+Branch: atlas/phase-a-verify
+Session commits (newest first):
+e1cad76 docs(atlas): correct D5/.gitkeep and DoD row 8 claims - evidence: atlas/evidence/atlas-status.txt
+9d6a9a8 docs(atlas): record commit evidence - evidence: atlas/evidence/commit.txt
+c262720 docs(atlas): verify Phase A, restore DoD evidence, fix Doctor drift - evidence: atlas/evidence/phase-a-verify.txt
+
+HEAD: e1cad76f9a9e6b87d0bf4c2dac6c3e610289e6aa

@@ -14,7 +14,8 @@ public enum AudioPreflight {
         return (sum / Double(samples.count)).squareRoot()
     }
 
-    public static func peak(_ samples: [Float]) -> Float {
+    /// Highest absolute sample in the clip.
+    private static func peak(_ samples: [Float]) -> Float {
         samples.reduce(0.0) { max($0, abs($1)) }
     }
 

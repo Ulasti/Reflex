@@ -74,11 +74,6 @@ public actor ModelManager {
         loadedModels.removeValue(forKey: kind)
     }
 
-    /// Releases everything. Used by the engine when backgrounding on iOS.
-    public func unloadAll() {
-        loadedModels.removeAll()
-    }
-
     /// Optional preflight: verifies every package on disk compiles cleanly
     /// without loading it into memory.
     public func verifyCompilation() async throws {
@@ -129,13 +124,28 @@ public enum ReflexModelError: LocalizedError {
     }
 }
 
-private extension ReflexModelKind {
-    var bundleName: String {
+extension ReflexModelKind {
+    var bundleName: String { whisperBundleName }
+
+    var whisperBundleName: String {
         switch self {
         case .whisperBase: "whisper-base"
         case .whisperSmall: "whisper-small"
         case .whisperLargeV3Turbo: "whisper-large-v3-turbo"
         case .laya: "laya"
+        }
+    }
+
+    var whisperMelCount: Int {
+        self == .whisperLargeV3Turbo ? 128 : 80
+    }
+
+    var whisperEncoderDim: Int {
+        switch self {
+        case .whisperBase: 512
+        case .whisperSmall: 768
+        case .whisperLargeV3Turbo: 1280
+        case .laya: 0
         }
     }
 }

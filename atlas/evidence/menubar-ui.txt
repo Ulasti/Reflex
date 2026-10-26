@@ -1,0 +1,47 @@
+# Evidence: menubar UI conversion (atlas/menubar-ui)
+
+Date: 2026-10-18
+Branch: atlas/menubar-ui (from atlas/phase-a-verify @ d99ffad lineage; dev is an ancestor)
+Scope: Reflex/ app-layer UI only. No ReflexCore changes.
+
+## What changed
+
+- Reflex/ReflexApp.swift: macOS is now MenuBarExtra (.menu style, capsule.fill
+  icon) + Settings scene. The WindowGroup survives only for the iOS target.
+- Reflex/MenuBarView.swift (new): status line, live transcript, last result,
+  Start/Stop Listening, Settings..., Quit.
+- Reflex/StatusPillView.swift (new): pill-shaped status light (capsule, LED +
+  state word, pulsing green like the old Phase C LED).
+- Reflex/NotchPillController.swift (new): NSPanel pill below the notch / menu
+  bar while Reflex is active. Measures other notch apps' islands through
+  CGWindowListCopyWindowInfo (owner, layer, bounds — no screen-recording
+  permission needed), sits below the island, and hides while the island covers
+  the slot. Panel ignores mouse events; level .statusBar (below Vorssaint's
+  statusBar+1, per its NotchPanel source).
+- Reflex/SettingsView.swift (new): Settings scene — General, Model, Input,
+  Status Pill (toggle + Vorssaint note), Diagnostics, Session Logs.
+- Reflex/SessionLogUI.swift (new): LogHistoryView moved here, shared with iOS.
+- Reflex/ContentView.swift: now iOS-only (#if !os(macOS)); its settings sheet,
+  LogHistoryView, and old SettingsView removed (moved/regrown elsewhere).
+- Reflex/AppModel.swift: added showNotchPill (@Published, persisted), starts
+  NotchPillController in init.
+- project.yml: INFOPLIST_KEY_LSUIElement = YES for Reflex-macOS (verified
+  "LSUIElement" => true in the built Info.plist).
+
+## Gates
+
+- xcodegen generate                        -> Created project (ok)
+- xcodebuild Reflex-macOS Debug            -> BUILD SUCCEEDED (/tmp/reflex-dd)
+- xcodebuild Reflex-iOS Debug (sim generic)-> BUILD SUCCEEDED (/tmp/reflex-dd-ios)
+- swift test --package-path ReflexCore     -> "Test run with 51 tests in 13
+                                               suites passed"
+- Launch smoke test: ran the Debug binary directly; process alive after 5 s,
+  no crash output (only a benign sandbox-extension line from CLI launch), then
+  killed. Menu bar item registered.
+
+## Not verified (needs a real display + Vorssaint running)
+
+- Visual placement of the pill relative to the notch and to Vorssaint's
+  expanded Dynamic Island (yield behavior).
+- SettingsLink opening the Settings window from the LSUIElement menu bar
+  menu (standard pattern; not exercised by a headless run).

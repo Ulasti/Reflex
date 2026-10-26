@@ -12,24 +12,49 @@ import CoreAudio
 /// All calls are best-effort: if CoreAudio or the device is unavailable we
 /// simply skip the mute and rely on the cooldown.
 public enum MicMute {
-    public static func muteInput(_ deviceID: UInt32? = nil, _ on: Bool) {
-        let target = deviceID ?? defaultInputDeviceID()
-        guard let target else { return }
-        var address = AudioObjectPropertyAddress(
+    /// Mutes `deviceID` (nil = the system default input) and returns the input
+    /// level that was in use, so `restoreInput` can put it back. Reading the
+    /// real scalar matters: restoring a hardcoded 1.0 silently resets the
+    /// user's mic gain on every command (audit M5).
+    @discardableResult
+    public static func muteInput(_ deviceID: UInt32? = nil) -> Float32? {
+        let saved = inputVolume(deviceID)
+        setInputVolume(0, deviceID: deviceID)
+        return saved
+    }
+
+    /// Re-arms the input at the level `muteInput` found. Falls back to 1.0 when
+    /// the device would not report a level, so the mic is never left silent.
+    public static func restoreInput(_ deviceID: UInt32? = nil, to level: Float32?) {
+        setInputVolume(level ?? 1.0, deviceID: deviceID)
+    }
+
+    private static func volumeAddress() -> AudioObjectPropertyAddress {
+        AudioObjectPropertyAddress(
             mSelector: kAudioDevicePropertyVolumeScalar,
             mScope: kAudioDevicePropertyScopeInput,
             mElement: kAudioObjectPropertyElementMain
         )
-        var value: Float32 = on ? 0.0 : 1.0
+    }
+
+    private static func inputVolume(_ deviceID: UInt32?) -> Float32? {
+        guard let target = deviceID ?? defaultInputDeviceID() else { return nil }
+        var address = volumeAddress()
+        var size = UInt32(MemoryLayout<Float32>.size)
+        var value: Float32 = 0
+        guard AudioObjectGetPropertyData(
+            AudioObjectID(target), &address, 0, nil, &size, &value
+        ) == noErr else { return nil }
+        return value
+    }
+
+    private static func setInputVolume(_ volume: Float32, deviceID: UInt32?) {
+        guard let target = deviceID ?? defaultInputDeviceID() else { return }
+        var address = volumeAddress()
+        var value = volume
         _ = AudioObjectSetPropertyData(
             AudioObjectID(target), &address, 0, nil, UInt32(MemoryLayout<Float32>.size), &value
         )
-    }
-
-    public static func withInputMuted<T>(_ deviceID: UInt32?, _ work: () throws -> T) rethrows -> T {
-        muteInput(deviceID, true)
-        defer { muteInput(deviceID, false) }
-        return try work()
     }
 
     private static func defaultInputDeviceID() -> UInt32? {
@@ -45,8 +70,6 @@ public enum MicMute {
         ) == noErr, deviceID != 0 else { return nil }
         return deviceID
     }
-
-    private static func setGlobalInputVolume(_ volume: Float32) -> OSStatus { noErr }
 }
 
 #endif

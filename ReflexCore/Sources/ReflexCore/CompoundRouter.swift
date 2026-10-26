@@ -25,11 +25,63 @@ public enum CompoundRouter {
     }
 
     /// Returns the parts of a compound utterance, or an empty array when the
-    /// phrase is single-action (no supportive `and`/`then` connective).
+    /// phrase is single-action (no supportive `and`/`then` connective and no
+    /// sentence boundary).
     public static func split(_ transcript: String) -> [Part] {
+        // Sentence boundaries are hard splits: Whisper puts two back-to-back
+        // commands in one segment ("Open YouTube.com. Open a new tab") because
+        // the VAD gate can be longer than the pause, and only the second clause
+        // used to execute. A domain period is never followed by a space, so a
+        // period at the end of a word is a sentence end here. Both sides must
+        // look like actions, so ordinary prose stays whole.
+        let sentences = sentenceParts(transcript)
+        if sentences.count > 1, sentences.allSatisfy({ looksLikeClauseStart($0) }) {
+            return sentences.flatMap { sentence -> [Part] in
+                let clause = sentence.trimmingCharacters(in: CharacterSet(charactersIn: " \t.!?"))
+                guard !clause.isEmpty else { return [] }
+                let inner = splitConnectives(clause)
+                if !inner.isEmpty { return inner }
+                // A single-clause sentence keeps the trailing "and press enter"
+                // fold the whole-utterance path applies.
+                let submit = trailingSubmit(from: clause)
+                let trimmed = stripTrailingSubmit(clause)
+                return [Part(transcript: trimmed.isEmpty ? clause : trimmed, submit: submit)]
+            }
+        }
+        return splitConnectives(transcript)
+    }
+
+    /// Sentence boundaries need a weaker test than the connective split: the
+    /// second sentence may legitimately begin with a payload verb ("Type buy
+    /// milk"), which the connective path rejects because there the left side is
+    /// the text being typed. Prose still fails — "hello" and "what" are not
+    /// command verbs, so "hello. what is the capital of France?" stays whole.
+    private static func looksLikeClauseStart(_ clause: String) -> Bool {
+        if looksLikeActionStart(clause) { return true }
+        let lower = clause.lowercased()
+        return payloadVerbs.contains { lower.hasPrefix($0) }
+    }
+
+    /// Splits on ". ", "! " and "? " (the whitespace is already consumed by the
+    /// word split).
+    private static func sentenceParts(_ transcript: String) -> [String] {
+        var out: [String] = []
+        var current: [String] = []
+        for unit in transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+            .split(separator: " ", omittingEmptySubsequences: true) {
+            current.append(String(unit))
+            if unit.hasSuffix(".") || unit.hasSuffix("!") || unit.hasSuffix("?") {
+                out.append(current.joined(separator: " "))
+                current = []
+            }
+        }
+        if !current.isEmpty { out.append(current.joined(separator: " ")) }
+        return out
+    }
+
+    private static func splitConnectives(_ transcript: String) -> [Part] {
         var text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
-
         // Find the *first* connective. Only split when the text after it is a
         // real, non-trivial clause; trailing "press enter" etc stays with the
         // prior part as submit.
@@ -39,7 +91,11 @@ public enum CompoundRouter {
 
             // "press enter" trailing the whole utterance folds into `left`.
             if !remainingClause(right) {
-                text = left
+                // The right side is a trailing submit-only tail (like "press enter").
+                // We want to split it off as a separate action.
+                parts.append(left)
+                parts.append(right)
+                text = "" // So that the loop ends.
                 break
             }
             parts.append(left)
@@ -49,18 +105,12 @@ public enum CompoundRouter {
             return []
         }
         parts.append(text)
-        return parts.map { part in
+        return parts.enumerated().map { index, part in
             let submit = trailingSubmit(from: part)
             let trimmed = stripTrailingSubmit(part)
             return Part(transcript: trimmed.isEmpty ? part : trimmed, submit: submit)
         }
     }
-
-    /// Finds the earliest `seps` connective whose *left* clause is a complete
-    /// action (starts with a verb). "run and gun" must not split on "and"; a
-    /// typed message full of "and"s ("type this and that") must not either,
-    /// because its left side is mid-payload. Here any left side that already
-    /// starts like a command is a split.
     private static func supportingConnective(in text: String) -> Range<String.Index>? {
         let lower = text.lowercased()
         for separator in separators {
@@ -76,10 +126,18 @@ public enum CompoundRouter {
         return nil
     }
 
+    /// Verbs whose remainder is a free-text payload, not a new clause. "type
+    /// this and that" is one typed message, not two actions.
+    private static let payloadVerbs = [
+        "type ", "write ", "paste ", "dictate ", "input ", "search ", "look up ",
+        "look for ", "play ",
+    ]
+
     /// A clause is a real action when it begins with a command verb (open,
     /// type, play, search, scroll, press, new, show, go, create, move, etc.).
     private static func looksLikeActionStart(_ clause: String) -> Bool {
         let lower = clause.lowercased()
+        if payloadVerbs.contains(where: { lower.hasPrefix($0) }) { return false }
         let verbs = [
             "open ", "launch ", "start ", "create ", "make ", "move ", "copy ",
             "type ", "write ", "paste ", "dictate ", "play ", "pause ", "stop ",
@@ -102,7 +160,8 @@ public enum CompoundRouter {
         if t.isEmpty { return false }
         let lower = t.lowercased()
         if ["press enter", "hit enter", "press return", "hit return",
-            "and press enter", "then press enter"].contains(lower) {
+             "and press enter", "then press enter", "new line", "press tab",
+             "hit tab", "and new line", "and press tab"].contains(lower) {
             return false
         }
         // A trailing submit-only tail like "press enter" is folded, not split.
@@ -113,7 +172,8 @@ public enum CompoundRouter {
     public static func trailingSubmit(from clause: String) -> Bool {
         let lower = clause.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         return ["press enter", "hit enter", "press return", "hit return", "submit",
-                "and press enter", "then press enter", "and hit enter", "and press return"]
+                 "and press enter", "then press enter", "and hit enter", "and press return",
+                 "new line", "press tab", "hit tab", "and new line", "and press tab"]
             .contains { lower.hasSuffix($0) }
     }
 

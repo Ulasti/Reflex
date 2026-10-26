@@ -26,9 +26,12 @@ public enum MicPicker {
             var nameSize: UInt32 = 0
             var nameAddr = AudioObjectPropertyAddress(mSelector: kAudioDevicePropertyDeviceNameCFString, mScope: kAudioDevicePropertyScopeInput, mElement: 0)
             guard AudioObjectGetPropertyDataSize(id, &nameAddr, 0, nil, &nameSize) == noErr else { continue }
-            var nameCF: CFString?
-            guard AudioObjectGetPropertyData(id, &nameAddr, 0, nil, &nameSize, &nameCF) == noErr else { continue }
-            let name = nameCF as String? ?? ""
+            // CoreAudio writes a +1 CFStringRef into this slot. Reading it back
+            // through a raw pointer keeps the compiler from warning about
+            // forming a pointer to an object reference.
+            var nameRef: UnsafeMutableRawPointer?
+            guard AudioObjectGetPropertyData(id, &nameAddr, 0, nil, &nameSize, &nameRef) == noErr else { continue }
+            let name = nameRef.map { Unmanaged<CFString>.fromOpaque($0).takeRetainedValue() as String } ?? ""
             devices.append(MicDevice(id: String(id), name: name, isDefault: false))
         }
         return devices

@@ -41,6 +41,8 @@ final class AppModel: ObservableObject {
     #if os(macOS)
     @Published var micDevices: [MicDevice] = []
     @Published var selectedMicID: String?
+    private var dictationArmed = false
+    private var dictationArmedTimer: Timer?
     #endif
 
     /// Verbose mode: log every decision + action of a session as it happens.
@@ -56,6 +58,13 @@ final class AppModel: ObservableObject {
     @Published var suppressWhileMediaPlaying: Bool {
         didSet { UserDefaults.standard.set(suppressWhileMediaPlaying, forKey: Self.mediaSuppressKey) }
     }
+    /// True once the mic permission has actually been refused. Holds until a
+    /// later request succeeds; drives the red error light on its own, since
+    /// "you must fix this" is not a model-load problem.
+    @Published private(set) var micDenied = false
+    /// When the last successful action fired, nil when no flash is in flight.
+    /// Drives the green flash window on the menu bar light.
+    @Published private(set) var actionFlashStart: Date?
     /// Completed sessions, newest first (persisted on disk).
     @Published var sessions: [SessionLog] = []
     /// The most recently completed session (what "copy last session" copies).
@@ -70,13 +79,26 @@ final class AppModel: ObservableObject {
     private var micMonitor: MicMonitor?
     private var liveTranscriber: LiveTranscriber?
     private var liveUpdatesTask: Task<Void, Never>?
+    /// Cleared by the green flash 300 ms after the last action (see flashExecuted).
+    private var flashTask: Task<Void, Never>?
     private var processing = false
     private var currentSession: SessionLog?
     private var lastActionTime: Date?
-    private let feedbackCooldown: TimeInterval = 1.0
+    /// 0.3 s still covers the feedback tone/shutter; it used to be 1.0 s, which
+    /// ate the first command of any two spoken back to back (plan Phase 1).
+    private let feedbackCooldown: TimeInterval = 0.3
+    /// FIFO of captured segments awaiting route + dispatch (plan Phase 1).
+    private var pendingSegments: [PendingSegment] = []
+    /// Live-latency bookkeeping: when the current utterance's speech started,
+    /// when its last voiced frame was seen (set from the level stream, reset
+    /// per segment).
+    private var speechStartedAt: Date?
+    private var lastVoicedAt: Date?
 
     #if os(macOS)
-    private var hotKeyID: UInt32 = 1
+    private let hotKeyID: UInt32 = 1
+    /// Holds the mic mute for as long as the feedback tone sounds.
+    private var feedbackTone: FeedbackTone?
     #endif
 
     /// True while the active model is loading. Drives UI gating so the user
@@ -96,6 +118,37 @@ final class AppModel: ObservableObject {
             failure: failure,
             ready: loadState.isReady
         )
+    }
+
+    /// The menu bar icon's light. Derived from published state only, so every
+    /// model-load, mic and dispatch change re-renders the icon on its own.
+    var menuBarLight: SignalLight {
+        let failure: String?
+        if case .failed(let reason) = loadState {
+            failure = reason
+        } else {
+            failure = micDenied ? "Microphone access denied" : nil
+        }
+        return SignalLight.resolve(
+            failure: failure,
+            loading: loadState.isLoading,
+            flashActive: actionFlashStart != nil,
+            listening: isListening,
+            hearing: isSpeaking
+        )
+    }
+
+    /// Green "it acted" flash on the menu bar light. Re-triggering restarts the
+    /// window, so a queue draining three commands stays green until 300 ms
+    /// after the last one rather than flickering into one blur.
+    private func flashExecuted() {
+        actionFlashStart = Date()
+        flashTask?.cancel()
+        flashTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+            self?.actionFlashStart = nil
+        }
     }
 
     init() {
@@ -217,6 +270,7 @@ final class AppModel: ObservableObject {
         guard !isListening else { return }
         Task {
             let granted = await requestMicrophoneAccess()
+            micDenied = !granted
             guard granted else {
                 modelStatus = "Microphone access denied"
                 return
@@ -253,12 +307,21 @@ final class AppModel: ObservableObject {
             #else
             monitor = MicMonitor()
             #endif
-            monitor.onSegment = { [weak self] samples in
-                Task { @MainActor in self?.handleSegment(samples) }
+            monitor.onSegment = { [weak self] samples, reason, audioDuration in
+                Task { @MainActor in self?.handleSegment(samples, reason: reason, audioDuration: audioDuration) }
             }
             monitor.onLevel = { [weak self] level, speaking in
                 Task { @MainActor in
                     self?.liveLevel = level
+                    if speaking {
+                        if self?.speechStartedAt == nil { self?.speechStartedAt = Date() }
+                        // Only a window whose audio crossed the speech floor is a
+                        // voiced frame: `speaking` stays true through the silence
+                        // gate, so using it would measure the gate, not the voice.
+                        if level >= StreamSegmenter.speechLevelFloor {
+                            self?.lastVoicedAt = Date()
+                        }
+                    }
                     self?.isSpeaking = speaking
                 }
             }
@@ -310,43 +373,116 @@ final class AppModel: ObservableObject {
             : "Stopped — ⌘P to re-arm"
     }
 
-    /// A finalized speech segment arrived. Runs it through the pipeline and
-    /// auto-executes the resulting action. Segments heard while a prior one is
-    /// still being processed are dropped; the mic keeps listening regardless.
-    private func handleSegment(_ samples: [Float]) {
-        if let t = lastActionTime, Date().timeIntervalSince(t) < feedbackCooldown {
-            modelStatus = "Cooldown, ignoring feedback"
-            return
+    /// A queued segment: live mode already captured the transcript at arrival;
+    /// segmented mode still carries the raw samples.
+    private enum PendingSegment {
+        case liveText(String, timing: SegmentTiming)
+        case samples([Float])
+    }
+
+    /// When each live utterance happened, so the session log can report live
+    /// latency: speech onset → segment emit ("hearing"), the final decode, the
+    /// route, the dispatch, and last-voiced-frame → dispatched.
+    private struct SegmentTiming {
+        let speechStart: Date?
+        let lastVoiced: Date?
+        let segAt: Date
+        let decodeMs: Double
+        let emitReason: String
+        let audioDuration: Double
+    }
+
+    /// A finalized speech segment arrived. Live mode captures the transcript
+    /// here — the transcriber's rolling buffer belongs to the next utterance as
+    /// soon as speech resumes — then queues the work FIFO. Segments arriving
+    /// mid-drain are queued instead of dropped (plan Phase 1); the mic keeps
+    /// listening regardless.
+    private func handleSegment(_ samples: [Float], reason: String, audioDuration: Double) {
+        Task { @MainActor in
+            let segAt = Date()
+            let speechStart = speechStartedAt
+            let lastVoiced = lastVoicedAt
+            speechStartedAt = nil
+            lastVoicedAt = nil
+            let pending: PendingSegment
+            if let live = liveTranscriber {
+                let decodeStart = Date()
+                let text: String
+                do {
+                    text = try await live.finalizeUtterance()
+                } catch {
+                    modelStatus = "Pipeline: \(error.localizedDescription)"
+                    return
+                }
+                let timing = SegmentTiming(
+                    speechStart: speechStart,
+                    lastVoiced: lastVoiced,
+                    segAt: segAt,
+                    decodeMs: Date().timeIntervalSince(decodeStart) * 1000,
+                    emitReason: reason,
+                    audioDuration: audioDuration
+                )
+                guard !text.isEmpty else {
+                    modelStatus = "No speech detected"
+                    return
+                }
+                // No text de-duplication here: identical text is only a repeat
+                // if it came from a new audio segment, and `finalizeUtterance`
+                // clears the rolling buffer, so it always did. Skipping it
+                // swallowed a deliberate repeat ("volume up, volume up").
+                pending = .liveText(text, timing: timing)
+            } else {
+                pending = .samples(samples)
+            }
+            pendingSegments.append(pending)
+            guard !processing else { return }
+            processing = true
+            modelStatus = "Deciding…"
+            await drainSegments()
+            processing = false
+            if isListening {
+                modelStatus = "Listening — ⌘P to kill"
+            }
         }
+    }
+
+    /// Drains queued segments one at a time, in arrival order. The green flash
+    /// retriggers once per dispatched action (flashExecuted, in `dispatch`).
+    private func drainSegments() async {
+        while !pendingSegments.isEmpty {
+            let pending = pendingSegments.removeFirst()
+            var decisiveRule = false
+            if case .liveText(let text, _) = pending {
+                // A decisive rule means the speaker, not system audio: music
+                // never classifies at >= 0.9. Without this check the media
+                // suppression below dropped "volume up" and "open Safari" too.
+                decisiveRule = RuleRouter().classify(text)?.isDecisive == true
+            }
 #if os(macOS)
-        // System audio (Music, Safari, YouTube) is loud enough to trip the
-        // VAD and gets dictated as "bell dings" etc. When media is actually
-        // playing, drop the segment rather than route it.
-        if suppressWhileMediaPlaying, NowPlaying.status().isPlaying {
-            modelStatus = "Media playing, ignoring system audio"
-            return
-        }
+            // System audio (Music, Safari, YouTube) is loud enough to trip the
+            // VAD and gets dictated as "bell dings" etc. When media is actually
+            // playing, skip the non-decisive segments rather than route them.
+            // Off the main actor: NowPlaying.status() blocks on a semaphore for
+            // up to 3 s (atlas/docs/audit-2026-10-14.md, M2).
+            if suppressWhileMediaPlaying, !decisiveRule, await mediaIsPlaying() {
+                modelStatus = "Media playing, ignoring system audio"
+                continue
+            }
 #endif
-        guard !processing else {
-            modelStatus = "Busy, dropped a segment"
-            return
-        }
-        processing = true
-        modelStatus = "Deciding…"
-        Task {
+            // Cooldown delays instead of dropping: the previous action's
+            // ding/shutter is audible and must not re-trigger. Shrunk 1.0 → 0.3 s.
+            if let t = lastActionTime {
+                let wait = feedbackCooldown - Date().timeIntervalSince(t)
+                if wait > 0 {
+                    try? await Task.sleep(nanoseconds: UInt64(wait * 1_000_000_000))
+                }
+            }
             do {
-                if let live = liveTranscriber {
-                    // Live mode: WhisperKit finalized the text already; route
-                    // once here (partials shown in the UI are never routed).
-                    let text = try await live.finalizeUtterance()
-                    if text.isEmpty {
-                        modelStatus = "No speech detected"
-                    } else {
-                        await resolveLiveTranscript(text)
-                    }
-                } else {
+                if case .liveText(let text, let timing) = pending {
+                    await resolveLiveTranscript(text, timing: timing)
+                } else if case .samples(let sampleArray) = pending {
                     let decisions = try await engine.resolveCommandStreamCompound(
-                        samples: samples,
+                        samples: sampleArray,
                         modelKind: activeModel,
                         forcedLanguage: forcedEnglish ? "en" : "auto"
                     )
@@ -360,23 +496,29 @@ final class AppModel: ObservableObject {
             } catch {
                 modelStatus = "Pipeline: \(error.localizedDescription)"
             }
-            processing = false
-            if isListening {
-                modelStatus = "Listening — ⌘P to kill"
-            }
         }
     }
+
+#if os(macOS)
+    /// Whether the system is playing media right now. Detached because
+    /// `NowPlaying.status()` blocks on a semaphore for up to 3 s.
+    private func mediaIsPlaying() async -> Bool {
+        await Task.detached(priority: .utility) { NowPlaying.status().isPlaying }.value
+    }
+#endif
 
     /// Routes a WhisperKit-finalized transcript through Laya and executes.
     /// Compound utterances ("new note ... then open ...") expand into one gated
     /// decision per clause (A4) and execute in order.
-    private func resolveLiveTranscript(_ text: String) async {
+    private func resolveLiveTranscript(_ text: String, timing: SegmentTiming?) async {
         do {
+            let routeStart = Date()
             let decisions = try await engine.resolveCompoundTranscript(text)
+            let routeMs = Date().timeIntervalSince(routeStart) * 1000
             for decision in decisions {
                 lastTranscript = decision.transcript
                 lastDecision = decision
-                await dispatch(decision, mode: .live)
+                await dispatch(decision, mode: .live, timing: timing, routeMs: routeMs)
                 if case .stopped = lastResult { break }
             }
         } catch {
@@ -387,8 +529,14 @@ final class AppModel: ObservableObject {
     /// Runs the macOS `ActionDispatcher` for a decision, surfaces the result,
     /// and — in verbose mode — records the whole decision + outcome into the
     /// current session log.
-    private func dispatch(_ decision: ReflexDecision, mode: SessionLog.Mode) async {
+    private func dispatch(
+        _ decision: ReflexDecision,
+        mode: SessionLog.Mode,
+        timing: SegmentTiming? = nil,
+        routeMs: Double? = nil
+    ) async {
         #if os(macOS)
+        let dispatchStart = Date()
         let outcome = await Task.detached(priority: .userInitiated) {
             do {
                 return (try ActionDispatcher().dispatch(decision), nil) as (ReflexActionResult?, String?)
@@ -399,25 +547,59 @@ final class AppModel: ObservableObject {
         let (result, failure) = outcome
         // Phase C feedback: a short ding on done, a lower tone on failure so
         // the user knows (without watching the screen) whether it acted.
-        if let result {
+        if let result, result.isNoOp {
+            // A gated no-op ("not sure what you meant") did nothing and did not
+            // fail: no green flash, no red — red is reserved for mic, model and
+            // capture failures — so the light returns to Armed. No ding either.
             lastResult = result
             modelStatus = result.summary
+        } else if let result {
+            lastResult = result
+            modelStatus = result.summary
+            flashExecuted()
             if shouldPlayFeedbackSounds, result.summary != "Stopped listening" {
                 lastActionTime = Date()
-                Self.playFeedbackDone()
+                playFeedback(named: "Glass")
             } else if result.summary != "Stopped listening" {
                 lastActionTime = Date()
             }
         } else {
+            // The transcript did not resolve to anything runnable. Not green
+            // (nothing was executed) and not red (the mic and model are fine).
             modelStatus = "Execute failed: \(failure ?? "unknown error")"
             lastActionTime = Date()
             if shouldPlayFeedbackSounds {
-                Self.playFeedbackFail()
+                playFeedback(named: "Sosumi")
             }
         }
+        let dispatchMs = Date().timeIntervalSince(dispatchStart) * 1000
 
         guard verboseLogging, var session = currentSession else { return }
         let outcomeText = result?.summary ?? "Execute failed: \(failure ?? "unknown error")"
+        // Check for bare "type" to arm dictation.
+        if decision.transcript.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == "type" {
+            dictationArmed = true
+        }
+        let dictationDecision: ReflexDecision
+        if dictationArmed {
+            // The user has armed dictation with a bare "type".
+            // Treat the transcript as the payload to be typed.
+            dictationArmed = false
+            dictationArmedTimer?.invalidate()
+            dictationArmedTimer = nil
+            dictationDecision = ReflexDecision(
+                actionTarget: ReflexChoice("dictation"),
+                urgencyScore: ReflexScore(0),
+                confidence: ReflexNoul(lowerBound: 1.0, upperBound: 1.0),
+                transcript: decision.transcript,
+                trace: nil,
+                confidenceValue: 1.0,
+                addressed: 1.0,
+                layaConfidence: 0.0
+            )
+        } else {
+            dictationDecision = decision
+        }
         session.entries.append(SessionLog.Entry(
             id: UUID(),
             time: Date(),
@@ -431,7 +613,14 @@ final class AppModel: ObservableObject {
             ruleTarget: decision.trace?.ruleTarget,
             chosen: decision.trace?.chosen,
             ambiguous: decision.trace?.ambiguous ?? false,
-            result: outcomeText
+            result: outcomeText,
+            hearingMs: timing.map { $0.segAt.timeIntervalSince($0.speechStart ?? $0.segAt) * 1000 },
+            decodeMs: timing?.decodeMs,
+            routeMs: routeMs,
+            dispatchMs: dispatchMs,
+            voiceToDispatchMs: timing?.lastVoiced.map { Date().timeIntervalSince($0) * 1000 },
+            emitReason: timing?.emitReason,
+            audioDuration: timing?.audioDuration
         ))
         currentSession = session
         #else
@@ -451,23 +640,74 @@ final class AppModel: ObservableObject {
     }
 
     #if os(macOS)
-    /// Phase C feedback tones: "Glass" (done) and "Sosumi" (failure) — the
-    /// system sound list, no bundled assets needed.
-    ///
-    /// The input device is muted for the duration of the tone so the mic
-    /// cannot hear its own feedback (MicMute). A software cooldown alone is
-    /// not enough: the bell is loud enough to trip the VAD even through the
-    /// cooldown, and a long cooldown makes the app feel sluggish.
-    private static func playFeedbackDone() {
-        MicMute.withInputMuted(nil) { NSSound(named: "Glass")?.play() }
+    /// Phase C feedback tone. The input device is muted for the duration of the
+    /// tone so the mic cannot hear its own feedback (MicMute). A software
+    /// cooldown alone is not enough: the bell is loud enough to trip the VAD
+    /// even through the cooldown, and a long cooldown makes the app feel
+    /// sluggish.
+    private func playFeedback(named name: String) {
+        // A previous tone may still be sounding; re-arm the mic before the next.
+        feedbackTone?.finish()
+        let tone = FeedbackTone(
+            named: name,
+            deviceID: selectedMicID.flatMap(UInt32.init)
+        ) { [weak self] in
+            self?.feedbackTone = nil
+        }
+        feedbackTone = tone
+        tone.play()
     }
-
-    private static func playFeedbackFail() {
-        MicMute.withInputMuted(nil) { NSSound(named: "Sosumi")?.play() }
-    }
-    #else
-    // iOS: silent feedback for now (no haptics wired in this pass).
-    private static func playFeedbackDone() {}
-    private static func playFeedbackFail() {}
     #endif
 }
+
+#if os(macOS)
+/// Plays one feedback tone with the input device muted for exactly as long as
+/// the tone lasts, then puts the user's mic level back.
+///
+/// `NSSound.play()` returns immediately, so unmuting in the same run-loop tick
+/// leaves the mute window at ~0 ms and the ding is recorded anyway (audit M5) —
+/// the unmute has to be driven by the sound finishing. `NSSound` holds its
+/// delegate weakly, so `AppModel` keeps the tone alive until `onFinish` runs.
+@MainActor
+private final class FeedbackTone: NSObject, NSSoundDelegate {
+    private let sound: NSSound?
+    /// The device capture actually uses, not the system default (audit S7).
+    private let deviceID: UInt32?
+    private let onFinish: () -> Void
+    /// The level found before muting, put back when the tone ends.
+    private var savedLevel: Float32?
+    private var isMuted = false
+
+    init(named name: String, deviceID: UInt32?, onFinish: @escaping () -> Void) {
+        sound = NSSound(named: name)
+        self.deviceID = deviceID
+        self.onFinish = onFinish
+        super.init()
+    }
+
+    func play() {
+        guard let sound else {
+            onFinish()
+            return
+        }
+        savedLevel = MicMute.muteInput(deviceID)
+        isMuted = true
+        sound.delegate = self
+        sound.play()
+    }
+
+    /// Re-arms the mic now. Idempotent: whichever of the sound's delegate or a
+    /// replacement tone gets here first, the level is restored exactly once.
+    func finish() {
+        guard isMuted else { return }
+        isMuted = false
+        sound?.delegate = nil
+        MicMute.restoreInput(deviceID, to: savedLevel)
+        onFinish()
+    }
+
+    nonisolated func sound(_ sound: NSSound, didFinishPlaying success: Bool) {
+        Task { @MainActor in finish() }
+    }
+}
+#endif

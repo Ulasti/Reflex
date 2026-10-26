@@ -1,0 +1,74 @@
+# Evidence: Live Demo v1 plan accepted, branch cut, Phase 0 drafted
+
+Date: 2026-10-19
+Branch: atlas/live-demo-v1 (cut from dev immediately after the menubar merge 9d3a665)
+
+## What this session did
+
+- atlas/docs/live-demo-v1-plan.md — the user's plan, stored verbatim (accepted
+  as the driver for all engine work: accuracy + response time). Targets:
+  p50 <= 500 ms / p95 <= 700 ms, >= 90% command accuracy, near-zero false
+  triggers, every light-table row correct.
+- atlas/docs/live-demo-corpus-v0.md — Phase 0 steps 1-2 drafted: 25-command
+  set (16 Tier A + 5 open-app + 4 go-to-site), 4-6 phrasings per command with
+  heldout split marked, recording protocol + file naming + manifest columns,
+  ambient decoy sentences, ablation bookkeeping.
+- atlas/ATLAS.md — Next Steps restructured around the plan (item 1 = Phase 0
+  order and the baseline-before-Phase-1 rule; A5 folded into Phases 3/4; the
+  rest of the feature queue explicitly held by the Stop line).
+
+## Plan line refs verified against the tree (plan was written on an older snapshot)
+
+- Partial throttle guard: LiveTranscriber.swift:196 (plan says 195) — the
+  `floor(timeIntervalSinceReferenceDate)` cadence bug exists as described.
+- handleSegment cooldown/drop: AppModel.swift:359-364, cooldown constant line
+  85 (plan says 331-338) — drifts because menubar work removed ~14 lines above
+  it; behavior unchanged (drop while processing + 1.0 s feedbackCooldown).
+- StreamSegmenter defaults: maxSilenceWindows 7 (=700 ms), rearmWindows 4,
+  window 1600 samples = 100 ms — matches the plan's latency table.
+
+## Status of the plan's Phase 0 (the gate for everything else)
+
+- Command set: DRAFTED, not frozen (user freezes by editing the corpus doc).
+- Corpus recording: not started (user's task, ~400-500 short clips + 30-60 min
+  ambient).
+- Replay harness + baseline ablation: not started (agent's next task; must
+  exist and capture the baseline BEFORE any Phase 1 change, per the plan).
+
+## Gates still green at branch cut
+
+Full gate on the menubar merge (same tree): 342 compile actions, 56 tests/14
+suites, verify OK, --diagnose 0 blocking, --laya-ref 126/126. No code changed
+this session — docs/branch only.
+
+## Recording assets (added same day)
+
+- corpus/PHRASES.md — the reading copy of the corpus: Part 1 train (91 lines),
+  Part 2 heldout (41 lines), Part 3 ambient, take rules, file-naming stems.
+  Wording matches atlas/docs/live-demo-corpus-v0.md 1:1 (canonical).
+- corpus/{train,heldout,ambient}/ created as the recording destinations.
+- corpus/.gitignore — *.wav/*.m4a/*.mp3/*.flac ignored; audio never committed.
+- 132 phrasings total; 2 takes minimum = 264 clips, 4 takes = 528 clips.
+- corpus/record.swift — dependency-free Swift recorder (AVAudioRecorder):
+  parses PHRASES.md, prompts per line, beeps, records 2 x 5 s take windows to
+  corpus/<folder>/<stem>__take<N>.wav (16 kHz mono PCM), resumable, skip/quit.
+  `--list` self-check passes: 132 = 91 train + 41 heldout. Not yet exercised
+  against a live mic (mic TCC untested from the agent shell; user runs it).
+- recorder v2 (same day, after first user run): fixed 5 s window replaced with
+  press-Enter-to-start / press-Enter-to-stop takes (user asked how to end a
+  recording; the window was invisible without audio feedback); beeps moved from
+  NSSound (silent in a CLI process — needs an app run loop) to afplay of
+  /System/Library/Sounds/{Tink,Pop}.aiff (verified present + afplay exit 0);
+  the start beep fires just before capture starts so clips carry speech only.
+  takes under 0.5 s are discarded with a message; saved duration printed per
+  take. --seconds flag removed.
+  First user run left one 0.0 s file (corpus/train/volume_up__1__take1.wav):
+  to be deleted by the user before recording for real.
+- recorder v3 (same day, after the second user run still reported 0.00 s):
+  take length now measured from the saved file (AVAudioFile length / sample
+  rate) instead of AVAudioRecorder.currentTime, which reported 0 while the
+  main thread sat blocked in readLine(); the wait for Enter now pumps
+  CFRunLoopRunInMode so the capture engine has a running loop; metering is on
+  and prints "%.1f s level %.0f dB" every second during capture; a 0-length
+  file now reports "no audio captured" with a microphone-permission hint
+  instead of "too short". Live-mic verification still user-side.

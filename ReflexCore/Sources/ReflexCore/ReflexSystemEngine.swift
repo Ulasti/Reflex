@@ -133,6 +133,17 @@ public actor ReflexSystemEngine {
     }
 
     private func runCoreMLLaya(text: String) async throws -> ReflexDecision {
+        // Phase 3 latency short-circuit: a strong rule decides on its own, so
+        // the Laya forward pass (a CoreML run the arbiter would only confirm)
+        // never happens. Measured route stage 227 ms -> microseconds; the
+        // baseline showed Laya rescuing 0 of 145 rule misses, so nothing is
+        // lost for a rule that already fires at >= 0.9.
+        // REFLEX_FORCE_LAYA=1 disables the skip so the ablation can still
+        // measure the Laya lane; it is a measurement switch, not a runtime mode.
+        let forceLaya = ProcessInfo.processInfo.environment["REFLEX_FORCE_LAYA"] != nil
+        if !forceLaya, let rule = RuleRouter().classify(text), rule.isDecisive {
+            return ruleDecision(rule, text: text)
+        }
         guard let layaRouter else {
             throw ReflexSystemEngineError.layaUnavailable
         }
@@ -173,7 +184,8 @@ public actor ReflexSystemEngine {
                 transcript: text,
                 trace: trace,
                 confidenceValue: confidence,
-                addressed: addressed
+                addressed: addressed,
+                layaConfidence: action.confidence
             )
         }
 
@@ -184,7 +196,29 @@ public actor ReflexSystemEngine {
             transcript: text,
             trace: trace,
             confidenceValue: confidence,
-            addressed: addressed
+            addressed: addressed,
+            layaConfidence: action.confidence
+        )
+    }
+
+    /// A rule-only decision: the rule's target at its own confidence, no Laya
+    /// forward pass, nothing left ambiguous (the rule is deterministic).
+    private func ruleDecision(_ rule: RuleDecision, text: String) -> ReflexDecision {
+        let trace = RoutingTrace(
+            layaTarget: "skipped",
+            ruleTarget: rule.target,
+            chosen: rule.target,
+            ambiguous: false
+        )
+        return ReflexDecision(
+            actionTarget: ReflexChoice(rule.target),
+            urgencyScore: ReflexScore(0),
+            confidence: ReflexNoul(lowerBound: rule.confidence, upperBound: rule.confidence),
+            transcript: text,
+            trace: trace,
+            confidenceValue: rule.confidence,
+            addressed: 1.0,
+            layaConfidence: 0
         )
     }
 
@@ -198,8 +232,9 @@ public actor ReflexSystemEngine {
         let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowered = cleaned.lowercased()
         let bracketed = cleaned.hasPrefix("[") && cleaned.hasSuffix("]")
-        let highSignal = ["silence", "no speech", "inaudible", "applause"]
-            .contains { lowered.contains($0) }
+        // The utterance must *be* the marker: "silence it" is mute, not silence.
+        let bare = lowered.trimmingCharacters(in: CharacterSet(charactersIn: " ().,!?;"))
+        let highSignal = ["silence", "silent", "no speech", "inaudible", "applause"].contains(bare)
         return bracketed || highSignal
     }
 }

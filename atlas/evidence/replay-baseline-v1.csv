@@ -1,0 +1,265 @@
+file,split,command_id,phrase_id,segments,transcript,expected,rule_sig,laya_sig,hybrid_sig,rule_conf,laya_conf,hybrid_conf,correct_rules,correct_laya,correct_hybrid,hearing_ms,partial1_ms,decode_ms,emit_to_route_ms,last_word_to_route_ms
+brightness_down__5__take1.wav,heldout,brightness_down,5,1,Decrease brightness,brightness.down,brightness.down,media.toggle,brightness.down,0.950,0.092,0.950,1,0,1,0,662,179,401,604
+brightness_down__5__take2.wav,heldout,brightness_down,5,1,Decrease brightness,brightness.down,brightness.down,media.toggle,brightness.down,0.950,0.092,0.950,1,0,1,0,752,175,389,590
+brightness_down__6__take1.wav,heldout,brightness_down,6,1,Screen a bit darker,brightness.down,brightness.down,open.Screen a bit darker,brightness.down,0.950,0.100,0.950,1,0,1,0,1080,168,389,593
+brightness_down__6__take2.wav,heldout,brightness_down,6,1,been a bit darker,brightness.down,brightness.down,file_operation,brightness.down,0.950,0.025,0.950,1,0,1,0,1089,170,389,592
+brightness_up__5__take1.wav,heldout,brightness_up,5,1,Increased brightness,brightness.up,brightness.up,media.toggle,brightness.up,0.950,0.142,0.950,1,0,1,0,541,161,378,579
+brightness_up__5__take2.wav,heldout,brightness_up,5,1,Increased brightness,brightness.up,brightness.up,media.toggle,brightness.up,0.950,0.142,0.950,1,0,1,0,1092,160,378,580
+brightness_up__6__take1.wav,heldout,brightness_up,6,1,Screen a bit brighter,brightness.up,brightness.up,open.Screen a bit brighter,brightness.up,0.950,0.148,0.950,1,0,1,0,757,174,394,600
+brightness_up__6__take2.wav,heldout,brightness_up,6,1,screen a bit brighter,brightness.up,brightness.up,file_operation,brightness.up,0.950,0.062,0.950,1,0,1,0,,161,390,592
+copy__5__take1.wav,heldout,copy,5,1,Copy this election,shortcut.copy,shortcut.copy,file_operation,shortcut.copy,0.900,0.670,0.900,1,0,1,0,768,172,400,602
+copy__5__take2.wav,heldout,copy,5,1,Copy to selection,shortcut.copy,none,file_operation,general_query,0.000,0.158,0.158,0,0,0,0,880,164,385,588
+copy__6__take1.wav,heldout,copy,6,1,Copy everything,shortcut.copy,none,file_operation,file_operation,0.000,0.878,0.878,0,0,0,0,981,154,374,576
+copy__6__take2.wav,heldout,copy,6,1,Copy everything,shortcut.copy,none,file_operation,file_operation,0.000,0.878,0.878,0,0,0,0,966,163,380,581
+dark_mode__5__take1.wav,heldout,dark_mode,5,1,Make it dark,system.darkMode(true),none,media.toggle,general_query,0.000,0.283,0.283,0,0,0,0,,163,377,579
+dark_mode__5__take2.wav,heldout,dark_mode,5,1,Make it dark,system.darkMode(true),none,media.toggle,general_query,0.000,0.283,0.283,0,0,0,0,774,163,377,579
+dark_mode__6__take1.wav,heldout,dark_mode,6,1,Night mode,system.darkMode(true),none,file_operation,general_query,0.000,0.076,0.076,0,0,0,0,,138,353,555
+dark_mode__6__take2.wav,heldout,dark_mode,6,1,Night mode,system.darkMode(true),none,file_operation,general_query,0.000,0.076,0.076,0,0,0,0,,151,365,568
+go_github__4__take1.wav,heldout,go_github,4,1,GetUp.com,open.github,none,file_operation,general_query,0.000,0.052,0.052,0,0,0,0,768,169,382,585
+go_github__4__take2.wav,heldout,go_github,4,1,Get up.com,open.github,none,file_operation,general_query,0.000,0.051,0.051,0,0,0,0,,166,380,582
+go_google__4__take1.wav,heldout,go_google,4,1,Google.com,open.google,web.com,file_operation,web.com,0.850,0.073,0.850,0,0,0,0,782,150,364,566
+go_google__4__take2.wav,heldout,go_google,4,1,Google.com,open.google,web.com,file_operation,web.com,0.850,0.073,0.850,0,0,0,0,967,156,377,579
+go_wikipedia__4__take1.wav,heldout,go_wikipedia,4,1,www.equipiria.com,open.wikipedia,none,file_operation,general_query,0.000,0.060,0.060,0,0,0,0,1060,217,437,641
+go_wikipedia__4__take2.wav,heldout,go_wikipedia,4,1,Wikipedia.com,open.wikipedia,none,file_operation,general_query,0.000,0.074,0.074,0,0,0,0,1070,175,402,603
+go_youtube__4__take1.wav,heldout,go_youtube,4,1,youtube.com,open.youtube,none,file_operation,general_query,0.000,0.033,0.033,0,0,0,0,3294,2416,2651,2859
+go_youtube__4__take2.wav,heldout,go_youtube,4,1,Easy.com,open.youtube,none,file_operation,general_query,0.000,0.056,0.056,0,0,0,0,1241,177,389,600
+next_track__5__take1.wav,heldout,next_track,5,1,Go to the next song,media.next,media.next,media.next,media.next,0.900,0.715,0.900,1,1,1,0,810,173,389,593
+next_track__5__take2.wav,heldout,next_track,5,1,Go to the next song,media.next,media.next,media.next,media.next,0.900,0.715,0.900,1,1,1,0,1714,176,416,617
+next_track__6__take1.wav,heldout,next_track,6,1,skip ahead,media.next,media.next,file_operation,media.next,0.900,0.055,0.900,1,0,1,0,,153,368,572
+next_track__6__take2.wav,heldout,next_track,6,1,Skip ahead,media.next,media.next,file_operation,media.next,0.900,0.065,0.900,1,0,1,0,661,150,363,567
+open_calendar__4__take1.wav,heldout,open_calendar,4,1,calendar,open.Calendar,none,file_operation,general_query,0.000,0.083,0.083,0,0,0,0,,144,362,566
+open_calendar__4__take2.wav,heldout,open_calendar,4,1,Start calendar,open.Calendar,open.calendar,file_operation,open.calendar,0.900,0.087,0.900,1,0,1,0,746,166,382,583
+open_music__4__take1.wav,heldout,open_music,4,1,Open the music app,open.Music,open.music,media.toggle,open.music,0.900,0.697,0.900,1,0,1,0,1088,170,386,590
+open_music__4__take2.wav,heldout,open_music,4,1,Open the music app,open.Music,open.music,media.toggle,open.music,0.900,0.697,0.900,1,0,1,0,1503,173,396,600
+open_notes__4__take1.wav,heldout,open_notes,4,1,Open the notes app,open.Notes,open.notes,open.notes,open.notes,0.900,0.969,0.969,1,1,1,0,854,164,385,588
+open_notes__4__take2.wav,heldout,open_notes,4,1,Open the notes out,open.Notes,open.notes out,open.notes out,open.notes out,0.900,0.313,0.900,0,0,0,0,,178,402,604
+open_safari__4__take1.wav,heldout,open_safari,4,1,Safari please,open.Safari,none,open.Safari please,general_query,0.000,0.090,0.090,0,0,0,0,887,156,377,582
+open_safari__4__take2.wav,heldout,open_safari,4,1,Safari Police,open.Safari,none,file_operation,general_query,0.000,0.058,0.058,0,0,0,0,631,134,358,563
+open_terminal__4__take1.wav,heldout,open_terminal,4,1,Open the terminal,open.Terminal,open.terminal,open.terminal,open.terminal,0.900,0.274,0.900,1,1,1,0,1167,148,367,570
+open_terminal__4__take2.wav,heldout,open_terminal,4,1,Open the terminal,open.Terminal,open.terminal,open.terminal,open.terminal,0.900,0.274,0.900,1,1,1,0,1495,159,379,581
+paste__5__take1.wav,heldout,paste,5,1,Paste from the clipboard,shortcut.paste,type_text,file_operation,type_text,0.950,0.205,0.950,0,0,0,0,611,178,416,618
+paste__5__take2.wav,heldout,paste,5,1,Paste from the clipboard,shortcut.paste,type_text,file_operation,type_text,0.950,0.205,0.950,0,0,0,0,1166,188,408,611
+paste__6__take1.wav,heldout,paste,6,1,Drop it in here,shortcut.paste,none,file_operation,general_query,0.000,0.138,0.138,0,0,0,0,962,166,384,585
+paste__6__take2.wav,heldout,paste,6,1,Drop it in here,shortcut.paste,none,file_operation,general_query,0.000,0.138,0.138,0,0,0,0,,164,387,590
+play_pause__5__take1.wav,heldout,play_pause,5,1,Toggle Playback,media.play,none,media.play,general_query,0.000,0.210,0.210,0,1,0,0,887,178,400,603
+play_pause__5__take2.wav,heldout,play_pause,5,1,Toggle Play Mac,media.play,media.play,file_operation,media.play,0.900,0.074,0.900,1,0,1,0,1096,171,388,594
+play_pause__6__take1.wav,heldout,play_pause,6,1,Start for a second,media.play,open.for a second,open.for a second,open.for a second,0.900,0.094,0.900,0,0,0,0,780,159,380,583
+play_pause__6__take2.wav,heldout,play_pause,6,1,Stop for a second,media.play,none,open.Stop,open.Stop,0.000,0.505,0.505,0,0,0,0,1586,167,389,590
+prev_track__5__take1.wav,heldout,prev_track,5,1,Play the last one,media.previous,media.play,file_operation,media.play,0.900,0.067,0.900,0,0,0,0,1394,168,392,594
+prev_track__5__take2.wav,heldout,prev_track,5,1,Play the last one,media.previous,media.play,file_operation,media.play,0.900,0.067,0.900,0,0,0,0,,174,394,599
+prev_track__6__take1.wav,heldout,prev_track,6,1,Back to the previous one,media.previous,none,open.Back,general_query,0.000,0.115,0.115,0,0,0,0,754,183,403,605
+prev_track__6__take2.wav,heldout,prev_track,6,1,back to the previous one,media.previous,none,file_operation,general_query,0.000,0.048,0.048,0,0,0,0,788,182,401,604
+screenshot__5__take1.wav,heldout,screenshot,5,1,Grab the screen,screenshot,none,open.Grab the screen,open.Grab the screen,0.000,0.664,0.664,0,0,0,0,872,157,379,580
+screenshot__5__take2.wav,heldout,screenshot,5,1,Grab the screen,screenshot,none,open.Grab the screen,open.Grab the screen,0.000,0.664,0.664,0,0,0,0,972,157,378,581
+screenshot__6__take1.wav,heldout,screenshot,6,1,Tooth screen,screenshot,none,open.Tooth screen,general_query,0.000,0.129,0.129,0,0,0,0,247,389,616,819
+screenshot__6__take2.wav,heldout,screenshot,6,1,Take a picture of the screen,screenshot,none,open.Take a picture of the screen,general_query,0.000,0.305,0.305,0,0,0,0,558,184,403,605
+scroll_down__5__take1.wav,heldout,scroll_down,5,1,Scroll down a bit,scroll.down,scroll.down,file_operation,scroll.down,0.920,0.038,0.920,1,0,1,0,1515,160,382,588
+scroll_down__5__take2.wav,heldout,scroll_down,5,1,Skull up a bit,scroll.down,none,file_operation,general_query,0.000,0.049,0.049,0,0,0,0,,177,395,596
+scroll_down__6__take1.wav,heldout,scroll_down,6,1,Take me to the bottom,scroll.down,none,open.Take me,general_query,0.000,0.178,0.178,0,0,0,0,994,175,392,595
+scroll_down__6__take2.wav,heldout,scroll_down,6,1,Take me to the bottom,scroll.down,none,open.Take me,general_query,0.000,0.178,0.178,0,0,0,0,1304,177,421,626
+scroll_up__5__take1.wav,heldout,scroll_up,5,1,Scroll up a bit,scroll.up,scroll.up,file_operation,scroll.up,0.920,0.042,0.920,1,0,1,0,549,164,392,593
+scroll_up__5__take2.wav,heldout,scroll_up,5,1,Scroll up a bit,scroll.up,scroll.up,file_operation,scroll.up,0.920,0.042,0.920,1,0,1,0,1096,170,389,590
+scroll_up__6__take1.wav,heldout,scroll_up,6,1,Take me to the top,scroll.up,none,open.Take me,general_query,0.000,0.339,0.339,0,0,0,0,1050,175,396,601
+scroll_up__6__take2.wav,heldout,scroll_up,6,1,Take me to the top,scroll.up,none,open.Take me,general_query,0.000,0.339,0.339,0,0,0,0,747,177,397,600
+show_desktop__5__take1.wav,heldout,show_desktop,5,1,Clear the screen,system.showDesktop,none,open.Clear the screen,general_query,0.000,0.296,0.296,0,0,0,0,1249,155,378,581
+show_desktop__5__take2.wav,heldout,show_desktop,5,1,Clear the screen,system.showDesktop,none,open.Clear the screen,general_query,0.000,0.296,0.296,0,0,0,0,,155,369,574
+show_desktop__6__take1.wav,heldout,show_desktop,6,1,"Desktop, please",system.showDesktop,none,file_operation,general_query,0.000,0.092,0.092,0,0,0,0,846,158,381,585
+show_desktop__6__take2.wav,heldout,show_desktop,6,1,desktop,system.showDesktop,none,file_operation,general_query,0.000,0.091,0.091,0,0,0,0,1072,142,362,563
+undo__5__take1.wav,heldout,undo,5,1,Undo the last change,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.523,0.900,1,0,1,0,1179,184,410,610
+undo__5__take2.wav,heldout,undo,5,1,undo the last,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.077,0.900,1,0,1,0,1379,265,488,691
+undo__6__take1.wav,heldout,undo,6,1,Never mind undo,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.128,0.900,1,0,1,0,1397,163,396,598
+undo__6__take2.wav,heldout,undo,6,1,"Never mind, undo",shortcut.undo,shortcut.undo,open.Never mind undo,shortcut.undo,0.900,0.146,0.900,1,0,1,0,,169,398,601
+volume_down__5__take1.wav,heldout,volume_down,5,1,Bring the volume down,volume.down,volume.down,volume.down,volume.down,0.950,0.666,0.950,1,1,1,0,763,163,387,591
+volume_down__5__take2.wav,heldout,volume_down,5,1,Bring the volume down,volume.down,volume.down,volume.down,volume.down,0.950,0.666,0.950,1,1,1,0,,184,416,618
+volume_down__6__take1.wav,heldout,volume_down,6,1,It's way too loud,volume.down,none,media.toggle,general_query,0.000,0.153,0.153,0,0,0,0,922,190,413,614
+volume_down__6__take2.wav,heldout,volume_down,6,1,It's way too loud,volume.down,none,media.toggle,general_query,0.000,0.153,0.153,0,0,0,0,871,177,399,603
+volume_mute__5__take1.wav,heldout,volume_mute,5,1,Put it on mute,volume.mute,volume.mute,volume.mute,volume.mute,0.950,0.328,0.950,1,1,1,0,977,165,389,592
+volume_mute__5__take2.wav,heldout,volume_mute,5,1,Put it on mute,volume.mute,volume.mute,volume.mute,volume.mute,0.950,0.328,0.950,1,1,1,0,826,171,391,594
+volume_mute__6__take1.wav,heldout,volume_mute,6,1,Mew everything,volume.mute,none,file_operation,general_query,0.000,0.078,0.078,0,0,0,0,1298,151,376,578
+volume_mute__6__take2.wav,heldout,volume_mute,6,1,Mute everything,volume.mute,volume.mute,volume.mute,volume.mute,0.950,0.624,0.950,1,1,1,0,1364,162,418,621
+volume_up__5__take1.wav,heldout,volume_up,5,1,crank it up,volume.up,none,file_operation,general_query,0.000,0.046,0.046,0,0,0,0,651,152,380,581
+volume_up__5__take2.wav,heldout,volume_up,5,1,Get up,volume.up,none,file_operation,general_query,0.000,0.055,0.055,0,0,0,0,1069,148,375,580
+volume_up__6__take1.wav,heldout,volume_up,6,1,Volume a bit higher,volume.up,media.toggle,media.toggle,media.toggle,0.950,0.840,0.950,0,0,0,0,1175,169,392,596
+volume_up__6__take2.wav,heldout,volume_up,6,1,Volume will be higher,volume.up,media.toggle,media.toggle,media.toggle,0.950,0.965,0.965,0,0,0,0,967,166,394,595
+brightness_down__1__take1.wav,train,brightness_down,1,1,Brightness down,brightness.down,brightness.down,file_operation,brightness.down,0.950,0.047,0.950,1,0,1,0,1178,158,386,586
+brightness_down__1__take2.wav,train,brightness_down,1,1,"Right, it's down",brightness.down,none,file_operation,general_query,0.000,0.042,0.042,0,0,0,0,,416,638,841
+brightness_down__2__take1.wav,train,brightness_down,2,1,Demur,brightness.down,none,file_operation,general_query,0.000,0.125,0.125,0,0,0,0,,133,354,560
+brightness_down__2__take2.wav,train,brightness_down,2,1,,brightness.down,none,none,none,0.000,0.000,0.000,0,0,0,0,,492,492,699
+brightness_down__3__take1.wav,train,brightness_down,3,1,Turn down the brightness,brightness.down,brightness.down,volume.down,brightness.down,0.950,0.332,0.950,1,0,1,0,981,166,416,619
+brightness_down__3__take2.wav,train,brightness_down,3,1,Turn down the brightness,brightness.down,brightness.down,volume.down,brightness.down,0.950,0.332,0.950,1,0,1,0,778,173,403,606
+brightness_down__4__take1.wav,train,brightness_down,4,1,less light,brightness.down,none,file_operation,general_query,0.000,0.039,0.039,0,0,0,0,950,136,364,567
+brightness_down__4__take2.wav,train,brightness_down,4,1,Let's light,brightness.down,none,open.Let's light,general_query,0.000,0.140,0.140,0,0,0,0,,151,375,581
+brightness_up__1__take1.wav,train,brightness_up,1,1,brightness up,brightness.up,brightness.up,file_operation,brightness.up,0.950,0.092,0.950,1,0,1,0,860,147,370,572
+brightness_up__1__take2.wav,train,brightness_up,1,1,Brighten us up,brightness.up,brightness.up,general_query,brightness.up,0.950,0.036,0.950,1,0,1,0,550,165,388,589
+brightness_up__2__take1.wav,train,brightness_up,2,1,brighter,brightness.up,none,file_operation,general_query,0.000,0.096,0.096,0,0,0,0,,128,351,553
+brightness_up__2__take2.wav,train,brightness_up,2,1,brighter,brightness.up,none,file_operation,general_query,0.000,0.096,0.096,0,0,0,0,790,127,361,562
+brightness_up__3__take1.wav,train,brightness_up,3,1,Turn up the brightness,brightness.up,brightness.up,volume.up,brightness.up,0.950,0.313,0.950,1,0,1,0,1082,173,404,608
+brightness_up__3__take2.wav,train,brightness_up,3,1,Turn off the brightness,brightness.up,brightness.unknown,media.toggle,brightness.unknown,0.950,0.251,0.950,0,0,0,0,,177,403,604
+brightness_up__4__take1.wav,train,brightness_up,4,1,More light,brightness.up,none,file_operation,general_query,0.000,0.042,0.042,0,0,0,0,742,153,381,582
+brightness_up__4__take2.wav,train,brightness_up,4,1,More like,brightness.up,none,file_operation,general_query,0.000,0.071,0.071,0,0,0,0,,142,367,569
+copy__1__take1.wav,train,copy,1,1,Copy,shortcut.copy,none,file_operation,general_query,0.000,0.424,0.424,0,0,0,0,1066,136,360,563
+copy__1__take2.wav,train,copy,1,1,Copy,shortcut.copy,none,file_operation,general_query,0.000,0.424,0.424,0,0,0,0,,399,623,828
+copy__2__take1.wav,train,copy,2,1,Copy that,shortcut.copy,shortcut.copy,file_operation,shortcut.copy,0.900,0.576,0.900,1,0,1,0,,160,387,590
+copy__2__take2.wav,train,copy,2,1,Copy that,shortcut.copy,shortcut.copy,file_operation,shortcut.copy,0.900,0.576,0.900,1,0,1,0,661,134,365,567
+copy__3__take1.wav,train,copy,3,1,Copy this,shortcut.copy,shortcut.copy,file_operation,shortcut.copy,0.900,0.393,0.900,1,0,1,0,,141,369,572
+copy__3__take2.wav,train,copy,3,1,Copy this,shortcut.copy,shortcut.copy,file_operation,shortcut.copy,0.900,0.393,0.900,1,0,1,0,,140,363,564
+copy__4__take1.wav,train,copy,4,1,Put it on the clipboard,shortcut.copy,none,general_query,general_query,0.000,0.094,0.094,0,0,0,0,1719,183,412,615
+copy__4__take2.wav,train,copy,4,1,Put it on the clipboard,shortcut.copy,none,general_query,general_query,0.000,0.094,0.094,0,0,0,0,574,198,422,623
+dark_mode__1__take1.wav,train,dark_mode,1,1,Thought mode,system.darkMode(true),none,file_operation,general_query,0.000,0.043,0.043,0,0,0,0,,187,415,615
+dark_mode__1__take2.wav,train,dark_mode,1,1,That mode,system.darkMode(true),none,file_operation,general_query,0.000,0.062,0.062,0,0,0,0,,148,371,572
+dark_mode__2__take1.wav,train,dark_mode,2,1,toggle dark mode,system.darkMode(true),system.darkMode(true),file_operation,system.darkMode(true),0.850,0.062,0.850,1,0,1,0,863,150,375,576
+dark_mode__2__take2.wav,train,dark_mode,2,1,Tuckle that mug,system.darkMode(true),none,file_operation,general_query,0.000,0.077,0.077,0,0,0,0,936,420,645,846
+dark_mode__3__take1.wav,train,dark_mode,3,1,Switch to dark,system.darkMode(true),none,open.Switch,general_query,0.000,0.188,0.188,0,0,0,0,,162,390,593
+dark_mode__3__take2.wav,train,dark_mode,3,1,Switch to dark,system.darkMode(true),none,open.Switch,general_query,0.000,0.188,0.188,0,0,0,0,752,160,385,586
+dark_mode__4__take1.wav,train,dark_mode,4,1,Turn on dark mode,system.darkMode(true),system.darkMode(true),file_operation,system.darkMode(true),0.850,0.070,0.850,1,0,1,0,960,160,388,590
+dark_mode__4__take2.wav,train,dark_mode,4,1,Turn on dark mode,system.darkMode(true),system.darkMode(true),file_operation,system.darkMode(true),0.850,0.070,0.850,1,0,1,0,866,169,393,595
+go_github__1__take1.wav,train,go_github,1,1,Go to GitHub,open.github,open.GitHub,open.GitHub,open.GitHub,0.900,0.242,0.900,1,1,1,0,1069,166,395,600
+go_github__1__take2.wav,train,go_github,1,1,Go to get up,open.github,open.get up,open.get up,open.get up,0.900,0.066,0.900,0,0,0,0,,145,384,587
+go_github__2__take1.wav,train,go_github,2,1,Open it up,open.github,open.it up,open.it up,open.it up,0.900,0.914,0.914,0,0,0,0,842,144,382,586
+go_github__2__take2.wav,train,go_github,2,1,Open GitHub,open.github,open.GitHub,open.GitHub,open.GitHub,0.900,0.877,0.900,1,1,1,0,1165,141,367,569
+go_github__3__take1.wav,train,go_github,3,1,Visit GitHub,open.github,none,open.Visit GitHub,general_query,0.000,0.304,0.304,0,0,0,0,,133,372,575
+go_github__3__take2.wav,train,go_github,3,1,Visit Kedavra.com,open.github,none,file_operation,general_query,0.000,0.035,0.035,0,0,0,0,626,177,420,623
+go_google__1__take1.wav,train,go_google,1,1,Go to Google,open.google,web.Go to Google,open.Google,web.Go to Google,0.850,0.138,0.850,0,1,0,0,,156,390,591
+go_google__1__take2.wav,train,go_google,1,1,Go to Google,open.google,web.Go to Google,open.Google,web.Go to Google,0.850,0.138,0.850,0,1,0,0,934,149,390,592
+go_google__2__take1.wav,train,go_google,2,1,Open Google,open.google,open.Google,open.Google,open.Google,0.900,0.907,0.907,1,1,1,0,,146,400,605
+go_google__2__take2.wav,train,go_google,2,1,Open Google,open.google,open.Google,open.Google,open.Google,0.900,0.907,0.907,1,1,1,0,653,137,368,569
+go_google__3__take1.wav,train,go_google,3,1,Who is it Google,open.google,web.Who is it Google,general_query,web.Who is it Google,0.850,0.078,0.850,0,0,0,0,,158,378,579
+go_google__3__take2.wav,train,go_google,3,1,We visit Google,open.google,web.We visit Google,web.We visit Google,web.We visit Google,0.850,0.165,0.850,0,0,0,0,680,147,369,571
+go_wikipedia__1__take1.wav,train,go_wikipedia,1,1,Go to Wikipedia,open.wikipedia,open.Wikipedia,web.Go to Wikipedia,open.Wikipedia,0.900,0.106,0.900,1,0,1,0,1127,148,371,572
+go_wikipedia__1__take2.wav,train,go_wikipedia,1,1,Go to Wikipedia,open.wikipedia,open.Wikipedia,web.Go to Wikipedia,open.Wikipedia,0.900,0.106,0.900,1,0,1,0,,149,377,580
+go_wikipedia__2__take1.wav,train,go_wikipedia,2,1,Open Wikipedia,open.wikipedia,open.Wikipedia,open.Wikipedia,open.Wikipedia,0.900,0.159,0.900,1,1,1,0,783,147,377,584
+go_wikipedia__2__take2.wav,train,go_wikipedia,2,1,Open Wikipedia,open.wikipedia,open.Wikipedia,open.Wikipedia,open.Wikipedia,0.900,0.159,0.900,1,1,1,0,591,141,375,577
+go_wikipedia__3__take1.wav,train,go_wikipedia,3,1,Visit Wikipedia,open.wikipedia,none,open.Visit Wikipedia,general_query,0.000,0.042,0.042,0,0,0,0,1186,184,422,624
+go_wikipedia__3__take2.wav,train,go_wikipedia,3,1,Where's it Wikipedia,open.wikipedia,none,web.Where's it Wikipedia,web.Where's it Wikipedia,0.000,0.715,0.715,0,0,0,0,1125,590,832,1032
+go_youtube__1__take1.wav,train,go_youtube,1,1,Go to YouTube,open.youtube,open.YouTube,open.YouTube,open.YouTube,0.900,0.082,0.900,1,1,1,0,725,232,465,666
+go_youtube__1__take2.wav,train,go_youtube,1,1,Go to uni,open.youtube,open.uni,file_operation,open.uni,0.900,0.058,0.900,0,0,0,0,844,150,379,581
+go_youtube__2__take1.wav,train,go_youtube,2,1,Open YouTube,open.youtube,open.YouTube,open.YouTube,open.YouTube,0.900,0.615,0.900,1,1,1,0,1351,140,364,568
+go_youtube__2__take2.wav,train,go_youtube,2,1,Open YouTube,open.youtube,open.YouTube,open.YouTube,open.YouTube,0.900,0.615,0.900,1,1,1,0,,129,360,561
+go_youtube__3__take1.wav,train,go_youtube,3,1,Visit YouTube,open.youtube,none,open.Visit YouTube,general_query,0.000,0.080,0.080,0,0,0,0,1043,197,415,616
+go_youtube__3__take2.wav,train,go_youtube,3,1,visit YouTube,open.youtube,none,file_operation,general_query,0.000,0.027,0.027,0,0,0,0,600,223,451,654
+next_track__1__take1.wav,train,next_track,1,1,Next track,media.next,none,media.next,general_query,0.000,0.158,0.158,0,1,0,0,851,178,402,613
+next_track__1__take2.wav,train,next_track,1,1,Next check,media.next,none,file_operation,general_query,0.000,0.061,0.061,0,0,0,0,782,135,372,573
+next_track__2__take1.wav,train,next_track,2,1,Next song,media.next,media.next,media.next,media.next,0.900,0.340,0.900,1,1,1,0,1222,150,381,582
+next_track__2__take2.wav,train,next_track,2,1,Next,media.next,none,file_operation,general_query,0.000,0.068,0.068,0,0,0,0,,192,419,624
+next_track__3__take1.wav,train,next_track,3,1,skip,media.next,media.next,file_operation,media.next,0.900,0.056,0.900,1,0,1,0,,268,487,689
+next_track__3__take2.wav,train,next_track,3,1,Skip,media.next,media.next,file_operation,media.next,0.900,0.070,0.900,1,0,1,0,,151,377,582
+next_track__4__take1.wav,train,next_track,4,1,Skip this one,media.next,media.next,file_operation,media.next,0.900,0.119,0.900,1,0,1,0,1758,209,439,649
+next_track__4__take2.wav,train,next_track,4,1,Skip this one,media.next,media.next,file_operation,media.next,0.900,0.119,0.900,1,0,1,0,1555,153,374,576
+open_calendar__1__take1.wav,train,open_calendar,1,1,Open calendar,open.Calendar,open.calendar,open.calendar,open.calendar,0.900,0.533,0.900,1,1,1,0,1555,141,367,571
+open_calendar__1__take2.wav,train,open_calendar,1,1, I'll under,open.Calendar,none,file_operation,general_query,0.000,0.058,0.058,0,0,0,0,418,176,404,606
+open_calendar__2__take1.wav,train,open_calendar,2,1,Launch Calendar,open.Calendar,open.Calendar,open.Calendar,open.Calendar,0.900,0.212,0.900,1,1,1,0,1047,126,352,553
+open_calendar__2__take2.wav,train,open_calendar,2,1,Launch calendar,open.Calendar,open.calendar,open.calendar,open.calendar,0.900,0.159,0.900,1,1,1,0,,182,411,615
+open_calendar__3__take1.wav,train,open_calendar,3,1,Open my calendar,open.Calendar,open.calendar,open.calendar,open.calendar,0.900,0.859,0.900,1,1,1,0,867,198,429,632
+open_calendar__3__take2.wav,train,open_calendar,3,1,Open my calendar,open.Calendar,open.calendar,open.calendar,open.calendar,0.900,0.859,0.900,1,1,1,0,,241,481,685
+open_music__1__take1.wav,train,open_music,1,1,Open music,open.Music,open.music,media.toggle,open.music,0.900,0.820,0.900,1,0,1,0,2773,144,395,596
+open_music__1__take2.wav,train,open_music,1,1,Open music,open.Music,open.music,media.toggle,open.music,0.900,0.820,0.900,1,0,1,0,2267,225,476,679
+open_music__2__take1.wav,train,open_music,2,1,Launch music,open.Music,open.music,open.music,open.music,0.900,0.143,0.900,1,1,1,0,712,214,441,645
+open_music__2__take2.wav,train,open_music,2,1,Launch music,open.Music,open.music,open.music,open.music,0.900,0.143,0.900,1,1,1,0,845,141,370,572
+open_music__3__take1.wav,train,open_music,3,1,Start music,open.Music,open.music,media.toggle,open.music,0.900,0.426,0.900,1,0,1,0,,149,376,577
+open_music__3__take2.wav,train,open_music,3,1,Start music,open.Music,open.music,media.toggle,open.music,0.900,0.426,0.900,1,0,1,0,933,149,381,584
+open_notes__1__take1.wav,train,open_notes,1,1,Open notes,open.Notes,open.notes,open.notes,open.notes,0.900,0.677,0.900,1,1,1,0,,139,355,560
+open_notes__1__take2.wav,train,open_notes,1,1,Open Note,open.Notes,open.Note,open.Note,open.Note,0.900,0.861,0.900,0,0,0,0,936,159,380,588
+open_notes__2__take1.wav,train,open_notes,2,1,Launch Notes,open.Notes,open.Notes,open.Notes,open.Notes,0.900,0.326,0.900,1,1,1,0,609,222,448,650
+open_notes__2__take2.wav,train,open_notes,2,1,launch notes,open.Notes,open.notes,open.notes,open.notes,0.900,0.090,0.900,1,1,1,100,,154,383,584
+open_notes__3__take1.wav,train,open_notes,3,1,Start notes,open.Notes,open.notes,file_operation,open.notes,0.900,0.072,0.900,1,0,1,0,1246,194,419,625
+open_notes__3__take2.wav,train,open_notes,3,1,Start notes,open.Notes,open.notes,file_operation,open.notes,0.900,0.072,0.900,1,0,1,0,,147,372,576
+open_safari__1__take1.wav,train,open_safari,1,1,Open Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.649,0.900,1,1,1,0,1043,146,370,573
+open_safari__1__take2.wav,train,open_safari,1,1,Open Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.649,0.900,1,1,1,0,,134,352,553
+open_safari__2__take1.wav,train,open_safari,2,1,Launch Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.389,0.900,1,1,1,0,942,179,402,606
+open_safari__2__take2.wav,train,open_safari,2,1,Launch Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.389,0.900,1,1,1,0,1363,153,382,585
+open_safari__3__take1.wav,train,open_safari,3,1,Start Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.531,0.900,1,1,1,0,,178,402,605
+open_safari__3__take2.wav,train,open_safari,3,1,Start Safari,open.Safari,open.Safari,open.Safari,open.Safari,0.900,0.531,0.900,1,1,1,0,763,160,382,586
+open_terminal__1__take1.wav,train,open_terminal,1,1,Open terminal,open.Terminal,open.terminal,open.terminal,open.terminal,0.900,0.683,0.900,1,1,1,0,1250,144,366,571
+open_terminal__1__take2.wav,train,open_terminal,1,1,Open Term,open.Terminal,open.Term,open.Term,open.Term,0.900,0.637,0.900,0,0,0,0,,225,441,646
+open_terminal__2__take1.wav,train,open_terminal,2,1,Launch Terminal,open.Terminal,open.Terminal,open.Terminal,open.Terminal,0.900,0.147,0.900,1,1,1,0,,220,444,647
+open_terminal__2__take2.wav,train,open_terminal,2,1,Launch terminal,open.Terminal,open.terminal,open.terminal,open.terminal,0.900,0.210,0.900,1,1,1,0,835,155,382,584
+open_terminal__3__take1.wav,train,open_terminal,3,1,Start terminal,open.Terminal,open.terminal,open.terminal,open.terminal,0.900,0.144,0.900,1,1,1,0,1286,148,382,584
+open_terminal__3__take2.wav,train,open_terminal,3,1,Stark Terminal,open.Terminal,none,open.Stark Terminal,general_query,0.000,0.110,0.110,0,0,0,0,1151,169,394,594
+paste__1__take1.wav,train,paste,1,1,PASTE,shortcut.paste,shortcut.paste,file_operation,shortcut.paste,0.900,0.118,0.900,1,0,1,0,,229,456,660
+paste__1__take2.wav,train,paste,1,1,PASTE,shortcut.paste,shortcut.paste,file_operation,shortcut.paste,0.900,0.118,0.900,1,0,1,0,642,148,364,566
+paste__2__take1.wav,train,paste,2,1,Paste that,shortcut.paste,type_text,file_operation,type_text,0.950,0.244,0.950,0,0,0,0,1388,186,425,629
+paste__2__take2.wav,train,paste,2,1,Taste that,shortcut.paste,none,file_operation,general_query,0.000,0.044,0.044,0,0,0,0,,155,386,588
+paste__3__take1.wav,train,paste,3,1,Paste it here,shortcut.paste,type_text,file_operation,type_text,0.950,0.069,0.950,0,0,0,0,952,163,392,593
+paste__3__take2.wav,train,paste,3,1,Paste it here,shortcut.paste,type_text,file_operation,type_text,0.950,0.069,0.950,0,0,0,0,536,188,422,625
+paste__4__take1.wav,train,paste,4,1,Put it here,shortcut.paste,none,general_query,general_query,0.000,0.166,0.166,0,0,0,0,1047,162,393,594
+paste__4__take2.wav,train,paste,4,1,Put it here,shortcut.paste,none,general_query,general_query,0.000,0.166,0.166,0,0,0,0,,270,659,863
+play_pause__1__take1.wav,train,play_pause,1,1,Pause,media.play,media.pause,open.Pause,media.pause,0.900,0.094,0.900,1,0,1,0,,133,360,562
+play_pause__1__take2.wav,train,play_pause,1,1,Pulse,media.play,none,file_operation,general_query,0.000,0.060,0.060,0,0,0,0,,230,466,667
+play_pause__2__take1.wav,train,play_pause,2,1,Play,media.play,media.play,media.play,media.play,0.900,0.154,0.900,1,1,1,0,,126,364,565
+play_pause__2__take2.wav,train,play_pause,2,1,Bye,media.play,none,file_operation,general_query,0.000,0.072,0.072,0,0,0,0,,170,402,604
+play_pause__3__take1.wav,train,play_pause,3,1,Pause the music,media.play,media.pause,media.pause,media.pause,0.900,0.941,0.941,1,1,1,0,1793,209,442,653
+play_pause__3__take2.wav,train,play_pause,3,1,Piano Music,media.play,none,media.toggle,general_query,0.000,0.094,0.094,0,1,0,0,,275,502,705
+play_pause__4__take1.wav,train,play_pause,4,1,Resume,media.play,media.play,file_operation,media.play,0.900,0.059,0.900,1,0,1,0,,150,392,594
+play_pause__4__take2.wav,train,play_pause,4,1,,media.play,none,none,none,0.000,0.000,0.000,0,0,0,0,,689,689,892
+prev_track__1__take1.wav,train,prev_track,1,1,previous track,media.previous,none,file_operation,general_query,0.000,0.045,0.045,0,0,0,0,1259,182,452,663
+prev_track__1__take2.wav,train,prev_track,1,1,check,media.previous,none,file_operation,general_query,0.000,0.062,0.062,0,0,0,0,670,151,385,594
+prev_track__2__take1.wav,train,prev_track,2,1,Go back,media.previous,browser_command,file_operation,browser_command,0.900,0.060,0.900,0,0,0,0,,142,391,594
+prev_track__2__take2.wav,train,prev_track,2,1,Go back,media.previous,browser_command,file_operation,browser_command,0.900,0.060,0.900,0,0,0,0,1058,179,419,622
+prev_track__3__take1.wav,train,prev_track,3,1,Last song,media.previous,none,media.toggle,general_query,0.000,0.248,0.248,0,0,0,0,1753,328,576,783
+prev_track__3__take2.wav,train,prev_track,3,1,Last song,media.previous,none,media.toggle,general_query,0.000,0.248,0.248,0,0,0,0,1357,149,383,585
+prev_track__4__take1.wav,train,prev_track,4,1,previous song,media.previous,media.previous,media.previous,media.previous,0.900,0.080,0.900,1,1,1,0,1527,135,363,565
+prev_track__4__take2.wav,train,prev_track,4,1,Previous song,media.previous,media.previous,media.previous,media.previous,0.900,0.215,0.900,1,1,1,0,625,140,370,572
+screenshot__1__take1.wav,train,screenshot,1,1,screenshot,screenshot,screenshot,file_operation,screenshot,0.950,0.061,0.950,1,0,1,0,1200,125,359,563
+screenshot__1__take2.wav,train,screenshot,1,1,screenshot,screenshot,screenshot,file_operation,screenshot,0.950,0.061,0.950,1,0,1,0,,189,420,623
+screenshot__2__take1.wav,train,screenshot,2,1,Take a screenshot,screenshot,screenshot,file_operation,screenshot,0.950,0.114,0.950,1,0,1,0,717,268,488,690
+screenshot__2__take2.wav,train,screenshot,2,1,Take a screenshot,screenshot,screenshot,file_operation,screenshot,0.950,0.114,0.950,1,0,1,0,776,152,386,591
+screenshot__3__take1.wav,train,screenshot,3,1,Capture the screen,screenshot,screenshot,open.Capture the screen,screenshot,0.950,0.662,0.950,1,0,1,0,1302,173,404,605
+screenshot__3__take2.wav,train,screenshot,3,1,Capture the screen,screenshot,screenshot,open.Capture the screen,screenshot,0.950,0.662,0.950,1,0,1,0,1169,219,475,682
+screenshot__4__take1.wav,train,screenshot,4,1,screen capture,screenshot,none,open.screen capture,general_query,0.000,0.111,0.111,0,0,0,0,760,138,372,575
+screenshot__4__take2.wav,train,screenshot,4,1,Screen capture,screenshot,none,open.Screen capture,general_query,0.000,0.173,0.173,0,0,0,0,1036,158,404,612
+scroll_down__1__take1.wav,train,scroll_down,1,1,Scroll down,scroll.down,scroll.down,file_operation,scroll.down,0.920,0.058,0.920,1,0,1,0,551,185,427,631
+scroll_down__1__take2.wav,train,scroll_down,1,1,Skull down,scroll.down,none,file_operation,general_query,0.000,0.058,0.058,0,0,0,0,,409,656,866
+scroll_down__2__take1.wav,train,scroll_down,2,1,Go down,scroll.down,none,file_operation,general_query,0.000,0.110,0.110,0,0,0,0,1036,165,389,591
+scroll_down__2__take2.wav,train,scroll_down,2,1,Go down,scroll.down,none,file_operation,general_query,0.000,0.110,0.110,0,0,0,0,,137,363,567
+scroll_down__3__take1.wav,train,scroll_down,3,1,Page down,scroll.down,shortcut.page_down,open.Page down,shortcut.page_down,0.900,0.091,0.900,0,0,0,0,1149,177,404,610
+scroll_down__3__take2.wav,train,scroll_down,3,1,Page down,scroll.down,shortcut.page_down,open.Page down,shortcut.page_down,0.900,0.091,0.900,0,0,0,0,541,156,393,594
+scroll_down__4__take1.wav,train,scroll_down,4,1,More down,scroll.down,none,file_operation,general_query,0.000,0.060,0.060,0,0,0,0,1149,179,410,619
+scroll_down__4__take2.wav,train,scroll_down,4,1,,scroll.down,none,none,none,0.000,0.000,0.000,0,0,0,0,,693,693,899
+scroll_up__1__take1.wav,train,scroll_up,1,1,Scroll up,scroll.up,scroll.up,file_operation,scroll.up,0.920,0.069,0.920,1,0,1,0,888,148,398,601
+scroll_up__1__take2.wav,train,scroll_up,1,1,Squall up,scroll.up,none,file_operation,general_query,0.000,0.171,0.171,0,0,0,0,1161,157,378,581
+scroll_up__2__take1.wav,train,scroll_up,2,1,Go up,scroll.up,none,file_operation,general_query,0.000,0.071,0.071,0,0,0,0,,236,456,659
+scroll_up__2__take2.wav,train,scroll_up,2,1,Go up,scroll.up,none,file_operation,general_query,0.000,0.071,0.071,0,0,0,0,845,172,407,618
+scroll_up__3__take1.wav,train,scroll_up,3,1,Page up,scroll.up,shortcut.page_up,open.Page up,shortcut.page_up,0.900,0.210,0.900,0,0,0,0,,141,377,578
+scroll_up__3__take2.wav,train,scroll_up,3,1,Page up,scroll.up,shortcut.page_up,open.Page up,shortcut.page_up,0.900,0.210,0.900,0,0,0,0,984,250,581,786
+scroll_up__4__take1.wav,train,scroll_up,4,1,Move up,scroll.up,none,file_operation,general_query,0.000,0.378,0.378,0,0,0,0,1135,153,376,578
+scroll_up__4__take2.wav,train,scroll_up,4,1,Move up,scroll.up,none,file_operation,general_query,0.000,0.378,0.378,0,0,0,0,,153,379,580
+show_desktop__1__take1.wav,train,show_desktop,1,1,Show desktop,system.showDesktop,system.showDesktop,open.desktop,system.showDesktop,0.900,0.449,0.900,1,0,1,0,1142,153,377,580
+show_desktop__1__take2.wav,train,show_desktop,1,1,Show Desk Up,system.showDesktop,none,open.Desk Up,open.Desk Up,0.000,0.558,0.558,0,0,0,0,1264,192,413,620
+show_desktop__2__take1.wav,train,show_desktop,2,1,minimize everything,system.showDesktop,shortcut.minimize,open.minimize everything,shortcut.minimize,0.900,0.268,0.900,0,0,0,0,1546,164,397,607
+show_desktop__2__take2.wav,train,show_desktop,2,1,Minimize everything,system.showDesktop,shortcut.minimize,open.Minimize everything,shortcut.minimize,0.900,0.494,0.900,0,0,0,0,780,306,691,898
+show_desktop__3__take1.wav,train,show_desktop,3,1,Go to desktop,system.showDesktop,open_folder,open.desktop,open_folder,0.930,0.712,0.930,0,0,0,0,1357,202,433,634
+show_desktop__3__take2.wav,train,show_desktop,3,1,Go to desktop,system.showDesktop,open_folder,open.desktop,open_folder,0.930,0.712,0.930,0,0,0,0,,251,480,682
+show_desktop__4__take1.wav,train,show_desktop,4,1,Show me the desktop,system.showDesktop,open_folder,open.desktop,open_folder,0.930,0.684,0.930,0,0,0,0,732,177,406,609
+show_desktop__4__take2.wav,train,show_desktop,4,1,Show me the desktop,system.showDesktop,open_folder,open.desktop,open_folder,0.930,0.684,0.930,0,0,0,0,1174,215,441,648
+undo__1__take1.wav,train,undo,1,1,Undo,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.325,0.900,1,0,1,0,,152,380,583
+undo__1__take2.wav,train,undo,1,1,under,shortcut.undo,none,file_operation,general_query,0.000,0.078,0.078,0,0,0,0,,360,586,789
+undo__2__take1.wav,train,undo,2,1,Undo that,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.572,0.900,1,0,1,0,,203,431,635
+undo__2__take2.wav,train,undo,2,1,undo that,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.070,0.900,1,0,1,0,725,142,368,569
+undo__3__take1.wav,train,undo,3,1,Take it back,shortcut.undo,none,file_operation,general_query,0.000,0.059,0.059,0,0,0,0,,160,382,582
+undo__3__take2.wav,train,undo,3,1,Take it back,shortcut.undo,none,file_operation,general_query,0.000,0.059,0.059,0,0,0,0,,243,470,671
+undo__4__take1.wav,train,undo,4,1,Undo it,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.181,0.900,1,0,1,0,839,167,391,596
+undo__4__take2.wav,train,undo,4,1,undo it,shortcut.undo,shortcut.undo,file_operation,shortcut.undo,0.900,0.113,0.900,1,0,1,0,,209,431,632
+volume_down__1__take1.wav,train,volume_down,1,1,Volume down,volume.down,volume.down,volume.down,volume.down,0.950,0.561,0.950,1,1,1,0,,158,547,751
+volume_down__1__take2.wav,train,volume_down,1,1,What do you mean,volume.down,none,general_query,general_query,0.000,0.283,0.283,0,0,0,0,,261,492,694
+volume_down__2__take1.wav,train,volume_down,2,1,Turn it down,volume.down,none,media.toggle,general_query,0.000,0.202,0.202,0,0,0,0,,199,425,627
+volume_down__2__take2.wav,train,volume_down,2,1,Turn it down,volume.down,none,media.toggle,general_query,0.000,0.202,0.202,0,0,0,0,,255,479,681
+volume_down__3__take1.wav,train,volume_down,3,1,Quieter,volume.down,volume.down,general_query,volume.down,0.950,0.078,0.950,1,0,1,0,,183,412,615
+volume_down__3__take2.wav,train,volume_down,3,1,Quen,volume.down,none,general_query,general_query,0.000,0.285,0.285,0,0,0,0,1231,514,740,947
+volume_down__4__take1.wav,train,volume_down,4,1,Lower the volume,volume.down,volume.down,volume.down,volume.down,0.950,0.676,0.950,1,1,1,0,1294,227,445,649
+volume_down__4__take2.wav,train,volume_down,4,1,Load volume,volume.down,media.toggle,file_operation,media.toggle,0.950,0.145,0.950,0,0,0,0,,215,442,644
+volume_mute__1__take1.wav,train,volume_mute,1,1,Mute,volume.mute,volume.mute,volume.mute,volume.mute,0.950,0.264,0.950,1,1,1,0,,150,378,579
+volume_mute__1__take2.wav,train,volume_mute,1,1,No,volume.mute,none,file_operation,general_query,0.000,0.057,0.057,0,0,0,0,,571,797,1000
+volume_mute__2__take1.wav,train,volume_mute,2,1,Mute the volume,volume.mute,volume.mute,volume.mute,volume.mute,0.950,0.698,0.950,1,1,1,0,1493,167,396,601
+volume_mute__2__take2.wav,train,volume_mute,2,1,,volume.mute,none,none,none,0.000,0.000,0.000,0,0,0,0,,491,491,691
+volume_mute__3__take1.wav,train,volume_mute,3,1,Silence it.,volume.mute,none,none,none,0.000,0.000,0.000,0,0,0,0,1663,146,146,350
+volume_mute__3__take2.wav,train,volume_mute,3,1,Silence it.,volume.mute,none,none,none,0.000,0.000,0.000,0,0,0,0,1848,441,441,650
+volume_mute__4__take1.wav,train,volume_mute,4,1,Volume off,volume.mute,media.toggle,media.toggle,media.toggle,0.950,0.675,0.950,0,0,0,0,1560,149,399,600
+volume_mute__4__take2.wav,train,volume_mute,4,1,I will not,volume.mute,none,file_operation,general_query,0.000,0.062,0.062,0,0,0,0,1391,237,474,675
+volume_up__1__take1.wav,train,volume_up,1,1,Volume up,volume.up,volume.up,volume.up,volume.up,0.950,0.726,0.950,1,1,1,0,1368,156,378,580
+volume_up__1__take2.wav,train,volume_up,1,1,Volume up,volume.up,volume.up,volume.up,volume.up,0.950,0.726,0.950,1,1,1,0,1060,146,379,582
+volume_up__2__take1.wav,train,volume_up,2,1,Turn it up,volume.up,none,file_operation,general_query,0.000,0.039,0.039,0,0,0,0,1585,164,393,594
+volume_up__2__take2.wav,train,volume_up,2,1,Turn it up,volume.up,none,file_operation,general_query,0.000,0.039,0.039,0,0,0,0,,160,385,588
+volume_up__3__take1.wav,train,volume_up,3,1,Louder,volume.up,volume.up,file_operation,volume.up,0.950,0.116,0.950,1,0,1,0,853,153,377,580
+volume_up__3__take2.wav,train,volume_up,3,1,Lover,volume.up,none,file_operation,general_query,0.000,0.081,0.081,0,0,0,0,1246,151,374,576
+volume_up__4__take1.wav,train,volume_up,4,1,Raise the volume,volume.up,volume.up,volume.up,volume.up,0.950,0.394,0.950,1,1,1,0,1466,162,410,612
+volume_up__4__take2.wav,train,volume_up,4,1,Raise the volume,volume.up,volume.up,volume.up,volume.up,0.950,0.394,0.950,1,1,1,0,781,160,390,593

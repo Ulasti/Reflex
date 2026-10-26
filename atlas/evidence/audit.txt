@@ -1,0 +1,186 @@
+# Atlas audit evidence — reflex (atlas audit reflex)
+Date: 2026-10-19T19:0xZ
+Auditor: delegated subagent (session: atlas audit reflex)
+Scope: Atlas installation, workspace templates, Config/GLOBAL.md, and
+atlas/ATLAS.md drift. Falsification attempted per verification-integrity.
+No commit/push performed. No project source modified. No file deleted.
+CPU note: a reflex-cli --replay latency benchmark was running in background;
+no xcodebuild / swift build|test / reflex-cli --replay|--laya-ref|--diagnose /
+build-and-verify.sh was run. Build/test-derived rows are Unverified with the
+exact re-derivation command.
+
+====================================================================
+1. DoD RESULTS (re-derived this session; each Pass states its falsifier)
+====================================================================
+Row 1  macOS build          | Unverified | reason: not re-run (CPU contention with
+       in-flight latency benchmark). Re-derive: xcodebuild -project Reflex.xcodeproj
+       -scheme Reflex-macOS -configuration Debug -destination 'platform=macOS'
+       -derivedDataPath /tmp/reflex-dd build   (cleared dd). Falsifier if re-run:
+       a log with 0 compile actions. Evidence on disk: evidence/build-macos.log
+       (276KB, mtime 2026-10-19 17:52) — predates the in-flight Phase 1/3 edits.
+Row 2  iOS build            | Unverified | reason: same. Re-derive: xcodebuild
+       -scheme Reflex-iOS ... CODE_SIGNING_ALLOWED=NO. On disk: build-ios.log
+       (507KB, 17:52).
+Row 3  SPM+CLI release      | Unverified | reason: same. Re-derive: swift build
+       --package-path ReflexCore -c release from a cleared ReflexCore/.build.
+       On disk: build-cli.log (203 bytes, 17:52) — shows 24 build steps and
+       "Build complete! (19.10 sec)", so not the D23 zero-work mode, but not
+       re-derived this session.
+Row 4  --verify compiles    | Unverified | reason: same. Re-derive:
+       ./ReflexCore/.build/out/Products/Release/reflex-cli --verify.
+       On disk: verify-models.log (36 bytes, 17:52) "verify OK".
+Row 5  --verify negative ctl | Unverified | reason: requires running --verify.
+       Re-derive: run --verify against an empty dir, confirm exit 1 + "No model
+       packages found". Artifact read: verify-models-negative.txt records exit=1
+       and the exact message (valid negative control on its face, but from
+       2026-10-16).
+Row 6  unit tests           | Unverified | reason: not re-run (CPU). Re-derive:
+       swift test --package-path ReflexCore. On disk: tests.log (25KB, 17:52)
+       says "Test run with 56 tests in 14 suites passed". CONTRADICTION: the
+       Status narrative claims "59 tests / 15 suites" (no evidence file); D1
+       claims "51 tests in 13 suites" (2026-10-16). Three numbers, two files.
+Row 7  self-containment     | Pass       | re-derived this session via API scan.
+       Falsifier: a home-directory API hit resolving a model/asset path — none
+       (12 hits, 0 violations, all 12 classified intentional; see section 2).
+       Prior evidence/self-containment.txt is dated 2026-10-02 and used hand
+       greps; superseded by this session's script + classification.
+Row 8  heavy assets         | Pass       | static, this session. 21 files >50MB,
+       all 21 gitignored; Models/MANIFEST.md is the only tracked file in Models/
+       (git ls-files Models -> Models/MANIFEST.md). Falsifier: a >50MB gitignored
+       asset with no committed manifest/placeholder. Note (already in D5/row 8):
+       .gitignore line 32 `!Models/.gitkeep` is a dead rule — Models/.gitkeep
+       does not exist (ls: No such file).
+Row 9  secrets              | Pass       | re-derived this session: 159 tracked
+       files scanned (heavy dirs excluded), 0 secret hits; negative control 4
+       hits (README/ATLAS plan/docs) proves the engine matches. Falsifier: any
+       private-key/token/password pattern. No .env tracked.
+Row 10 referenced paths     | Fail       | re-derived this session. DoD text says
+       "23 paths checked, 1 missing"; artifacts-check.txt actually lists 24 rows.
+       Independent sweep found 2 missing: (a) reference doc
+       reflex/atlas/docs/jev-voice-action-reference.md (known, D30), and (b)
+       Reflex.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+       (claimed in Inputs & Locations; find shows only ReflexCore/Package.resolved).
+       Falsifier met.
+Row 11 ATLAS.md current     | Pass       | static: Status.Last worked on=2026-10-19,
+       Branch=atlas/live-demo-v1 == git rev-parse HEAD branch, needs_review=false.
+       Falsifier: Status.Branch differs from the checked-out branch. (Evidence
+       file atlas-status.txt is stale at 17:52 but ATLAS.md content is current.)
+Row 12 committed           | Fail       | this session's 19 modified + several new
+       files are uncommitted; commit.txt covers only 2026-10-16 commits on
+       atlas/phase-a-verify. FACT recorded only; the WIP is intentional and must
+       not be discarded.
+Row 13 pushed              | Fail       | not pushed. git-push.txt says NOT PUSHED.
+       atlas/live-demo-v1 is 6 commits ahead of dev and not merged to dev
+       (git branch --contains 916cf3e -> only atlas/live-demo-v1). Row 10 fails,
+       so the branch strategy's push condition is not met.
+
+====================================================================
+2. SELF-CONTAINMENT CLASSIFICATION (script + read every hit)
+====================================================================
+Script run against the project root with output redirected to a temp path
+(NOT atlas/evidence/self-containment.txt — that tracked file was preserved per
+deletion safety). Summary line:
+  SELF_CONTAINMENT_AUDIT total=12 violation=3 intentional=2 review=7 big_files=21
+
+All 12 hits read and classified. Script's "violation"/"review" labels are
+resolved below. Result: 12 found, 12 intentional, 0 violations, 0 unresolved.
+
+| # | File:line | Class | Why |
+|---|---|---|---|
+| 1 | tools/project_env.py:4 | intentional | doc comment ("never derives from $HOME") |
+| 2 | tools/project_env.py:10 | intentional | comment; code pins HF_HOME in-project (setdefault) |
+| 3 | tools/convert.py:33 | intentional | comment |
+| 4 | tools/convert.py:331 | intentional | expanduser() on a user-supplied --output arg |
+| 5 | tools/download_whisperkit_models.py:66 | intentional | comment |
+| 6 | .gitignore:15 | intentional | comment |
+| 7 | ReflexCore/Tests/.../ActionDispatcherTests.swift:145 | intentional | test fixture string "/Users/me/Documents" |
+| 8 | ReflexCore/Sources/.../Resources/laya-tokenizer.json:1 | intentional | false positive: vocab substring matches an asset keyword; no path |
+| 9 | ReflexCore/Sources/.../PayloadExtractor.swift:77 | intentional | NSHomeDirectory()+"/Applications" = user app dir for launching apps |
+| 10 | ReflexCore/Sources/.../ActionDispatcher.swift:841 | intentional | folderURL(named:) base for ~/Downloads,~/Desktop,… runtime user data |
+| 11 | ReflexCore/Sources/.../LiveTranscriber.swift:38 | intentional | doc comment |
+| 12 | Reflex/ReflexApp.swift:44 | intentional | doc comment |
+
+Big files: 21, all >50MB, all gitignored (Models/*, tools/.venv/*, .cache/huggingface/*).
+Home-dir API sweep (repo, excl heavy): 0 code hits beyond the above; model
+resolver confirmed single — ReflexWhisperKit.defaultModelsDirectory
+(LiveTranscriber.swift:42) with CLI (main.swift:881) and app
+(ReflexApp.swift:49 ReflexEnvironment.modelDirectory()) delegating.
+
+Escaped-asset check:
+- ~/Library/Application Support/Reflex/session-logs.json (128K, mtime 19 Oct
+  21:54): declared runtime OUTPUT in Inputs & Locations — intentional.
+- ~/.cache/huggingface (697M; model handy-computer/parakeet-unified-en-0.6b-gguf):
+  grep for "parakeet" across the repo -> 0 hits. NOT a Reflex asset; likely
+  another tool's default HF cache. Reported, not a violation. Owner unverified.
+- ~/.ollama, ~/.config/reflex, ~/.local/share/reflex: absent.
+
+====================================================================
+3. INSTALLATION / POINTER FINDINGS (Full level)
+====================================================================
+- profile.source_sha256 == sha256(<workspace>/SKILL.md) ==
+  048666bcc256b5b2ecea8d85e938c40dc801732835fabbdf5502a7d5dcd14bc6  -> OK
+- ATLAS-EMBED count in <workspace>/SKILL.md = 7 -> OK
+- Host copy ~/.config/opencode/skills/atlas/SKILL.md = 0 embeds; frontmatter
+  identical to original; all 8 hot sections byte-identical; 0 cold sections
+  present -> lean core correct at Full. (bak present: SKILL.md.bak-20261018T023659Z)
+- Hook scripts present and +x: Config/scripts/hooks/atlas-session-start.sh,
+  atlas-stop-gate.sh (also .bak-20261018T023659Z) -> OK
+- Pointer blocks: reflex/AGENTS.md and reflex/CLAUDE.md blocks byte-identical to
+  Config/templates/pointer.md (diff empty) -> OK
+- Wrapper ~/.config/opencode/commands/atlas.md exists; contains no other-machine
+  absolute path -> OK. INFO: its body diverges from the spec's host-neutral body
+  (adds a parsing clause + a safety paragraph). Functionally fine; propose align.
+- Embedded GLOBAL.md in <workspace>/SKILL.md DIFFERS from on-disk
+  Config/GLOBAL.md: embedded copy lacks the on-disk "Location:", "Purpose" and
+  whole "## Verification Integrity" section. GLOBAL.md is user-owned (never
+  overwritten) -> proposal only, not applied.
+
+====================================================================
+4. REGISTRY CHECK (rebuilt vs on-disk)
+====================================================================
+On-disk before: generated_at 2026-10-17T14:53:01Z
+  atlas  {In Progress, needs_review true,  2026-10-16, atlas/atlas-upgrade-v2}
+  reflex {In Progress, needs_review true,  2026-10-16, atlas/phase-a-verify}
+Rebuild from each project's ATLAS.md:
+  atlas  {In Progress, needs_review true,  2026-10-16, atlas/atlas-upgrade-v2}  (unchanged)
+  reflex {In Progress, needs_review false, 2026-10-19, atlas/live-demo-v1}       (changed)
+DIFF: reflex.needs_review true->false; reflex.last_worked_on 2026-10-16->2026-10-19;
+reflex.branch atlas/phase-a-verify->atlas/live-demo-v1; generated_at advanced.
+Action: backed up to Config/registry.json.bak-20261019T190413Z and regenerated.
+
+====================================================================
+5. FALSIFICATION ATTEMPTS
+====================================================================
+F1 self-containment: searched the home-directory APIs (homeDirectoryForCurrentUser,
+   NSHomeDirectory(, homeDirectory, Path.home(, expanduser, getenv("HOME"), getpwuid,
+   $HOME, ~/, /Users/…) then READ every hit. Could not falsify: no hit resolves a
+   model/asset path. 12 hits all classify intentional.
+F2 single-resolver: tried to find a 2nd model resolver. reflex-cli's
+   defaultModelsDirectory() and the app's modelDirectory() both return
+   ReflexWhisperKit.defaultModelsDirectory; no independent path built. Could not
+   falsify the one-resolver claim.
+F3 host copy is a valid lean core: re-derived the expected lean core from
+   <workspace>/SKILL.md (frontmatter + hot sections) and compared; frontmatter
+   identical, all 8 hot sections verbatim, no cold section leaked. Could not
+   falsify "host copy not drifted".
+F4 embedded-asset drift: extracted all 7 embedded blocks and diffed against disk.
+   FALSIFIED for GLOBAL.md (embedded is stale); the other 6 (templates/ATLAS.md,
+   templates/INDEX.md, templates/pointer.md, and the 3 scripts) are identical.
+F5 DoD row 10: tried to confirm only 1 referenced path is missing. FALSIFIED:
+   found a 2nd missing path (workspace Package.resolved). Also the evidence file's
+   row count (24) contradicts the DoD text (23).
+F6 DoD row 6: tried to confirm a single test/suite count. FALSIFIED: Status says
+   59/15, tests.log says 56/14, D1 says 51/13.
+F7 secret scan can fail: ran the same engine on a pattern that must match ->
+   4 hits. The zero result is therefore a real zero, not a broken grep.
+F8 registry matches a fresh rebuild: FALSIFIED for the reflex row (see section 4).
+
+====================================================================
+6. UNVERIFIED (could not check)
+====================================================================
+U1 DoD rows 1-6 (all build/test-derived): not re-run — CPU contention with the
+   in-flight reflex-cli --replay latency benchmark. Exact commands in section 1.
+U2 Row 5 negative control: the artifact is internally consistent (exit=1) but
+   was produced 2026-10-16, not this session.
+U3 Whether ~/.cache/huggingface (697M, parakeet) belongs to another project.
+U4 Visual menu-bar light behavior: previously recorded Unverified; not re-checked.

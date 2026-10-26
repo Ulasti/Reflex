@@ -1,0 +1,77 @@
+# Evidence: menu bar signal light + notch pill removal (atlas/menubar-ui)
+
+Date: 2026-10-19
+Branch: atlas/menubar-ui
+Follows commits fbc9d3d (project regen), ec0ef08 (signal light model).
+
+## What changed this session
+
+- Reflex/AppModel.swift: showNotchPill + notchPillKey + the NotchPillController
+  instance and its init wiring removed (the notch overlay is never started).
+- Reflex/SettingsView.swift: the "Status Pill" settings section (toggle +
+  NotchNeighbor note) removed; StatusPillView stays as the diagnostics preview.
+- Reflex/NotchPillController.swift: moved to atlas/attic/NotchPillController.swift
+  — parked, NOT deleted, and outside the project.yml `Reflex` glob so it no
+  longer compiles into either target. Restore = move back + re-add the toggle.
+- ReflexCore/Sources/ReflexCore/MicMonitor.swift: onLevel is now also emitted
+  per capture chunk in MicMonitor.start() (alongside the segmenter's 100 ms
+  window emission), so the light's voice-following runs at capture cadence as
+  the light table's "~64 ms response" row asks for.
+- Reflex/MenuBarIconView.swift: hearing comment updated to the new cadence.
+
+## Light table coverage (menu bar icon, MenuBarIconView + SignalLight.resolve)
+
+State    | Color          | Motion
+---------|----------------|--------------------------------------------
+Off      | labelColor     | opacity 1, mic.slash.fill (no colored light)
+Armed    | labelColor     | 4 s sine breath, opacity 0.30-0.65
+Hearing  | labelColor     | opacity 0.70 + 0.30*liveLevel, per-chunk level
+Executed | systemGreen    | flash 1.0->0.55 over 0.3 s, retrigger per action
+Waiting  | systemOrange   | 4 s sine breath, opacity 0.50-1.0
+Error    | systemRed      | solid (mic denied / model failure)
+Unsure   | not surfaced   | approved: no .unsure state in SignalLight
+
+Priority (tested, SignalLightTests 5/5): error > loading > flash > listening > off.
+
+## Gates (full run, 2026-10-19)
+
+- xcodegen generate                          -> Created project (ok)
+- xcodebuild Reflex-macOS Debug (fresh dd)   -> BUILD SUCCEEDED, 342 compile actions
+- xcodebuild Reflex-iOS Debug                -> BUILD SUCCEEDED
+- swift test --package-path ReflexCore       -> 56 tests in 14 suites passed
+- swift build -c release + reflex-cli --verify -> verify OK
+- reflex-cli --diagnose                      -> "Ready. No blocking issues."
+- reflex-cli --laya-ref                      -> 126/126 checks passed
+
+Logs: evidence/build-macos.log, build-ios.log, tests.log, build-cli.log,
+verify-models.log, diagnose.txt, laya-ref.txt
+
+## Unverified (recorded, never assumed)
+
+- Visual check of breathing / level-following / green flash / amber by pixel
+  capture: ABANDONED per user decision 2026-10-19 (screencapture returned black
+  frames for most of the session; permission granted late; the model cannot
+  view images regardless). The user verifies by eye — off state and slashed
+  glyph confirmed working; breathing, flash and amber color not yet eyeballed.
+- The "~64 ms" hearing response is structural (per-chunk emission + 30 fps
+  redraw) but not measured: chunk cadence depends on the input device's
+  4096-frame tap, and no timing instrumentation exists.
+- MicMonitor's chunk-level emission has no unit test: MicMonitor.start()
+  requires a live AVAudioEngine, which the test target cannot run headlessly.
+  The segmenter behavior it relies on (onLevel contract) is covered by
+  StreamSegmenter tests.
+
+## Second pass (2026-10-19, after user review)
+
+- Reflex/MenuBarIconView.swift: mic pictogram dropped. The light is now a
+  plain 16 pt circle — `circle` (outline) for Off = no light, `circle.fill` in
+  the state color for every lit state. Same draw path (explicit NSImage,
+  palette color, isTemplate=false), so the earlier invisible-icon fix holds.
+- Hearing band widened: opacity 0.50 + 0.50*sqrt(level) instead of
+  0.70 + 0.30*level. The linear band sat too close together to see voice
+  reactivity on a 12 pt circle (user report: "not quite see the white
+  reactive"). Still ~30 fps render; level still arrives per capture chunk.
+- Re-ran the full gate after the change: 342 compile actions, 56 tests in 14
+  suites, verify OK, --diagnose 0 blocking, --laya-ref 126/126.
+- Still Unverified by eye: the new circle shape, the hollow-ring Off state,
+  and the widened hearing response (user to eyeball; capture abandoned).

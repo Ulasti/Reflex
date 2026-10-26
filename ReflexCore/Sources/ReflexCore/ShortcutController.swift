@@ -60,16 +60,18 @@ public enum ShortcutController {
             "press right", "press the right arrow", "press right arrow", "arrow right", "right arrow"
         ]),
         Shortcut(name: "copy", keyChar: "c", modifiers: ["command"], criteria: [
-            "copy that", "copy it", "copy this", "copy the selection", "copy the text", "copy those"
+            "copy that", "copy it", "copy this", "copy the selection", "copy the text", "copy those",
+            "copy", "copy everything", "copy to selection", "put it on the clipboard"
         ]),
         Shortcut(name: "paste", keyChar: "v", modifiers: ["command"], criteria: [
-            "paste", "paste that", "paste it", "paste this", "paste the text"
+            "paste", "paste that", "paste it", "paste this", "paste the text",
+            "paste it here", "put it here", "drop it in here", "paste from the clipboard"
         ]),
         Shortcut(name: "cut", keyChar: "x", modifiers: ["command"], criteria: [
             "cut that", "cut it", "cut this", "cut the selection"
         ]),
         Shortcut(name: "undo", keyChar: "z", modifiers: ["command"], criteria: [
-            "undo", "undo that", "undo it", "undo this"
+            "undo", "undo that", "undo it", "undo this", "take it back"
         ]),
         Shortcut(name: "redo", keyChar: "z", modifiers: ["command", "shift"], criteria: [
             "redo", "redo that", "redo it"
@@ -191,23 +193,29 @@ public enum ShortcutController {
     /// Best-matching shortcut name for a transcript, or nil. Scored by the
     /// longest matching criteria phrase so "copy that path" doesn't collapse
     /// into plain copy when a more specific action won the routing.
+    /// The longest catalog criterion the transcript contains, if any — the
+    /// match `canonicalName(in:)` is built from, exposed so the router can
+    /// grade confidence on how completely the utterance *is* a catalog phrase.
+    public static func matchedPhrase(in lowerTranscript: String) -> String? {
+        let t = lowerTranscript.lowercased()
+            .replacingOccurrences(of: "pressed ", with: "press ")
+        var best: String?
+        for shortcut in catalog {
+            for phrase in shortcut.criteria where t.contains(phrase) {
+                if best == nil || phrase.count > best!.count { best = phrase }
+            }
+        }
+        return best
+    }
+
     public static func canonicalName(in lowerTranscript: String) -> String? {
         // Past tense is the common slip ("pressed delete"): normalize it to the
         // imperative the catalog is written in before matching.
-        let t = lowerTranscript.lowercased()
-            .replacingOccurrences(of: "pressed ", with: "press ")
-        var bestName: String?
-        var bestLength = 0
-        for shortcut in catalog {
-            for phrase in shortcut.criteria {
-                guard t.contains(phrase) else { continue }
-                if phrase.count > bestLength {
-                    bestLength = phrase.count
-                    bestName = shortcut.name
-                }
-            }
+        guard let phrase = matchedPhrase(in: lowerTranscript) else { return nil }
+        for shortcut in catalog where shortcut.criteria.contains(phrase) {
+            return shortcut.name
         }
-        return bestName
+        return nil
     }
 
     public static func shortcut(named name: String) -> Shortcut? {
@@ -231,7 +239,7 @@ public enum ShortcutController {
     private static func pressKey(_ shortcut: Shortcut) throws {
         let part: String
         if let keyChar = shortcut.keyChar {
-            part = "keystroke \"\(Self.escape(keyChar))\""
+            part = "keystroke \"\(keyChar.appleScriptEscaped)\""
         } else if let keyCode = shortcut.keyCode {
             part = "key code \(keyCode)"
         } else {
@@ -252,9 +260,6 @@ public enum ShortcutController {
         return "{\(items.joined(separator: ", "))}"
     }
 
-    private static func escape(_ text: String) -> String {
-        text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-    }
     #endif
 }
 

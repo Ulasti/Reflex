@@ -1,0 +1,56 @@
+Atlas layout restore — reflex
+Date: 2026-10-16
+Branch: atlas/atlas-upgrade-v2
+Doctor: D27 (source wrapper), D28 (stale manifest.json)
+
+WHY
+A prior restructure moved the sources under `reflex-source/` and put
+`project.yml` inside `atlas/`. The project's own code never followed:
+`tools/project_env.py` sets MODELS_DIR = <repo-root>/Models and
+RESOURCES_DIR = <repo-root>/ReflexCore/Sources/ReflexCore/Resources, and
+`LiveTranscriber.swift` walks four `deletingLastPathComponent()` steps from
+`#filePath` to reach the repo root. Both assume Reflex/, ReflexCore/ and
+Models/ sit at the repo root. With the wrapper, REFLEX_MODELS pointed at a
+non-existent <repo-root>/Models — the same failure class as D17.
+
+WHAT MOVED (git mv; nothing deleted)
+  git mv reflex-source/Reflex      Reflex
+  git mv reflex-source/ReflexCore  ReflexCore
+  git mv reflex-source/Models      Models
+  git mv atlas/project.yml         project.yml
+  moved aside (not deleted): the emptied `reflex-source/` wrapper and the
+  orphan root `ReflexCore/Package.resolved` (which differed from
+  reflex-source/ReflexCore/Package.resolved, so it was backed up).
+
+Backups:
+  /private/var/folders/xr/t6xp49m55_51mbsshr3fnykw0000gn/T/opencode/proj-backups/reflex-restructure-20261016T022107Z/
+
+RESULT (no code change was needed)
+  - Reflex/, ReflexCore/, Models/ now at repo root; `atlas/` holds only
+    ATLAS.md, evidence/, docs/, files/.
+  - project_env.py and LiveTranscriber.swift now resolve the true repo root.
+  - Updated: project.yml paths, atlas/files/build-and-verify.sh,
+    atlas/ATLAS.md, .gitignore comment.
+
+PROOF — atlas/files/build-and-verify.sh, run after the move:
+  [1/5] xcodegen generate                         -> Created project at Reflex.xcodeproj
+  [2/5] xcodebuild Reflex-macOS                   -> ** BUILD SUCCEEDED ** (320 compile actions)
+  [3/5] xcodebuild Reflex-iOS                     -> ** BUILD SUCCEEDED **
+  [4/5] swift test ReflexCore                     -> Test run with 51 tests in 13 suites passed
+  [5/5] swift build ReflexCore -c release         -> Build complete! (25.28 sec)
+        reflex-cli --verify                       -> verify OK
+
+Logs: atlas/evidence/{xcodegen,build-macos,build-ios,tests,build-cli,verify-models}.log (2026-10-16 05:23-05:24)
+
+Still open: D28 — gitignored `Models/manifest.json` holds absolute /Users/emir
+paths from before the move (write-only, produced by tools/convert.py, read by
+nothing). Regenerate with relative paths or delete.
+
+Follow-up (same day)
+  - `.gitignore` restored byte-identical to the original first-commit version
+    (`Models/*` + `!Models/MANIFEST.md` + `!Models/.gitkeep`, root-anchored
+    again now that Models/ is back at the root). Weights ignored, none tracked;
+    only the small mel/tokenizer .bin resources remain committed.
+  - Cleared `ReflexCore/.build` (745 MB) and re-ran this gate: the ~530
+    "Stale file … outside the allowed root paths" warnings are gone (D29 fixed).
+    Logs now show 0 stale-path warnings.

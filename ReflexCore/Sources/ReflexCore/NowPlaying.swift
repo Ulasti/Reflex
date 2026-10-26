@@ -1,6 +1,7 @@
 #if os(macOS)
 import Darwin
 import Foundation
+import os
 
 /// Minimal wrapper over MediaRemote — the same private now-playing engine that
 /// feeds Control Center and the media keys — so playback commands route to the
@@ -57,32 +58,49 @@ public enum NowPlaying {
     public static func status() -> Status {
         var bundleIdentifier = ""
         if let fn: GetClientFn = load("MRMediaRemoteGetNowPlayingClient") {
+            let clientID = OSAllocatedUnfairLock(initialState: "")
             let semaphore = DispatchSemaphore(value: 0)
             fn(DispatchQueue.global(qos: .userInitiated)) { client in
                 if let client = client as? NSObject,
                    let id = client.value(forKey: "bundleIdentifier") as? String,
                    !id.isEmpty {
-                    bundleIdentifier = id
+                    clientID.withLock { $0 = id }
                 }
                 semaphore.signal()
             }
-            _ = semaphore.wait(timeout: .now() + 1.5)
+            // The wait is timed, so take only what a reply actually wrote: on a
+            // timeout the callback may still be running, and the old code read a
+            // local `var` out from under it (atlas/docs/audit-2026-10-14.md, N8).
+            if semaphore.wait(timeout: .now() + 1.5) == .success {
+                bundleIdentifier = clientID.withLock { $0 }
+            }
         }
 
         var title = ""
         var artist = ""
         var isPlaying = false
         if let fn: GetInfoFn = load("MRMediaRemoteGetNowPlayingInfo") {
+            let info = OSAllocatedUnfairLock(initialState: (title: "", artist: "", isPlaying: false))
             let semaphore = DispatchSemaphore(value: 0)
-            fn(DispatchQueue.global(qos: .userInitiated)) { info in
-                let dict = info as? [String: Any] ?? [:]
-                title = dict["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
-                artist = dict["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
+            fn(DispatchQueue.global(qos: .userInitiated)) { payload in
+                let dict = payload as? [String: Any] ?? [:]
                 let rate = (dict["kMRMediaRemoteNowPlayingInfoPlaybackRate"] as? NSNumber)?.doubleValue ?? 0
-                isPlaying = rate != 0
+                let title = dict["kMRMediaRemoteNowPlayingInfoTitle"] as? String ?? ""
+                let artist = dict["kMRMediaRemoteNowPlayingInfoArtist"] as? String ?? ""
+                let playing = rate != 0
+                info.withLock {
+                    $0.title = title
+                    $0.artist = artist
+                    $0.isPlaying = playing
+                }
                 semaphore.signal()
             }
-            _ = semaphore.wait(timeout: .now() + 1.5)
+            if semaphore.wait(timeout: .now() + 1.5) == .success {
+                let snapshot = info.withLock { $0 }
+                title = snapshot.title
+                artist = snapshot.artist
+                isPlaying = snapshot.isPlaying
+            }
         }
 
         return Status(

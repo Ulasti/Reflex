@@ -1,0 +1,41 @@
+warning: 'reflexcore': found 1 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore/Tests/ReflexCoreTests/StreamSegmenterTests.swift.backup
+warning: 'reflexcore': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore/Sources/ReflexCore/MicMonitor.swift.backup
+    /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore/Sources/ReflexCore/MicMonitor.swift.backup2
+warning: 'reflexcore': found 2 file(s) which are unhandled; explicitly declare them as resources or exclude from the target
+    /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore/Sources/ReflexCLI/ReplayHarness.swift.backup
+    /Users/emir/Documents/Atlas/Projects/reflex/ReflexCore/Sources/ReflexCLI/main.swift.backup
+Building for production...
+[4 / 16]
+[5 / 17] ArgmaxCore
+[16 / 70]
+[22 / 70]
+[27 / 70]
+[29 / 70]
+[33 / 70]
+[36 / 70]
+[43 / 70]
+[46 / 70]
+[47 / 70]
+[48 / 70]
+[55 / 70]
+[58 / 70]
+[59 / 70] ArgmaxCore
+[62 / 72] WhisperKit
+[73 / 94]
+[75 / 94]
+[77 / 94]
+[83 / 94]
+[84 / 94]
+[85 / 94] WhisperKit
+[88 / 96] ReflexCore
+[101 / 112]
+[103 / 112]
+[104 / 112]
+[105 / 112] ReflexCore
+[112 / 114] reflex-cli-product
+[113 / 115] reflex-cli-product
+[115 / 115] reflex-cli-product
+[117 / 118] reflex-cli-product
+Build complete! (34.37 secs)

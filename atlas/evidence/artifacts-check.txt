@@ -1,0 +1,29 @@
+# Artifacts and referenced-path check
+Date: 2026-10-16T02:50:48Z
+Rule: paths written in ATLAS.md are relative to atlas/; repo-root paths are listed separately.
+
+PATH                                                         STATUS
+atlas/ATLAS.md                                               OK
+atlas/evidence                                               OK
+atlas/docs                                                   OK
+atlas/files                                                  OK
+atlas/files/INDEX.md                                         OK
+atlas/files/build-and-verify.sh                              OK
+atlas/files/reflex.icon                                      OK
+atlas/docs/implementation-plan.md                            OK
+atlas/docs/jev-voice-action-reference.md                     MISSING
+atlas/docs/audit-2026-10-14.md                               OK
+atlas/docs/BROWSER_ROADMAP.md                                OK
+README.md                                                    OK
+project.yml                                                  OK
+Reflex.xcodeproj                                             OK
+Reflex                                                       OK
+ReflexCore/Sources                                           OK
+ReflexCore/Sources/ReflexCore/Resources                      OK
+Models                                                       OK
+Models/MANIFEST.md                                           OK
+tools/laya_reference.json                                    OK
+tools/project_env.py                                         OK
+tools/convert.py                                             OK
+tools/requirements.txt                                       OK
+ReflexCore/Package.resolved                                  OK

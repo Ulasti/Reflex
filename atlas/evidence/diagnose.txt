@@ -1,0 +1,14 @@
+Reflex health check
+
+  ✓ Whisper model
+  ✓ Microphone permission
+  ✓ Microphone audio
+  ✓ Accessibility
+  ✓ Browser automation — Safari
+  … Browser automation — Chrome: not running — skipped
+  … Browser automation — Edge: not running — skipped
+  … Browser automation — Brave: not running — skipped
+  … Browser automation — Opera: not running — skipped
+  ✓ Default browser
+
+Ready. No blocking issues.

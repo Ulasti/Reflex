@@ -1,0 +1,16 @@
+# ATLAS.md status update
+Date: 2026-10-16T02:55:08Z
+Branch: atlas/phase-a-verify
+
+Updated sections: Status (Branch -> atlas/phase-a-verify, Where I left off),
+Next Steps (Phase A verified; A5 remains), Blockers (test net updated; added lost-doc blocker),
+Inputs & Locations (jev reference MISSING), Links (added audit + roadmap; flagged lost doc),
+DoD (all 13 rows re-derived this session), Atlas Doctor (D1 reformatted, D5/D6/D22 corrected, D30/D31/D32 added),
+Toolbox (reflex.icon row added).
+
+DoD result: 11 Pass, 1 Fail (row 10, 1 of 23 referenced paths missing -> D30), 1 not pushed (row 13).
+
+Diff summary vs the pre-session state:
+ atlas/ATLAS.md       | 108 +++++++++++++++++++++++++++++++--------------------
+ atlas/files/INDEX.md |   1 +
+ 2 files changed, 66 insertions(+), 43 deletions(-)

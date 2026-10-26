@@ -27,7 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 
 # Canonical locations, all inside the project.
 MODELS_DIR = REPO_ROOT / "Models"
-RESOURCES_DIR = REPO_ROOT / "ReflexCore" / "Sources" / "ReflexCore" / "Resources"
+RESOURCES_DIR = REPO_ROOT / "reflexApp" / "ReflexCore" / "Sources" / "ReflexCore" / "Resources"
 CACHE_DIR = REPO_ROOT / ".cache"
 HF_CACHE_DIR = CACHE_DIR / "huggingface"
 

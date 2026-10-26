@@ -9,7 +9,7 @@ struct ReflexCLI {
         let args = CommandLine.arguments
         if args.count >= 4, args[1] == "--mel" {
             do {
-                let samples = try loadSamples(url: URL(fileURLWithPath: args[2]))
+                let samples = try AudioFileLoader.loadSamples16kMono(url: URL(fileURLWithPath: args[2]))
                 let mel = try WhisperMel(nMel: args.count > 4 ? Int(args[4]) ?? 80 : 80)
                 let values = mel.logMel(samples: samples)
                 try Data(bytes: values, count: values.count * MemoryLayout<Float>.size)
@@ -51,7 +51,7 @@ struct ReflexCLI {
         if args.count >= 3, args[1] == "--laya" {
             let transcript = args[2...].joined(separator: " ")
             do {
-                let router = try LayaRouter(modelDirectory: defaultModelsDirectory())
+                let router = try makeLayaRouter()
                 let routing = try await router.route(transcript: transcript)
                 printRouting(routing)
             } catch {
@@ -66,10 +66,32 @@ struct ReflexCLI {
             do {
                 let router = try makeLayaRouter()
                 try await router.preload()
-                let start = Date()
-                for _ in 0..<iterations { _ = try await router.route(transcript: transcript) }
-                let ms = Date().timeIntervalSince(start) * 1000
-                print(String(format: "%d routes in %.1f ms (%.1f ms/route)", iterations, ms, ms / Double(iterations)))
+                var times: [Double] = []
+                for _ in 0..<iterations {
+                    let start = Date()
+                    _ = try await router.route(transcript: transcript)
+                    times.append(Date().timeIntervalSince(start) * 1000)
+                }
+                // Plan Phase 4 asks for p50/p95 of one forward pass, not a mean.
+                let sorted = times.sorted()
+                func percentile(_ p: Double) -> Double {
+                    sorted[min(sorted.count - 1, Int(p * Double(sorted.count - 1)))]
+                }
+                let mean = times.reduce(0, +) / Double(times.count)
+                print(String(format: "%d routes  mean %.1f ms  p50 %.1f  p95 %.1f  min %.1f  max %.1f",
+                             iterations, mean, percentile(0.5), percentile(0.95), sorted[0], sorted[sorted.count - 1]))
+            } catch {
+                print("error: \(error.localizedDescription)")
+            }
+            return
+        }
+
+        if args.count >= 2, args[1] == "--oracle" {
+            let phrases = args.count > 2 ? args[2] : "corpus/PHRASES.md"
+            var csv: String?
+            if let index = args.firstIndex(of: "--csv"), args.count > index + 1 { csv = args[index + 1] }
+            do {
+                try await ReplayHarness.runOracle(phrasesPath: phrases, csvPath: csv)
             } catch {
                 print("error: \(error.localizedDescription)")
             }
@@ -107,7 +129,7 @@ struct ReflexCLI {
             let variant = positionals.count >= 1 ? positionals[0] : "base"
             let modelsDir = positionals.count >= 2 ? URL(fileURLWithPath: positionals[1]) : defaultModelsDirectory()
             do {
-                let samples = try loadSamples(url: URL(fileURLWithPath: args[2]))
+                let samples = try AudioFileLoader.loadSamples16kMono(url: URL(fileURLWithPath: args[2]))
                 guard let kind = ReflexModelKind(rawValue: "whisper-\(variant)") else {
                     print("unknown variant"); return
                 }
@@ -189,12 +211,11 @@ struct ReflexCLI {
                 let decision = try await routedDecision(transcript)
                 let plan = CommandPlan.make(
                     target: decision.actionTarget.identifier,
-                    confidence: decision.confidenceValue,
                     transcript: decision.transcript
                 )
                 print("transcript: \(plan.transcript)")
-                print("action: \(plan.action) (conf \(String(format: "%.2f", plan.confidence)), addressed \(String(format: "%.2f", plan.addressed)))")
-                print("submit: \(plan.submit), inApp: \(plan.inApp), compound: \(plan.compound)")
+                print("action: \(plan.action) (conf \(String(format: "%.2f", decision.confidenceValue)), addressed \(String(format: "%.2f", decision.addressed)))")
+                print("submit: \(plan.submit), inApp: \(plan.candidates.inApp ?? "-")")
                 let args = plan.args.sorted { $0.key < $1.key }
                 if args.isEmpty {
                     print("args: none")
@@ -218,10 +239,9 @@ struct ReflexCLI {
                     let decision = try await routedDecision(part.transcript)
                     let plan = CommandPlan.make(
                         target: decision.actionTarget.identifier,
-                        confidence: decision.confidenceValue,
                         transcript: decision.transcript
                     )
-                    var line = "[\(index + 1)] \(part.transcript) -> \(plan.action) (conf \(String(format: "%.2f", plan.confidence)))"
+                    var line = "[\(index + 1)] \(part.transcript) -> \(plan.action) (conf \(String(format: "%.2f", decision.confidenceValue)))"
                     if part.submit { line += " +submit" }
                     print(line)
                 }
@@ -275,7 +295,7 @@ struct ReflexCLI {
                 let engine = try makeEngine()
                 let segmenter = StreamSegmenter()
                 nonisolated(unsafe) var segments: [[Float]] = []
-                segmenter.onSegment = { segments.append($0) }
+                segmenter.onSegment = { segment, reason, audioDuration in segments.append(segment) }
 
                 if useWK {
                     try await runVliveWK(
@@ -301,6 +321,22 @@ struct ReflexCLI {
                     }
                     if segments.isEmpty { print("no speech detected in file") }
                 }
+            } catch {
+                print("error: \(error.localizedDescription)")
+            }
+            return
+        }
+
+        if args.count >= 3, args[1] == "--replay" {
+            // Corpus harness: real-time replay through the live path, mock
+            // dispatch, per-clip accuracy + stage latency (plan Phase 0.4).
+            do {
+                try await ReplayHarness.run(
+                    corpusDir: args[2],
+                    variant: stringArg("--variant", in: args) ?? "small",
+                    limit: intArg("--limit", in: args),
+                    csvPath: stringArg("--csv", in: args)
+                )
             } catch {
                 print("error: \(error.localizedDescription)")
             }
@@ -360,6 +396,8 @@ struct ReflexCLI {
                    reflex-cli --laya-bench <iterations> [transcript...]
                    reflex-cli --laya-ref <reference.json>
                    reflex-cli --vlive <audio-file> [variant] [--run] [--wk]
+                   reflex-cli --replay <corpus-dir> [--variant small] [--limit N] [--csv out.csv]
+                   reflex-cli --oracle [PHRASES.md] [--csv out.csv]
                    reflex-cli --listen [variant] [--run] [--wk]
                    reflex-cli --wk-install [variant] [models-dir]
                    reflex-cli --tokenize <text...>
@@ -383,7 +421,7 @@ struct ReflexCLI {
         }
 
         do {
-            let samples = try loadSamples(url: audioURL)
+            let samples = try AudioFileLoader.loadSamples16kMono(url: audioURL)
             print("audio: \(samples.count) samples (\(String(format: "%.2f", Double(samples.count) / 16000))s), model: \(kind.displayName)")
 
             let transcriber = try WhisperTranscriber(modelDirectory: modelsDir)
@@ -396,6 +434,15 @@ struct ReflexCLI {
         } catch {
             print("error: \(error.localizedDescription)")
         }
+    }
+
+    static func stringArg(_ flag: String, in args: [String]) -> String? {
+        guard let index = args.firstIndex(of: flag), index + 1 < args.count else { return nil }
+        return args[index + 1]
+    }
+
+    static func intArg(_ flag: String, in args: [String]) -> Int? {
+        stringArg(flag, in: args).flatMap(Int.init)
     }
 
     static func kind(for variant: String) throws -> ReflexModelKind {
@@ -436,7 +483,7 @@ struct ReflexCLI {
             layaRouter: layaRouter
         )
         let monitor = MicMonitor()
-        monitor.onSegment = { segment in
+        monitor.onSegment = { segment, reason, audioDuration in
             Task {
                 do {
                     try await runSegment(engine, segment, kind, runRequested: runRequested)
@@ -539,7 +586,7 @@ struct ReflexCLI {
         case "small.compressed": "openai_whisper-small_216MB"
         case "m", "medium": "openai_whisper-medium"
         case "medium.en": "openai_whisper-medium.en"
-        case "turbo": "openai_whisper-large-v3-v20240930_turbo"
+        case "turbo", "large-v3-turbo": "openai_whisper-large-v3-v20240930_turbo"
         default: requested
         }
     }
@@ -596,7 +643,7 @@ struct ReflexCLI {
         monitor.onPartial = { partial in
             Task { await live.consumePartial(partial) }
         }
-        monitor.onSegment = { segment in
+        monitor.onSegment = { segment, reason, audioDuration in
             Task {
                 do {
                     let text = try await live.finalizeUtterance()
@@ -649,7 +696,7 @@ struct ReflexCLI {
         }
         nonisolated(unsafe) var spoken = 0
         nonisolated(unsafe) var processed = 0
-        segmenter.onSegment = { _ in
+        segmenter.onSegment = { segment, reason, audioDuration in
             spoken += 1
             Task {
                 do {
@@ -740,7 +787,7 @@ struct ReflexCLI {
         let tolerance = 0.02  // fp16 CoreML vs fp32 PyTorch ground truth
         let data = try Data(contentsOf: URL(fileURLWithPath: path))
         let file = try JSONDecoder().decode(LayaReferenceFile.self, from: data)
-        let router = try LayaRouter(modelDirectory: defaultModelsDirectory())
+        let router = try makeLayaRouter()
         let tokenizer = try LayaTokenizer()
 
         var checks = 0

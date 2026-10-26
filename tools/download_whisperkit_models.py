@@ -51,6 +51,13 @@ ALIASES = {
 
 DEFAULT_VARIANT = "small"
 
+# The turbo folder carries an OpenAI snapshot date that is not part of the
+# upstream repo name, so the naming heuristic below cannot derive it.
+TOKENIZER_REPO_OVERRIDES = {
+    "openai_whisper-large-v3-v20240930_turbo": "openai/whisper-large-v3-turbo",
+    "openai_whisper-large-v3-v20240930_turbo_632MB": "openai/whisper-large-v3-turbo",
+}
+
 
 def default_models_dir():
     override = os.environ.get("REFLEX_MODELS")
@@ -91,6 +98,8 @@ def tokenizer_repo_for_variant(variant: str) -> str:
     """WhisperKit pulls the tokenizer from the standard openai/whisper-* repo,
     so we bundle just `tokenizer.json` beside the weights. Strip the WhisperKit
     folder suffix (`_216MB`) and `openai_whisper-` prefix to recover it."""
+    if variant in TOKENIZER_REPO_OVERRIDES:
+        return TOKENIZER_REPO_OVERRIDES[variant]
     base = variant
     for suffix in ("_216MB", "_217MB", "_594MB", "_600MB", "_632MB", "_769MB", "_947MB", "_955MB"):
         base = base.removesuffix(suffix)

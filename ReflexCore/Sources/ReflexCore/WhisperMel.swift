@@ -5,7 +5,7 @@ import Foundation
 /// numerically: reflect-padded STFT (n_fft 400, hop 160), power spectrum,
 /// whisper's baked mel filterbank, log10 clamp, global -8 floor, and the
 /// `(x + 4) / 4` affine normalization. Output is `n_mels x 3000`, row-major.
-struct WhisperMel {
+public struct WhisperMel {
     static let sampleRate = 16_000
     static let nFFT = 400
     static let hopLength = 160
@@ -16,7 +16,7 @@ struct WhisperMel {
     let nMel: Int
     private let filters: [Float]
 
-    init(nMel: Int) throws {
+    public init(nMel: Int) throws {
         guard let url = Bundle.module.url(
             forResource: "whisper-mel-\(nMel)",
             withExtension: "bin"
@@ -33,7 +33,7 @@ struct WhisperMel {
     }
 
     /// `samples` are 16 kHz mono floats in [-1, 1]. Returns `nMel * 3000`.
-    func logMel(samples: [Float]) -> [Float] {
+    public func logMel(samples: [Float]) -> [Float] {
         let frameCount = samples.count / Self.hopLength
         let window = Self.hannWindow()
         let (cosTable, sinTable) = Self.dftTables()

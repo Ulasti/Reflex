@@ -10,6 +10,7 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
     case searchedWeb(query: String, site: String?)
     case volumeSet(percent: Int)
     case volumeChanged(delta: Int)
+    case volumeMuted
     case volumeUnmuted
     case brightnessSet(percent: Int)
     case brightnessChanged(delta: Int)
@@ -32,6 +33,13 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
     case noOp(reason: String)
     case failed(error: String)
 
+    /// Whether nothing was done: the gate refused it ("not sure what you
+    /// meant"). The feedback light must not flash green for a no-op.
+    public var isNoOp: Bool {
+        if case .noOp = self { return true }
+        return false
+    }
+
     public var summary: String {
         switch self {
         case .launched(let app): "Launched \(app)"
@@ -40,6 +48,7 @@ public enum ReflexActionResult: Sendable, Equatable, CustomStringConvertible {
         case .searchedWeb(let query, let site): "Searched the web\(site.map { " on \($0)" } ?? "") for \"\(query)\""
         case .volumeSet(let percent): "Volume set to \(percent)%"
         case .volumeChanged(let delta): delta >= 0 ? "Volume up \(delta)%" : "Volume down \(-delta)%"
+        case .volumeMuted: "Volume muted"
         case .volumeUnmuted: "Volume unmuted"
         case .brightnessSet(let percent): "Brightness set to \(percent)%"
         case .brightnessChanged(let delta): delta >= 0 ? "Brightness up \(delta)%" : "Brightness down \(-delta)%"
@@ -113,34 +122,9 @@ public struct ActionDispatcher: Sendable {
         }
         let plan = CommandPlan.make(
             target: decision.actionTarget.identifier,
-            confidence: decision.confidenceValue,
             transcript: decision.transcript
         )
         return try dispatchSingle(plan)
-    }
-
-    /// Executes a pre-routed list of decisions (one per compound clause) in
-    /// order, gating each independently so a shaky clause never fires.
-    public func dispatchCompound(_ decisions: [ReflexDecision]) throws -> ReflexActionResult {
-        var summaries: [String] = []
-        var anyExecuted = false
-        for decision in decisions {
-            let result = try dispatch(decision)
-            switch result {
-            case .noOp(let reason):
-                summaries.append("Skipped \(reason)")
-            default:
-                anyExecuted = true
-                summaries.append(result.summary)
-            }
-        }
-        if summaries.isEmpty { return .noOp(reason: "compound had no clauses") }
-        if !anyExecuted { return .noOp(reason: summaries.joined(separator: " • ")) }
-        // Lead with the action summary so the status line reads as done work.
-        let lead = summaries[0]
-        let rest = summaries.dropFirst().map { "\($0)" }
-        let combined = ([lead] + rest).joined(separator: " • ")
-        return .browserActed(action: combined)
     }
 
     private func dispatchSingle(_ plan: CommandPlan) throws -> ReflexActionResult {
@@ -222,31 +206,24 @@ public struct ActionDispatcher: Sendable {
         components?.queryItems = [URLQueryItem(name: "q", value: query)]
         guard let url = components?.url else { throw ActionExecutionError.parseFailure }
         _ = try BrowserController.open(url)
-        // Wait for Google to actually inject result links (readyState fires too early).
-        _ = BrowserController.waitForSearchResults()
+        // No wait here: the "open the first result" clause owns it, and
+        // clickLink already retries ~4 s for result links and reports why it
+        // failed. This call only burned up to 8 s holding `processing`
+        // (atlas/docs/audit-2026-10-14.md, S2).
         return .searchedWeb(query: query, site: nil)
     }
 
     private func mediaControl(plan: CommandPlan) throws -> ReflexActionResult {
         let lower = plan.transcript.lowercased()
 
-        // Volume — the extractor's closed-set VolumeOp beats the heuristics.
-        if let op = plan.candidates.volumeOp ?? Self.legacyVolumeOp(lower) {
+        // Volume — one closed-set VolumeOp, from the extractor. A second table
+        // used to live here and could disagree with it
+        // (atlas/docs/audit-2026-10-14.md, "also noticed").
+        if let op = plan.candidates.volumeOp {
             return try Self.performVolume(op)
         }
 
-        let kind: Self.MediaKind
-        if lower.contains("pause") || lower.contains("stop the music") {
-            kind = .pause
-        } else if lower.contains("resume") || lower.contains("play") || lower.contains("continue") {
-            kind = .play
-        } else if lower.contains("next") || lower.contains("skip") || lower.contains("forward") {
-            kind = .next
-        } else if lower.contains("previous") || lower.contains("back") {
-            kind = .previous
-        } else {
-            kind = .toggle
-        }
+        let kind = Self.mediaOperation(for: plan.transcript)
 
         // An explicit app in the phrase ("play music", "play on spotify")
         // targets that app directly instead of the current now-playing source.
@@ -298,32 +275,40 @@ public struct ActionDispatcher: Sendable {
         return .noOp(reason: "nothing is playing")
     }
 
-    private func brightnessControl(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
-        if let percent = Self.extractPercent(from: plan.transcript) {
-            let applied = try BrightnessController.set(percent)
-            return .brightnessSet(percent: applied)
-        }
-        if lower.contains("maximum") || lower.contains("highest") || lower.contains("full") || lower.contains("max") {
-            let applied = try BrightnessController.set(100)
-            return .brightnessSet(percent: applied)
-        }
-        if lower.contains("minimum") || lower.contains("lowest") {
-            let applied = try BrightnessController.set(0)
-            return .brightnessSet(percent: applied)
-        }
+    public enum BrightnessOperation: Equatable, Sendable {
+        case percent(Int)
+        case maximum
+        case minimum
+        case up
+        case down
+    }
+
+    /// Phrase → brightness op, in the order the executor's chain used. Pure
+    /// and separated from execution like `systemOperation(for:)`, so the replay
+    /// harness scores the exact op the dispatcher would run.
+    public static func brightnessOperation(for transcript: String) -> BrightnessOperation? {
+        let lower = transcript.lowercased()
+        if let percent = extractPercent(from: transcript) { return .percent(percent) }
+        if lower.contains("maximum") || lower.contains("full") || lower.contains("max") { return .maximum }
+        if lower.contains("minimum") || lower.contains("lowest") { return .minimum }
         if lower.contains("brighter") || lower.contains("brighten") || lower.contains("up")
-            || lower.contains("increase") || lower.contains("raise") || lower.contains("highest") {
-            let applied = try BrightnessController.adjust(by: +10)
-            return .brightnessChanged(delta: applied)
-        }
+            || lower.contains("increase") || lower.contains("raise") || lower.contains("highest")
+            || lower.contains("more light") { return .up }
         if lower.contains("dimmer") || lower.contains("dim") || lower.contains("down")
             || lower.contains("decrease") || lower.contains("lower") || lower.contains("darker")
-            || lower.contains("reduce") {
-            let applied = try BrightnessController.adjust(by: -10)
-            return .brightnessChanged(delta: applied)
+            || lower.contains("reduce") || lower.contains("less light") { return .down }
+        return nil
+    }
+
+    private func brightnessControl(plan: CommandPlan) throws -> ReflexActionResult {
+        switch Self.brightnessOperation(for: plan.transcript) {
+        case .percent(let percent): return .brightnessSet(percent: try BrightnessController.set(percent))
+        case .maximum: return .brightnessSet(percent: try BrightnessController.set(100))
+        case .minimum: return .brightnessSet(percent: try BrightnessController.set(0))
+        case .up: return .brightnessChanged(delta: try BrightnessController.adjust(by: +10))
+        case .down: return .brightnessChanged(delta: try BrightnessController.adjust(by: -10))
+        case nil: throw ActionExecutionError.parseFailure
         }
-        throw ActionExecutionError.parseFailure
     }
 
     private func typeText(plan: CommandPlan) throws -> ReflexActionResult {
@@ -333,7 +318,7 @@ public struct ActionDispatcher: Sendable {
         guard !text.isEmpty else { throw ActionExecutionError.parseFailure }
 
         if let appName = c.inApp ?? Self.candidateInApp(plan), let url = AppResolver.url(for: appName) {
-            _ = NSWorkspace.shared.open(url)
+            Self.openAndActivate(url)
         }
         try Self.pasteText(text, withReturn: submit)
         return .typedText(text: text)
@@ -391,6 +376,9 @@ public struct ActionDispatcher: Sendable {
         // In-page link click — "open the first result/link" (ordinal in the plan).
         if let index = plan.candidates.linkIndex {
             let label = try BrowserController.clickLink(at: index)
+            if label.isEmpty {
+                return .browserActed(action: "No-op")
+            }
             return .browserActed(action: "Opened \(label)")
         }
 
@@ -432,7 +420,7 @@ public struct ActionDispatcher: Sendable {
         let appName = Self.candidateInApp(plan)
 
         if let appName, let url = AppResolver.url(for: appName) {
-            _ = NSWorkspace.shared.open(url)
+            Self.openAndActivate(url)
         }
         // ⌘N then (optionally) type the title.
         try ShortcutController.press(name: "new_document")
@@ -453,9 +441,12 @@ public struct ActionDispatcher: Sendable {
 
     private func screenshot(plan: CommandPlan) throws -> ReflexActionResult {
         let dir = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0]
-        let stamp = DateFormatter.localizedString(from: Date(), dateStyle: .medium, timeStyle: .short)
-            .replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
-        let path = dir.appendingPathComponent("Reflex \(stamp).png").path
+        // Seconds (and milliseconds) in the name: the old minute-granular style
+        // made two shots in the same minute collide and silently overwrite.
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss.SSS"
+        let path = dir.appendingPathComponent("Reflex \(formatter.string(from: Date())).png").path
         let output = try Self.runTool("/usr/sbin/screencapture", arguments: ["-x", path])
         guard output.isEmpty || !output.contains("error") else {
             return .failed(error: output)
@@ -463,23 +454,73 @@ public struct ActionDispatcher: Sendable {
         return .screenshotTaken(path: path)
     }
 
-    private func systemControl(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
-        if lower.contains("lock") {
-            try ShortcutController.press(name: "lock_screen")
-            return .systemControlOpened(operation: "Locked screen")
+    /// What a transcript asks `system_control` to do. Pure and separate from
+    /// execution so the routing contract tests can assert that every phrase the
+    /// router sends here is actually handleable (atlas/docs/audit-2026-10-14.md, M3).
+    public enum SystemOperation: Equatable, Sendable {
+        case lockScreen
+        case sleepDisplay
+        case showDesktop
+        case darkMode(Bool)
+        case emptyTrash
+    }
+
+    /// Phrase to operation, in the original if-chain's order.
+    public static func systemOperation(for transcript: String) -> SystemOperation? {
+        // Same filler stripping the router applies, so a phrase it matched
+        // ("desktop, please") parses here too.
+        let lower = PayloadExtractor.normalizeIntent(transcript).lowercased()
+        // Word boundaries, not substrings: "unlock the screen" must not lock
+        // (and macOS cannot unlock it anyway).
+        if lower.containsWord("lock") { return .lockScreen }
+        if lower.contains("sleep") || lower.contains("turn off the screen")
+            || lower.contains("turn off the display") {
+            return .sleepDisplay
         }
-        if lower.contains("sleep") {
-            _ = try Self.runTool("/usr/bin/pmset", arguments: ["displaysleepnow"])
-            return .systemControlOpened(operation: "Display sleeping")
-        }
-        if lower.contains("show desktop") || lower.contains("reveal the desktop") {
-            try ShortcutController.press(name: "show_desktop")
-            return .systemControlOpened(operation: "Showed desktop")
+        let bare = lower.trimmingCharacters(in: CharacterSet(charactersIn: " \t.,!?;"))
+        if lower.contains("show desktop") || lower.contains("show the desktop")
+            || lower.contains("reveal the desktop") || lower.contains("go to the desktop")
+            || lower.contains("go to desktop") || lower.contains("show me the desktop")
+            || lower.contains("clear the screen") || lower.contains("minimize everything")
+            || bare == "desktop" {
+            return .showDesktop
         }
         if lower.contains("dark mode") || lower.contains("light mode") || lower.contains("dark theme")
-            || lower.contains("light theme") {
-            let dark = lower.contains("dark")
+            || lower.contains("light theme") || lower.contains("night mode")
+            || lower.contains("switch to dark") || lower.contains("make it dark")
+            || lower.contains("switch to light") {
+            let wantsLight = lower.contains("light mode") || lower.contains("light theme")
+                || lower.contains("switch to light")
+            return .darkMode(!wantsLight)
+        }
+        if lower.contains("trash") || lower.contains("bin") { return .emptyTrash }
+        return nil
+    }
+
+    /// Whether text left over after a launch verb could be a shell command,
+    /// rather than a mis-transcription of a normal request. This is the guard on
+    /// the one path that hands arbitrary text to a shell (S1).
+    static func looksLikeShellCommand(_ command: String) -> Bool {
+        guard let first = command.split(separator: " ").first else { return false }
+        let articles: Set<String> = ["a", "an", "the", "my", "our", "your", "it", "that", "this"]
+        return !articles.contains(first.lowercased())
+    }
+
+    private func systemControl(plan: CommandPlan) throws -> ReflexActionResult {
+        guard let operation = Self.systemOperation(for: plan.transcript) else {
+            throw ActionExecutionError.parseFailure
+        }
+        switch operation {
+        case .lockScreen:
+            try ShortcutController.press(name: "lock_screen")
+            return .systemControlOpened(operation: "Locked screen")
+        case .sleepDisplay:
+            _ = try Self.runTool("/usr/bin/pmset", arguments: ["displaysleepnow"])
+            return .systemControlOpened(operation: "Display sleeping")
+        case .showDesktop:
+            try ShortcutController.press(name: "show_desktop")
+            return .systemControlOpened(operation: "Showed desktop")
+        case .darkMode(let dark):
             let script = """
             tell application "System Events"
                 tell appearance preferences
@@ -489,8 +530,7 @@ public struct ActionDispatcher: Sendable {
             """
             _ = try Self.runTool("/usr/bin/osascript", arguments: ["-e", script])
             return .systemControlOpened(operation: dark ? "Set dark mode" : "Set light mode")
-        }
-        if lower.contains("trash") || lower.contains("bin") {
+        case .emptyTrash:
             let script = """
             tell application "Finder"
                 empty trash
@@ -499,17 +539,14 @@ public struct ActionDispatcher: Sendable {
             _ = try Self.runTool("/usr/bin/osascript", arguments: ["-e", script])
             return .systemControlOpened(operation: "Emptied trash")
         }
-        throw ActionExecutionError.parseFailure
     }
 
     /// Quits a named app ("quit calculator") via NSRunningApplication so it
     /// doesn't depend on automation or Accessibility permissions.
     private func quitApp(plan: CommandPlan) throws -> ReflexActionResult {
-        let lower = plan.transcript.lowercased()
         guard let queried = Self.appName(fromQuitPhrase: plan.transcript) else {
             throw ActionExecutionError.parseFailure
         }
-        _ = lower
         guard let url = AppResolver.url(for: queried), let bundleID = Bundle(url: url)?.bundleIdentifier else {
             throw ActionExecutionError.unknownApp(name: queried)
         }
@@ -564,11 +601,14 @@ public struct ActionDispatcher: Sendable {
             }
             let targetName = Self.sanitizeName(rawTarget)
             let destURL = try Self.ensureFolder(named: targetName)
-            try Self.moveDownloads(matching: matcher, to: destURL)
+            let moved = try Self.moveDownloads(matching: matcher, to: destURL)
+            guard moved > 0 else {
+                return .noOp(reason: "nothing matched \"\(matcher)\" in Downloads")
+            }
             return .movedItems(into: destURL.lastPathComponent)
         }
 
-        if lower.contains("search") && (lower.contains("path") || lower.contains("clipboard") || lower.contains("copy")) {
+        if RuleRouter.isFileCopyRequest(plan.transcript) {
             guard let query = plan.candidates.query ?? Self.candidateQuery(plan) else {
                 throw ActionExecutionError.parseFailure
             }
@@ -593,10 +633,17 @@ public struct ActionDispatcher: Sendable {
         if let ssh = command.lowercased().range(of: "ssh") {
             command = String(command[ssh.lowerBound...])
         }
+        // The residual goes straight into Terminal, so refuse anything that is
+        // plainly not a command: "open a terminal" reduces to "a terminal" and
+        // the shell just prints "command not found" (atlas/docs/audit-2026-10-14.md,
+        // S1).
+        guard Self.looksLikeShellCommand(command) else {
+            return .noOp(reason: "not a command: \"\(command)\"")
+        }
         let script = """
         on run
             tell application "Terminal"
-                do script "\(Self.appleScriptEscape(command))"
+                do script "\(command.appleScriptEscaped)"
                 activate
             end tell
         end run
@@ -661,10 +708,10 @@ public struct ActionDispatcher: Sendable {
             let applied = try adjustVolume(by: -delta)
             return .volumeChanged(delta: applied)
         case .mute:
-            try setVolume(0)
-            return .volumeSet(percent: 0)
+            try setMuted(true)
+            return .volumeMuted
         case .unmute:
-            try setVolume(50)
+            try setMuted(false)
             return .volumeUnmuted
         case .max:
             try setVolume(100)
@@ -675,36 +722,20 @@ public struct ActionDispatcher: Sendable {
         }
     }
 
-    /// Legacy volume detection kept as a plan/extractor fallback. Aligned to
-    /// the extractor's ±15 steps so direct and fallback paths agree.
-    private static func legacyVolumeOp(_ lower: String) -> VolumeOp? {
-        guard lower.contains("volume") || lower.contains("mute") || lower.contains("louder")
-            || lower.contains("quieter") || lower.contains("turn up") || lower.contains("turn down") else {
-            return nil
-        }
-        if lower.contains("max") || lower.contains("all the way up") {
-            return .max
-        }
-        if lower.contains("half") || lower.contains("medium volume") {
-            return .half
-        }
-        if lower.contains("unmute") || lower.contains("sound back on") {
-            return .unmute
-        }
-        if lower.contains("mute") { return .mute }
-        if let percent = extractPercent(from: lower) { return .percent(percent) }
-        if lower.contains("louder") || lower.contains("up ") || lower.contains("increase") || lower.contains("raise") {
-            return .up(delta: 15)
-        }
-        if lower.contains("quieter") || lower.contains("down") || lower.contains("decrease") || lower.contains("lower") {
-            return .down(delta: 15)
-        }
-        return nil
-    }
-
     private static func setVolume(_ percent: Int) throws {
         let clamped = min(100, max(0, percent))
-        _ = try runTool("/usr/bin/osascript", arguments: ["-e", "set volume output volume \(clamped)"])
+        // Clear the mute flag too, or a level change while muted looks like it
+        // did nothing.
+        _ = try runTool("/usr/bin/osascript", arguments: [
+            "-e", "set volume output muted false",
+            "-e", "set volume output volume \(clamped)",
+        ])
+    }
+
+    /// Mutes or restores output without touching the level, so "unmute" returns
+    /// to the volume in use before the mute instead of a hardcoded 50 (S6).
+    private static func setMuted(_ muted: Bool) throws {
+        _ = try runTool("/usr/bin/osascript", arguments: ["-e", "set volume output muted \(muted)"])
     }
 
     private static func adjustVolume(by delta: Int) throws -> Int {
@@ -749,7 +780,23 @@ public struct ActionDispatcher: Sendable {
         return nil
     }
 
-    enum MediaKind { case play, pause, toggle, next, previous }
+    public enum MediaKind: Sendable { case play, pause, toggle, next, previous }
+
+    /// Phrase → playback op, in the order the dispatcher's if-chain used. Pure
+    /// and separated from execution like `systemOperation(for:)`, so the replay
+    /// harness scores the exact op the dispatcher would run
+    /// (atlas/docs/live-demo-v1-plan.md, Phase 0.4).
+    public static func mediaOperation(for transcript: String) -> MediaKind {
+        let lower = transcript.lowercased()
+        if lower.contains("pause") || lower.contains("stop the music") { return .pause }
+        // Track change before playback verbs: "play the last one" is previous,
+        // and "playback" must not read as "back" (word boundary).
+        if lower.contains("previous") || lower.contains("last song") || lower.contains("last one")
+            || lower.containsWord("back") { return .previous }
+        if lower.contains("next") || lower.contains("skip") || lower.contains("forward") { return .next }
+        if lower.contains("resume") || lower.contains("play") || lower.contains("continue") { return .play }
+        return .toggle
+    }
 
     private static func actionLabel(_ kind: MediaKind, command: String) -> String {
         switch kind {
@@ -763,14 +810,21 @@ public struct ActionDispatcher: Sendable {
 
     // MARK: - File helpers
 
-    private static func moveDownloads(matching matcher: String, to destURL: URL) throws {
+    /// Returns the number of items Finder actually moved, so a zero-match run is
+    /// reported as "nothing matched" instead of a success.
+    @discardableResult
+    private static func moveDownloads(matching matcher: String, to destURL: URL) throws -> Int {
         let downloads = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask)[0].path
         let script = """
         tell application "Finder"
-            move (every item of folder "\(appleScriptEscape(downloads))" whose name contains "\(appleScriptEscape(matcher))") to folder "\(appleScriptEscape(destURL.path))"
+            set theItems to (every item of folder "\(downloads.appleScriptEscaped)" whose name contains "\(matcher.appleScriptEscaped)")
+            set n to count of theItems
+            if n > 0 then move theItems to folder "\(destURL.path.appleScriptEscaped)"
+            return n
         end tell
         """
-        _ = try runTool("/usr/bin/osascript", arguments: ["-e", script])
+        let output = try runTool("/usr/bin/osascript", arguments: ["-e", script])
+        return Int(output.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 0
     }
 
     private static func ensureFolder(named name: String) throws -> URL {
@@ -813,6 +867,26 @@ public struct ActionDispatcher: Sendable {
 
     private static let desktop = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask)[0]
     private static let documents = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+
+    /// Opens `url`'s app and waits until it is actually frontmost before the
+    /// caller sends it a keystroke. Launch/activation takes ~0.5–2 s, and a ⌘V
+    /// or ⌘N sent before that lands in Reflex or whatever was frontmost —
+    /// silently typing into the wrong window (atlas/docs/audit-2026-10-14.md,
+    /// M4). Blocks the calling thread, which is the detached dispatch thread,
+    /// never the main actor.
+    private static func openAndActivate(_ url: URL, timeout: TimeInterval = 3.0) {
+        guard let bundleID = Bundle(url: url)?.bundleIdentifier else {
+            _ = NSWorkspace.shared.open(url)
+            return
+        }
+        guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier != bundleID else { return }
+        _ = NSWorkspace.shared.open(url)
+        let deadline = Date().addingTimeInterval(timeout)
+        while Date() < deadline,
+              NSWorkspace.shared.frontmostApplication?.bundleIdentifier != bundleID {
+            Thread.sleep(forTimeInterval: 0.05)
+        }
+    }
 
     /// Types text as the user did in Jev: copy to the clipboard, then ⌘V
     /// (Cmd+V is the only keystroke that handles non-ASCII, accented, and
@@ -938,10 +1012,6 @@ public struct ActionDispatcher: Sendable {
         return .searchedWeb(query: site.query ?? "", site: site.host)
     }
 
-    private static func appleScriptEscape(_ text: String) -> String {
-        text.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: "\"", with: "\\\"")
-    }
-
     // MARK: - Process
 
     static func runTool(_ executable: String, arguments: [String]) throws -> String {
@@ -952,8 +1022,10 @@ public struct ActionDispatcher: Sendable {
         process.standardOutput = output
         process.standardError = output
         try process.run()
-        process.waitUntilExit()
+        // Drain before waiting. A child that writes more than the pipe buffer
+        // (~64 KB) blocks on write, and then waitUntilExit() blocks with it.
         let data = output.fileHandleForReading.readDataToEndOfFile()
+        process.waitUntilExit()
         let text = String(data: data, encoding: .utf8) ?? ""
         guard process.terminationStatus == 0 else {
             throw ActionExecutionError.unexpectedExit(
