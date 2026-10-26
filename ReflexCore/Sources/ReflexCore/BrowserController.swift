@@ -32,6 +32,8 @@ public enum BrowserController {
         "com.brave.Browser",
         "com.operasoftware.Opera",
     ]
+    /// For v1 mode, disable open Nth website.
+    public static let isV1Mode = true
 
     /// The browser to drive: the frontmost qualifying browser if one is
     /// running, otherwise the OS default browser (from LaunchServices). This
@@ -156,6 +158,9 @@ public enum BrowserController {
     /// label+href, or throws with a reason when nothing clickable exists.
     @discardableResult
     public static func clickLink(at index: Int, in browser: String? = nil) throws -> String {
+    if BrowserController.isV1Mode {
+        return ""
+    }
         let js = """
         (function() {
             function chrome(a) {

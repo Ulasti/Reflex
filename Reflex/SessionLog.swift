@@ -39,6 +39,8 @@ struct SessionLog: Identifiable, Codable, Equatable, Sendable {
         let routeMs: Double?
         let dispatchMs: Double?
         let voiceToDispatchMs: Double?
+        let emitReason: String?
+        let audioDuration: Double?
     }
 
     let id: UUID
@@ -71,6 +73,34 @@ extension SessionLog {
         formatter.locale = Locale(identifier: "en_US_POSIX")
         return formatter
     }
+    
+    #if os(macOS)
+    private static let gitCommit: String = {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        process.arguments = ["rev-parse", "--short", "HEAD"]
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        process.standardError = Pipe()
+        try? process.run()
+        process.waitUntilExit()
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
+        if let output = String(data: data, encoding: .utf8) {
+            return output.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        return "unknown"
+    }()
+#else
+    private static let gitCommit: String = "unknown"
+#endif
+    
+    private static let buildDate: String = {
+        let executablePath = Bundle.main.executablePath ?? ""
+        let attrs = try? FileManager.default.attributesOfItem(atPath: executablePath)
+        let date = attrs?[.modificationDate] as? Date
+        return date.map { Self.formatter("yyyy-MM-dd HH:mm:ss").string(from: $0) } ?? "unknown"
+    }()
+    
 
     func markdown() -> String {
         let end = Self.dateLabel(endedAt ?? startedAt)

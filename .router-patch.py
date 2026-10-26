@@ -8,7 +8,7 @@ def patch(path, pairs):
 
 # ---- Router: spoken domains ("github dot com") are bare entities; two more
 # media phrasings the demo corpus uses. ----
-patch('ReflexCore/Sources/ReflexCore/RuleRouter.swift', [
+patch('reflexApp/ReflexCore/Sources/ReflexCore/RuleRouter.swift', [
 (
 '''        // Bare entity — "safari", "calendar", "youtube.com": a one-word phrase
         // that is exactly a known app or site is a launch, not a query.
@@ -32,7 +32,7 @@ patch('ReflexCore/Sources/ReflexCore/RuleRouter.swift', [
 
 # ---- Dispatcher: system op parsing must see the same normalized text the
 # router matched ("desktop, please" -> "desktop"). ----
-patch('ReflexCore/Sources/ReflexCore/ActionDispatcher.swift', [
+patch('reflexApp/ReflexCore/Sources/ReflexCore/ActionDispatcher.swift', [
 (
 '''    public static func systemOperation(for transcript: String) -> SystemOperation? {
         let lower = transcript.lowercased()''',
@@ -45,7 +45,7 @@ patch('ReflexCore/Sources/ReflexCore/ActionDispatcher.swift', [
 
 # ---- Engine: a marker word inside a real command is not silence.
 # "silence it" is mute. ----
-patch('ReflexCore/Sources/ReflexCore/ReflexSystemEngine.swift', [
+patch('reflexApp/ReflexCore/Sources/ReflexCore/ReflexSystemEngine.swift', [
 (
 '''        let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
         let lowered = cleaned.lowercased()

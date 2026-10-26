@@ -82,8 +82,6 @@ public enum CompoundRouter {
     private static func splitConnectives(_ transcript: String) -> [Part] {
         var text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         var parts: [String] = []
-        var foldedSubmit = false
-
         // Find the *first* connective. Only split when the text after it is a
         // real, non-trivial clause; trailing "press enter" etc stays with the
         // prior part as submit.
@@ -93,8 +91,11 @@ public enum CompoundRouter {
 
             // "press enter" trailing the whole utterance folds into `left`.
             if !remainingClause(right) {
-                text = left
-                foldedSubmit = !right.isEmpty
+                // The right side is a trailing submit-only tail (like "press enter").
+                // We want to split it off as a separate action.
+                parts.append(left)
+                parts.append(right)
+                text = "" // So that the loop ends.
                 break
             }
             parts.append(left)
@@ -105,17 +106,11 @@ public enum CompoundRouter {
         }
         parts.append(text)
         return parts.enumerated().map { index, part in
-            let submit = trailingSubmit(from: part) || (foldedSubmit && index == parts.count - 1)
+            let submit = trailingSubmit(from: part)
             let trimmed = stripTrailingSubmit(part)
             return Part(transcript: trimmed.isEmpty ? part : trimmed, submit: submit)
         }
     }
-
-    /// Finds the earliest `seps` connective whose *left* clause is a complete
-    /// action (starts with a verb). "run and gun" must not split on "and"; a
-    /// typed message full of "and"s ("type this and that") must not either,
-    /// because its left side is mid-payload. Here any left side that already
-    /// starts like a command is a split.
     private static func supportingConnective(in text: String) -> Range<String.Index>? {
         let lower = text.lowercased()
         for separator in separators {
@@ -165,7 +160,8 @@ public enum CompoundRouter {
         if t.isEmpty { return false }
         let lower = t.lowercased()
         if ["press enter", "hit enter", "press return", "hit return",
-            "and press enter", "then press enter"].contains(lower) {
+             "and press enter", "then press enter", "new line", "press tab",
+             "hit tab", "and new line", "and press tab"].contains(lower) {
             return false
         }
         // A trailing submit-only tail like "press enter" is folded, not split.
@@ -176,7 +172,8 @@ public enum CompoundRouter {
     public static func trailingSubmit(from clause: String) -> Bool {
         let lower = clause.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
         return ["press enter", "hit enter", "press return", "hit return", "submit",
-                "and press enter", "then press enter", "and hit enter", "and press return"]
+                 "and press enter", "then press enter", "and hit enter", "and press return",
+                 "new line", "press tab", "hit tab", "and new line", "and press tab"]
             .contains { lower.hasSuffix($0) }
     }
 

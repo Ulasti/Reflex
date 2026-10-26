@@ -10,7 +10,7 @@ Usage:
 
 Output directory defaults to `<repo>/Models`, derived from this file's own
 location so the toolchain stays self-contained after a clone (see
-Reflex/ReflexApp.swift > ReflexEnvironment.modelDirectory).
+`reflexApp/Reflex/ReflexApp.swift` > `ReflexEnvironment.modelDirectory`).
 """
 
 from __future__ import annotations

@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import whisper
 
-RESOURCES = Path(__file__).resolve().parents[1] / "ReflexCore" / "Sources" / "ReflexCore" / "Resources"
+RESOURCES = Path(__file__).resolve().parents[1] / "reflexApp" / "ReflexCore" / "Sources" / "ReflexCore" / "Resources"
 
 
 def main() -> None:
