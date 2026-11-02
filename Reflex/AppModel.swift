@@ -27,7 +27,7 @@ enum ModelLoadState: Equatable {
 final class AppModel: ObservableObject {
     private static let modelDefaultsKey = "activeModel"
 
-    @Published var activeModel: ReflexModelKind = .whisperSmall
+    @Published var activeModel: ReflexModelKind = .whisperSmallEn
     @Published var forcedEnglish = true
     @Published var modelStatus = "Starting up…"
     @Published var loadState: ModelLoadState = .idle
@@ -75,6 +75,8 @@ final class AppModel: ObservableObject {
     private static let mediaSuppressKey = "suppressWhileMediaPlaying"
 
     private let modelManager: ModelManager
+    let eventLogger = VoiceEventLogger()
+    private var currentCommandID: UUID?
     private let engine: ReflexSystemEngine
     private var micMonitor: MicMonitor?
     private var liveTranscriber: LiveTranscriber?
@@ -94,6 +96,15 @@ final class AppModel: ObservableObject {
     /// per segment).
     private var speechStartedAt: Date?
     private var lastVoicedAt: Date?
+
+    // Incremental commit state (MVP).
+    private var incrementalUtteranceID: Int = 0
+    private var incrementalCommitted: Bool = false
+    private var lastPartialRuleTarget: String?
+    private var lastPartialRuleText: String?
+    private var lastCommittedFingerprint: String?
+    private var lastCommittedTime: Date?
+    private let incrementalSafeTargets: Set<String> = ["open_app", "media_control", "display_control"]
 
     #if os(macOS)
     private let hotKeyID: UInt32 = 1
@@ -163,7 +174,7 @@ final class AppModel: ObservableObject {
         )
 
         let saved = UserDefaults.standard.string(forKey: Self.modelDefaultsKey)
-        activeModel = saved.flatMap(ReflexModelKind.init(rawValue:)) ?? .whisperSmall
+        activeModel = saved.flatMap(ReflexModelKind.init(rawValue:)) ?? .whisperSmallEn
         verboseLogging = UserDefaults.standard.bool(forKey: Self.verboseKey)
         shouldPlayFeedbackSounds = UserDefaults.standard.object(forKey: Self.feedbackKey) == nil
             ? true : UserDefaults.standard.bool(forKey: Self.feedbackKey)
@@ -294,7 +305,8 @@ final class AppModel: ObservableObject {
                     liveUpdatesTask?.cancel()
                     liveUpdatesTask = Task { [weak self] in
                         for await update in live.updates {
-                            self?.liveText = update.text
+                            await MainActor.run { self?.liveText = update.text }
+                            await self?.evaluateIncremental(update.text)
                         }
                     }
                 }
@@ -353,6 +365,10 @@ final class AppModel: ObservableObject {
         isSpeaking = false
         liveLevel = 0
         liveText = ""
+        incrementalUtteranceID += 1
+        incrementalCommitted = false
+        lastPartialRuleTarget = nil
+        lastPartialRuleText = nil
         liveUpdatesTask?.cancel()
         liveUpdatesTask = nil
 
@@ -399,6 +415,11 @@ final class AppModel: ObservableObject {
     /// listening regardless.
     private func handleSegment(_ samples: [Float], reason: String, audioDuration: Double) {
         Task { @MainActor in
+            incrementalUtteranceID += 1
+            let wasCommitted = incrementalCommitted
+            incrementalCommitted = false
+            lastPartialRuleTarget = nil
+            lastPartialRuleText = nil
             let segAt = Date()
             let speechStart = speechStartedAt
             let lastVoiced = lastVoicedAt
@@ -424,6 +445,10 @@ final class AppModel: ObservableObject {
                 )
                 guard !text.isEmpty else {
                     modelStatus = "No speech detected"
+                    return
+                }
+                if wasCommitted {
+                    modelStatus = "Listening — ⌘P to kill"
                     return
                 }
                 // No text de-duplication here: identical text is only a repeat
@@ -465,9 +490,27 @@ final class AppModel: ObservableObject {
             // Off the main actor: NowPlaying.status() blocks on a semaphore for
             // up to 3 s (atlas/docs/audit-2026-10-14.md, M2).
             if suppressWhileMediaPlaying, !decisiveRule, await mediaIsPlaying() {
+                eventLogger.record(VoiceEvent(
+                    sessionID: currentSession?.id ?? UUID(),
+                    utteranceID: incrementalUtteranceID,
+                    commandID: UUID(),
+                    eventType: "audio_rejected",
+                    monotonicNanos: eventLogger.monotonicNanos(),
+                    executionPath: "finalized",
+                    detail: "playback_contamination"
+                ))
                 modelStatus = "Media playing, ignoring system audio"
                 continue
             }
+            eventLogger.record(VoiceEvent(
+                sessionID: currentSession?.id ?? UUID(),
+                utteranceID: incrementalUtteranceID,
+                commandID: UUID(),
+                eventType: "audio_accepted",
+                monotonicNanos: eventLogger.monotonicNanos(),
+                executionPath: "finalized",
+                detail: nil
+            ))
 #endif
             // Cooldown delays instead of dropping: the previous action's
             // ding/shutter is audible and must not re-trigger. Shrunk 1.0 → 0.3 s.
@@ -507,10 +550,52 @@ final class AppModel: ObservableObject {
     }
 #endif
 
+    /// Incremental commit MVP: evaluate a partial transcript and, if a safe decisive
+    /// rule fires on two consecutive partials with identical intent/params, commit
+    /// the action early. The finalized-utterance path stays authoritative for
+    /// everything else and is skipped when an early commit already happened.
+    private func evaluateIncremental(_ text: String) async {
+        guard isListening, !incrementalCommitted, !processing else { return }
+        let normalized = TranscriptNormalizer.normalize(text)
+        guard !normalized.isEmpty else { return }
+        guard case .accepted = TranscriptSanitizer.sanitize(normalized) else { return }
+        guard !CompoundRouter.isCompound(normalized) else { return }
+        guard let rule = RuleRouter().classify(normalized), rule.isDecisive else { return }
+        guard IncrementalCommitGate.isEligible(target: rule.target) else { return }
+
+        // Stability: same intent + same text on two consecutive partials.
+        let stable = (lastPartialRuleTarget == rule.target && lastPartialRuleText == normalized)
+        lastPartialRuleTarget = rule.target
+        lastPartialRuleText = normalized
+        guard stable else { return }
+
+        // Utterance-scoped dedup: this utterance commits at most once.
+        let fingerprint = rule.target + "|" + normalized
+        incrementalCommitted = true
+        lastCommittedFingerprint = fingerprint
+        lastCommittedTime = Date()
+        do {
+            let decisions = try await engine.resolveCompoundTranscript(normalized)
+            for decision in decisions {
+                lastTranscript = decision.transcript
+                lastDecision = decision
+                await dispatch(decision, mode: .live, timing: nil, routeMs: nil, isEarlyCommit: true, executionPath: "incremental")
+                if case .stopped = lastResult { break }
+            }
+        } catch {
+            modelStatus = "Pipeline: \(error.localizedDescription)"
+            incrementalCommitted = false
+        }
+    }
+
     /// Routes a WhisperKit-finalized transcript through Laya and executes.
     /// Compound utterances ("new note ... then open ...") expand into one gated
     /// decision per clause (A4) and execute in order.
     private func resolveLiveTranscript(_ text: String, timing: SegmentTiming?) async {
+        guard case .accepted = TranscriptSanitizer.sanitize(TranscriptNormalizer.normalize(text)) else {
+            modelStatus = "Ignored: invalid transcript"
+            return
+        }
         do {
             let routeStart = Date()
             let decisions = try await engine.resolveCompoundTranscript(text)
@@ -533,8 +618,22 @@ final class AppModel: ObservableObject {
         _ decision: ReflexDecision,
         mode: SessionLog.Mode,
         timing: SegmentTiming? = nil,
-        routeMs: Double? = nil
+        routeMs: Double? = nil,
+        isEarlyCommit: Bool = false,
+        executionPath: String = "finalized"
     ) async {
+        let commandID = UUID()
+        currentCommandID = commandID
+        eventLogger.record(VoiceEvent(
+            sessionID: currentSession?.id ?? UUID(),
+            utteranceID: incrementalUtteranceID,
+            commandID: commandID,
+            eventType: "dispatch_started",
+            monotonicNanos: eventLogger.monotonicNanos(),
+            executionPath: executionPath,
+            transcriptRevision: nil,
+            detail: decision.actionTarget.identifier
+        ))
         #if os(macOS)
         let dispatchStart = Date()
         let outcome = await Task.detached(priority: .userInitiated) {
@@ -576,6 +675,17 @@ final class AppModel: ObservableObject {
 
         guard verboseLogging, var session = currentSession else { return }
         let outcomeText = result?.summary ?? "Execute failed: \(failure ?? "unknown error")"
+        if let cid = currentCommandID {
+            eventLogger.record(VoiceEvent(
+                sessionID: currentSession?.id ?? UUID(),
+                utteranceID: incrementalUtteranceID,
+                commandID: cid,
+                eventType: "action_completed",
+                monotonicNanos: eventLogger.monotonicNanos(),
+                executionPath: executionPath,
+                detail: outcomeText
+            ))
+        }
         // Check for bare "type" to arm dictation.
         if decision.transcript.lowercased().trimmingCharacters(in: .whitespacesAndNewlines) == "type" {
             dictationArmed = true
@@ -620,7 +730,19 @@ final class AppModel: ObservableObject {
             dispatchMs: dispatchMs,
             voiceToDispatchMs: timing?.lastVoiced.map { Date().timeIntervalSince($0) * 1000 },
             emitReason: timing?.emitReason,
-            audioDuration: timing?.audioDuration
+            audioDuration: timing?.audioDuration,
+            utteranceID: incrementalUtteranceID,
+            transcriptRevision: nil,
+            isPartial: timing == nil,
+            isEarlyCommit: isEarlyCommit,
+            commitReason: isEarlyCommit ? "two-consecutive-partial safe rule" : nil,
+            normalizedIntent: decision.actionTarget.identifier,
+            resolvedTarget: decision.actionTarget.identifier,
+            stabilityConfirmations: isEarlyCommit ? 2 : nil,
+            commitTimestamp: Date(),
+            reconciliationResult: nil,
+            duplicateSuppressed: false,
+            executionPath: executionPath
         ))
         currentSession = session
         #else

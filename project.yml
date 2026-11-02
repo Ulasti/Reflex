@@ -38,6 +38,7 @@ targets:
         INFOPLIST_KEY_LSUIElement: "YES"
         INFOPLIST_KEY_NSMicrophoneUsageDescription: "Reflex captures microphone audio to transcribe commands on-device."
         INFOPLIST_KEY_NSAppleEventsUsageDescription: "Reflex controls the apps you ask it to operate (volume, Finder, Terminal, media)."
+        INFOPLIST_KEY_NSAudioCaptureUsageDescription: "Reflex captures system audio to remove playback leakage from microphone input."
   Reflex-iOS:
     type: application
     platform: iOS
@@ -65,6 +66,9 @@ targets:
       - ReflexCore/Tests/ReflexCoreTests
     dependencies:
       - package: ReflexCore
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
 schemes:
   Reflex-macOS:
     build:

@@ -8,5 +8,7 @@ Evidence Gate, before every commit and before ending the session:
 3. Commit as `type(scope): description - evidence: <path>`.
 4. End your reply with: `Evidence: <paths> | Pass N | Fail N | Unverified N`.
 
+If `atlas/tasks.md` exists (Pro): also move its task cards to match the evidence and refresh this project's entry in the Atlas dashboard.
+
 Work on `atlas/<feature>` branches; never push to `dev` or `main`. Never delete anything without the user's explicit consent.
 <!-- atlas:end -->

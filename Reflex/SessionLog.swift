@@ -41,6 +41,19 @@ struct SessionLog: Identifiable, Codable, Equatable, Sendable {
         let voiceToDispatchMs: Double?
         let emitReason: String?
         let audioDuration: Double?
+        // Incremental routing observability (optional, backward compatible).
+        let utteranceID: Int?
+        let transcriptRevision: Int?
+        let isPartial: Bool?
+        let isEarlyCommit: Bool?
+        let commitReason: String?
+        let normalizedIntent: String?
+        let resolvedTarget: String?
+        let stabilityConfirmations: Int?
+        let commitTimestamp: Date?
+        let reconciliationResult: String?
+        let duplicateSuppressed: Bool?
+        let executionPath: String?
     }
 
     let id: UUID
@@ -128,6 +141,9 @@ extension SessionLog {
             lines.append("- Trace: Laya=\(laya), rule=\(rule), chosen=\(chosen)\(flag)")
             lines.append("- Action: \(entry.result)")
             lines.append("- Latency: \(Self.latencyLabel(entry))")
+            if let path = entry.executionPath {
+                lines.append("- Execution: \(path)\(entry.isEarlyCommit == true ? " (early commit)" : "")")
+            }
             lines.append("")
         }
         return lines.joined(separator: "\n")

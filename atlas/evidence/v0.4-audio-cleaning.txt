@@ -1,0 +1,10 @@
+v0.4 audio cleaning — build + tests
+- xcodebuild Reflex-macOS build: SUCCEEDED
+- xcodebuild Reflex-macOS test: SUCCEEDED (67 tests / 15 suites)
+- swift test ReflexCore: 77 tests / 17 suites passed
+- SystemAudioCapture.swift compiles (macOS 14.2+)
+- TranscriptSanitizer: 5 tests pass
+- IncrementalCommitGate: 5 tests pass
+
+Live session 02/11/26 19:40 (32 entries): early commit 1 (165 ms), no duplicates,
+finalized median 1034 ms, success 29/32.

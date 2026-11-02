@@ -29,7 +29,15 @@ project_env.ensure_cache_dirs()
 
 import torch  # noqa: E402  (must follow project_env)
 
-WHISPER_VARIANTS = {"base": "whisper-base", "small": "whisper-small", "large-v3-turbo": "whisper-large-v3-turbo"}
+WHISPER_VARIANTS = {
+    "tiny.en": "whisper-tiny.en",
+    "base.en": "whisper-base.en",
+    "small.en": "whisper-small.en",
+    "medium.en": "whisper-medium.en",
+    "base": "whisper-base",
+    "small": "whisper-small",
+    "large-v3-turbo": "whisper-large-v3-turbo",
+}
 # tools/ -> repo root. Never derive this from $HOME: a clone can live anywhere.
 REPO_ROOT = project_env.REPO_ROOT
 DEFAULT_OUTPUT = REPO_ROOT / "Models"

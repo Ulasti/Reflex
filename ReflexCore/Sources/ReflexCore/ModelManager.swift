@@ -4,16 +4,18 @@ import CoreML
 /// The discrete Reflex model roster. Kept as a pure enum so the rest of the
 /// core can reference models without hardcoding bundle paths.
 public enum ReflexModelKind: String, CaseIterable, Sendable {
-    case whisperBase = "whisper-base"
-    case whisperSmall = "whisper-small"
-    case whisperLargeV3Turbo = "whisper-large-v3-turbo"
+    case whisperTinyEn = "whisper-tiny.en"
+    case whisperBaseEn = "whisper-base.en"
+    case whisperSmallEn = "whisper-small.en"
+    case whisperMediumEn = "whisper-medium.en"
     case laya
 
     public var displayName: String {
         switch self {
-        case .whisperBase: "Whisper Base"
-        case .whisperSmall: "Whisper Small"
-        case .whisperLargeV3Turbo: "Whisper Large v3 Turbo"
+        case .whisperTinyEn: "Whisper Tiny (en)"
+        case .whisperBaseEn: "Whisper Base (en)"
+        case .whisperSmallEn: "Whisper Small (en)"
+        case .whisperMediumEn: "Whisper Medium (en)"
         case .laya: "Laya"
         }
     }
@@ -129,22 +131,22 @@ extension ReflexModelKind {
 
     var whisperBundleName: String {
         switch self {
-        case .whisperBase: "whisper-base"
-        case .whisperSmall: "whisper-small"
-        case .whisperLargeV3Turbo: "whisper-large-v3-turbo"
+        case .whisperTinyEn: "whisper-tiny.en"
+        case .whisperBaseEn: "whisper-base.en"
+        case .whisperSmallEn: "whisper-small.en"
+        case .whisperMediumEn: "whisper-medium.en"
         case .laya: "laya"
         }
     }
 
-    var whisperMelCount: Int {
-        self == .whisperLargeV3Turbo ? 128 : 80
-    }
+    var whisperMelCount: Int { 80 }
 
     var whisperEncoderDim: Int {
         switch self {
-        case .whisperBase: 512
-        case .whisperSmall: 768
-        case .whisperLargeV3Turbo: 1280
+        case .whisperTinyEn: 384
+        case .whisperBaseEn: 512
+        case .whisperSmallEn: 768
+        case .whisperMediumEn: 1024
         case .laya: 0
         }
     }
