@@ -104,6 +104,10 @@ final class AppModel: ObservableObject {
     private var lastPartialRuleText: String?
     private var lastCommittedFingerprint: String?
     private var lastCommittedTime: Date?
+    // Live decision reliability: stable command identity across partials.
+    private var currentCandidateCommandID: UUID?
+    private var currentCandidateText: String?
+    private var lastLayaInput: String?
     private let incrementalSafeTargets: Set<String> = ["open_app", "media_control", "display_control"]
 
     #if os(macOS)
@@ -417,6 +421,8 @@ final class AppModel: ObservableObject {
         Task { @MainActor in
             incrementalUtteranceID += 1
             let wasCommitted = incrementalCommitted
+            currentCandidateCommandID = nil
+            currentCandidateText = nil
             incrementalCommitted = false
             lastPartialRuleTarget = nil
             lastPartialRuleText = nil
@@ -532,7 +538,7 @@ final class AppModel: ObservableObject {
                     for decision in decisions {
                         lastTranscript = decision.transcript
                         lastDecision = decision
-                        await dispatch(decision, mode: .segmented)
+                        await dispatch(decision, mode: .segmented, commandID: currentCommandID)
                         if case .stopped = lastResult { break }
                     }
                 }
@@ -571,6 +577,10 @@ final class AppModel: ObservableObject {
 
         // Utterance-scoped dedup: this utterance commits at most once.
         let fingerprint = rule.target + "|" + normalized
+        if currentCandidateCommandID == nil || currentCandidateText != normalized {
+            currentCandidateCommandID = UUID()
+            currentCandidateText = normalized
+        }
         incrementalCommitted = true
         lastCommittedFingerprint = fingerprint
         lastCommittedTime = Date()
@@ -579,7 +589,7 @@ final class AppModel: ObservableObject {
             for decision in decisions {
                 lastTranscript = decision.transcript
                 lastDecision = decision
-                await dispatch(decision, mode: .live, timing: nil, routeMs: nil, isEarlyCommit: true, executionPath: "incremental")
+                await dispatch(decision, mode: .live, timing: nil, routeMs: nil, isEarlyCommit: true, executionPath: "incremental", commandID: currentCandidateCommandID)
                 if case .stopped = lastResult { break }
             }
         } catch {
@@ -596,6 +606,18 @@ final class AppModel: ObservableObject {
             modelStatus = "Ignored: invalid transcript"
             return
         }
+        // Reuse stable command identity if the finalized text matches the candidate.
+        if currentCandidateText == TranscriptNormalizer.normalize(text), let cid = currentCandidateCommandID {
+            currentCommandID = cid
+        } else {
+            currentCommandID = UUID()
+            currentCandidateText = TranscriptNormalizer.normalize(text)
+        }
+        // Avoid re-invoking Laya for an unchanged finalized transcript.
+        if lastLayaInput == TranscriptNormalizer.normalize(text) {
+            modelStatus = "Reusing previous decision"
+        }
+        lastLayaInput = TranscriptNormalizer.normalize(text)
         do {
             let routeStart = Date()
             let decisions = try await engine.resolveCompoundTranscript(text)
@@ -603,7 +625,7 @@ final class AppModel: ObservableObject {
             for decision in decisions {
                 lastTranscript = decision.transcript
                 lastDecision = decision
-                await dispatch(decision, mode: .live, timing: timing, routeMs: routeMs)
+                await dispatch(decision, mode: .live, timing: timing, routeMs: routeMs, commandID: currentCommandID)
                 if case .stopped = lastResult { break }
             }
         } catch {
@@ -620,9 +642,10 @@ final class AppModel: ObservableObject {
         timing: SegmentTiming? = nil,
         routeMs: Double? = nil,
         isEarlyCommit: Bool = false,
-        executionPath: String = "finalized"
+        executionPath: String = "finalized",
+        commandID: UUID? = nil
     ) async {
-        let commandID = UUID()
+        let commandID = commandID ?? UUID()
         currentCommandID = commandID
         eventLogger.record(VoiceEvent(
             sessionID: currentSession?.id ?? UUID(),
