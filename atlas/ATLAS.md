@@ -26,10 +26,10 @@ first, sharing one SwiftUI UI into an iOS/iPadOS app.
 | Field | Value |
 |---|---|
 | Status | `In Progress` |
-| Last worked on | 2026-11-02 |
-| Branch | `atlas/v0.5-live-decision` |
+| Last worked on | 2026-11-03 |
+| Branch | `dev` |
 | needs_review | false — prototype accepted by the user 2026-10-19; remaining polish tracked in Next Steps |
-| Where I left off | **v0.5 live-decision reliability shipped locally (2026-11-02, `6fc9397`, not pushed, no upstream):** stable command identity + Laya cache. Prior v0.4 audio cleaning stage A + native system audio capture (`bb78c93`) and v0.5 audit/benchmark scaffolding (`e320be8`). Branch `atlas/v0.5-live-decision` has 3 commits on top of `dev`; not yet pushed or merged. ATLAS.md reconciled 2026-11-03: branch and last-worked-on corrected (was stale `atlas/live-demo-v1-polish` / 2026-10-24). Live-demo-v1 Phase 0 (corpus freeze/record/replay/baseline) still pending and blocked behind D30 (missing upstream ref doc). Open DoD: row 10 Fail (missing ref doc), D33 (test count mismatch 59 vs 56 vs 51). |
+| Where I left off | **v0.5 live-decision reliability shipped locally (2026-11-02, `6fc9397`, not pushed, no upstream):** stable command identity + Laya cache. Prior v0.4 audio cleaning stage A + native system audio capture (`bb78c93`) and v0.5 audit/benchmark scaffolding (`e320be8`). Branch `atlas/v0.5-live-decision` has 3 commits on top of `dev`; not yet pushed or merged. ATLAS.md reconciled 2026-11-03: branch and last-worked-on corrected (was stale `atlas/live-demo-v1-polish` / 2026-10-24). Live-demo-v1 Phase 0 (corpus freeze/record/replay/baseline) still pending and blocked behind D30 (missing upstream ref doc). Open DoD: row 10 Fail (missing ref doc), D33 (test count mismatch 59 vs 56 vs 51). Merged `atlas/v0.5-live-decision` into `dev` and pushed 2026-11-03; atlas/* branches deleted. |
 
 ---
 
