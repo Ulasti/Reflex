@@ -171,10 +171,14 @@ final class AppModel: ObservableObject {
         modelManager = ModelManager(computeUnits: .cpuAndNeuralEngine, modelDirectory: dir)
         let transcriber = try? WhisperTranscriber(modelDirectory: dir)
         let layaRouter = try? LayaRouter(modelDirectory: dir)
+        let capabilityRegistry = AppCapabilityRegistry()
+        capabilityRegistry.register(CalculatorCapabilityProvider().capability())
         engine = ReflexSystemEngine(
             modelManager: modelManager,
             transcriber: transcriber,
-            layaRouter: layaRouter
+            layaRouter: layaRouter,
+            appContextProvider: NullAppContextProvider(),
+            capabilityRegistry: capabilityRegistry
         )
 
         let saved = UserDefaults.standard.string(forKey: Self.modelDefaultsKey)

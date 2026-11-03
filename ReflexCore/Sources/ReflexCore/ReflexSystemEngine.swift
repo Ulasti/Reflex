@@ -9,16 +9,30 @@ public actor ReflexSystemEngine {
     private let modelManager: ModelManager
     private let transcriber: WhisperTranscriber?
     private let layaRouter: LayaRouter?
+    private let appContextProvider: AppContextProvider
+    private let capabilityRegistry: AppCapabilityRegistry
 
     public init(
         modelManager: ModelManager,
         transcriber: WhisperTranscriber?,
-        layaRouter: LayaRouter? = nil
+        layaRouter: LayaRouter? = nil,
+        appContextProvider: AppContextProvider = NullAppContextProvider(),
+        capabilityRegistry: AppCapabilityRegistry = AppCapabilityRegistry()
     ) {
         self.modelManager = modelManager
         self.transcriber = transcriber
         self.layaRouter = layaRouter
+        self.appContextProvider = appContextProvider
+        self.capabilityRegistry = capabilityRegistry
     }
+
+    /// Current active-app context. Used by context-aware candidate generation
+    /// (roadmap Phase 1.3) and logged for observability.
+    public func currentAppContext() async -> AppContext {
+        await appContextProvider.currentContext()
+    }
+
+    public var capabilities: AppCapabilityRegistry { capabilityRegistry }
 
     /// Warms the active Whisper pair into memory (plus the Laya router, best
     /// effort) so the next `resolveCommandStream` skips the load cost.
