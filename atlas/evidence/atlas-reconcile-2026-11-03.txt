@@ -1,0 +1,5 @@
+Reconciled ATLAS.md + registry with git on 2026-11-03.
+Branch: atlas/v0.5-live-decision (was stale atlas/live-demo-v1-polish).
+Last worked on: 2026-11-02 (was 2026-10-24).
+Commit: 6fc9397 feat(v0.5): live decision reliability.
+Pushed: no (no upstream).
