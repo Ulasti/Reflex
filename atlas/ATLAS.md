@@ -45,18 +45,10 @@ never as a pass.
 
 ## Next Steps
 
-1. **Execute `docs/live-demo-v1-plan.md` (Live Demo v1) — the active driver,
-   accepted 2026-10-19.** Order is fixed: Phase 0 first — freeze
-   `docs/live-demo-corpus-v0.md` (drafted by the agent, needs the user's
-   freeze), record it (25 commands + 30-60 min of ambient decoys), build the
-   replay harness, and capture the baseline ablation **before any Phase 1
-   change** — then Phase 1 free wins (throttle fix, FIFO queue, rearm/cooldown),
-   Phase 2 gate tuning, Phases 3-5 two lanes + ambient guard, Phase 6 light
-   verification, Phase 7 rehearsal. Targets: p50 ≤ 500 ms / p95 ≤ 700 ms,
-   ≥ 90% accuracy, near-zero false triggers. Every phase delivers before/after
-   numbers or it is not done; the Stop line holds all other feature work.
-   A5 (compound router into the live path) closes inside Phases 3/4, not
-   separately. `--laya-ref` 126/126 stays the regression gate throughout.
+1. **Live Demo v1 — completed and demoed (user, 2026-11-03).** Plan
+   `docs/live-demo-v1-plan.md` and corpus `docs/live-demo-corpus-v0.md` are
+   behind us; no longer the active driver. Stop line lifted. Retained as
+   historical reference only.
 2. **Menu bar polish — after the demo.** Still Unverified by eye: hollow-ring
    Off, armed breathing, level-following, green flash, amber load. Notch pill
    parked at `atlas/attic/NotchPillController.swift` (restore = move back +
