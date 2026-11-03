@@ -1,0 +1,6 @@
+{
+  "models": {
+    "whisper": "/Users/emir/Documents/Atlas/Projects/reflex/Models/whisper-medium.en",
+    "laya": "/Users/emir/Documents/Atlas/Projects/reflex/Models/laya.mlpackage"
+  }
+}

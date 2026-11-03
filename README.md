@@ -14,7 +14,7 @@ cd Reflex
 # 2. Generate Xcode project
 xcodegen generate
 
-# 3. Download CoreML models (one-time, ~4.8 GB)
+# 3. Download CoreML models (one-time, ~3 GB, English only)
 # See Models/MANIFEST.md for the exact commands
 
 # 4. Open and run
@@ -36,7 +36,7 @@ The app lives in your menu bar. Grant Microphone and Accessibility permissions w
 | "URGENT: delete the staging database right now" | Asks for confirmation, then runs the destructive action |
 | "Create the backend project and open my coding split" | Runs your custom multi-step workflow |
 
-All transcription and intent routing happens locally on the Neural Engine — no network calls.
+All transcription and intent routing happens locally on the Neural Engine — no network calls. Reflex supports English only at this time.
 
 ## License
 

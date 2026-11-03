@@ -18,7 +18,9 @@ struct SettingsView: View {
     var body: some View {
         Form {
             Section("General") {
-                Toggle("Force English", isOn: $appModel.forcedEnglish)
+                Text("English only — Reflex supports English at this time.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
                 Toggle("Verbose session log", isOn: $appModel.verboseLogging)
                 Toggle("Feedback sounds", isOn: $appModel.shouldPlayFeedbackSounds)
                 Toggle("Suppress while media is playing", isOn: $appModel.suppressWhileMediaPlaying)

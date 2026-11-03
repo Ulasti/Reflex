@@ -162,7 +162,10 @@ swift build --package-path ReflexCore -c release
 
 # Model conversion (see Models/MANIFEST.md for the full matrix)
 cd tools && python3.10 -m venv .venv && .venv/bin/pip install -r requirements.txt
-./.venv/bin/python convert.py whisper --variant large-v3-turbo --quantize int8
+./.venv/bin/python convert.py whisper --variant tiny   --quantize none
+./.venv/bin/python convert.py whisper --variant base   --quantize none
+./.venv/bin/python convert.py whisper --variant small  --quantize none
+./.venv/bin/python convert.py whisper --variant medium --quantize none
 ./.venv/bin/python download_whisperkit_models.py small
 ```
 

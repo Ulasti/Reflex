@@ -28,7 +28,6 @@ final class AppModel: ObservableObject {
     private static let modelDefaultsKey = "activeModel"
 
     @Published var activeModel: ReflexModelKind = .whisperSmallEn
-    @Published var forcedEnglish = true
     @Published var modelStatus = "Starting up…"
     @Published var loadState: ModelLoadState = .idle
     @Published var lastTranscript = ""
@@ -537,7 +536,7 @@ final class AppModel: ObservableObject {
                     let decisions = try await engine.resolveCommandStreamCompound(
                         samples: sampleArray,
                         modelKind: activeModel,
-                        forcedLanguage: forcedEnglish ? "en" : "auto"
+                        forcedLanguage: "en"
                     )
                     for decision in decisions {
                         lastTranscript = decision.transcript

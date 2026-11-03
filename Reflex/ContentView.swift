@@ -53,8 +53,9 @@ struct ContentView: View {
                 appModel.modelSelectionChanged(kind)
             }
 
-            Toggle("Force English", isOn: $appModel.forcedEnglish)
-                .disabled(appModel.isBusy)
+            Text("English only")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             Toggle("Verbose session log", isOn: $appModel.verboseLogging)
                 .disabled(appModel.isBusy)
