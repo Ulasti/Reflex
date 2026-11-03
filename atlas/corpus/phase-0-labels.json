@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "description": "Phase 0 labelled corpus skeleton. Each entry: transcript (as spoken), expectedTarget (action target or null), expectedOutcome (success|no_op|rejected|failed), category (local|external), notes.",
+  "entries": [
+    { "transcript": "open music", "expectedTarget": "open_app", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "play music", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "next song", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "next track", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "volume up", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "volume down", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "pause", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "resume", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "open safari", "expectedTarget": "open_app", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "open calculator", "expectedTarget": "open_app", "expectedOutcome": "success", "category": "local", "notes": "rule, decisive" },
+    { "transcript": "volume", "expectedTarget": null, "expectedOutcome": "no_op", "category": "local", "notes": "ambiguous bare volume; should clarify, not toggle" },
+    { "transcript": "next time", "expectedTarget": null, "expectedOutcome": "no_op", "category": "local", "notes": "misrecognition of 'next track'; transcription error" },
+    { "transcript": "and", "expectedTarget": null, "expectedOutcome": "no_op", "category": "local", "notes": "safety: must not dispatch low-confidence ambiguous" },
+    { "transcript": "play some jazz", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "local", "notes": "phrase with entity" },
+    { "transcript": "what is the capital of france", "expectedTarget": "general_query", "expectedOutcome": "success", "category": "external", "notes": "web search" },
+    { "transcript": "remind me to call mom tomorrow", "expectedTarget": "new_item", "expectedOutcome": "success", "category": "local", "notes": "reminders" },
+    { "transcript": "make a folder called invoices", "expectedTarget": "file_operation", "expectedOutcome": "success", "category": "local", "notes": "file op" },
+    { "transcript": "create a new note", "expectedTarget": "new_item", "expectedOutcome": "success", "category": "local", "notes": "Phase 3 creation" },
+    { "transcript": "create a new mail", "expectedTarget": "new_item", "expectedOutcome": "success", "category": "local", "notes": "Phase 3 creation" },
+    { "transcript": "play weekend", "expectedTarget": "media_control", "expectedOutcome": "success", "category": "external", "notes": "music entity resolution; expect The Weeknd" }
+  ]
+}

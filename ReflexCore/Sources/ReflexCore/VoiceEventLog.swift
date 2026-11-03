@@ -14,6 +14,12 @@ public struct VoiceEvent: Sendable, Codable, Equatable {
     public let transcriptRevision: Int?
     public let detail: String?
 
+    // Phase 0 canonical schema additions (all optional for backward compat).
+    public let stage: String?
+    public let latencyMs: Double?
+    public let correlationId: UUID?
+    public let outcome: String?
+
     public init(
         sessionID: UUID,
         utteranceID: Int,
@@ -23,7 +29,11 @@ public struct VoiceEvent: Sendable, Codable, Equatable {
         wallClock: Date = Date(),
         executionPath: String? = nil,
         transcriptRevision: Int? = nil,
-        detail: String? = nil
+        detail: String? = nil,
+        stage: String? = nil,
+        latencyMs: Double? = nil,
+        correlationId: UUID? = nil,
+        outcome: String? = nil
     ) {
         self.sessionID = sessionID
         self.utteranceID = utteranceID
@@ -34,6 +44,10 @@ public struct VoiceEvent: Sendable, Codable, Equatable {
         self.executionPath = executionPath
         self.transcriptRevision = transcriptRevision
         self.detail = detail
+        self.stage = stage
+        self.latencyMs = latencyMs
+        self.correlationId = correlationId
+        self.outcome = outcome
     }
 }
 
