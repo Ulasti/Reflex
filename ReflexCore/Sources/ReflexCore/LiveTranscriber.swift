@@ -130,12 +130,10 @@ public actor LiveTranscriber {
         self.partialInterval = partialInterval
         (updatedStream, updatedContinuation) = AsyncStream<LiveTextUpdate>.makeStream()
 
-        let markers = ["config.json", "MelSpectrogram.mlmodelc", "AudioEncoder.mlmodelc", "TextDecoder.mlmodelc"]
-        let missing = markers.filter { !FileManager.default.fileExists(atPath: modelFolder.appendingPathComponent($0).path) }
-        guard missing.isEmpty else {
-            throw LiveError.unavailable("no pack at \(modelFolder.path) (missing \(missing.joined(separator: ", ")))")
-        }
-
+        // Allow WhisperKit to fetch the pack on demand so the app ships without
+        // bundled weights (download: true). When the pack is already on disk,
+        // WhisperKit skips the download. Progress is not surfaced here; the
+        // caller blocks the UI via loadState while this awaits.
         let instance: WhisperKit
         do {
             instance = try await WhisperKit(
@@ -144,7 +142,7 @@ public actor LiveTranscriber {
                 tokenizerFolder: modelFolder,
                 prewarm: true,
                 load: true,
-                download: false
+                download: true
             )
         } catch {
             throw LiveError.unavailable(error.localizedDescription)

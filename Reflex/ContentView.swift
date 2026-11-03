@@ -57,6 +57,11 @@ struct ContentView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
 
+            if appModel.isBusy {
+                Button("Abort model load") { appModel.abortModelLoad() }
+                    .disabled(!appModel.isBusy)
+            }
+
             Toggle("Verbose session log", isOn: $appModel.verboseLogging)
                 .disabled(appModel.isBusy)
 

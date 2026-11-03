@@ -21,6 +21,9 @@ struct SettingsView: View {
                 Text("English only — Reflex supports English at this time.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                if appModel.isBusy {
+                    Button("Abort model load") { appModel.abortModelLoad() }
+                }
                 Toggle("Verbose session log", isOn: $appModel.verboseLogging)
                 Toggle("Feedback sounds", isOn: $appModel.shouldPlayFeedbackSounds)
                 Toggle("Suppress while media is playing", isOn: $appModel.suppressWhileMediaPlaying)

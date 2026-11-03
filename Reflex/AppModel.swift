@@ -84,6 +84,7 @@ final class AppModel: ObservableObject {
     private var flashTask: Task<Void, Never>?
     private var processing = false
     private var currentSession: SessionLog?
+    private var loadTask: Task<Void, Never>?
     private var lastActionTime: Date?
     /// 0.3 s still covers the feedback tone/shutter; it used to be 1.0 s, which
     /// ate the first command of any two spoken back to back (plan Phase 1).
@@ -212,11 +213,23 @@ final class AppModel: ObservableObject {
     }
 
     /// Called by the UI when the model picker changes. Persists the choice and
-    /// begins loading the new variant into memory.
+    /// begins loading the new variant into memory. Cancels any in-flight load
+    /// first so a rapid switch cannot leave two loads racing.
     func modelSelectionChanged(_ kind: ReflexModelKind) {
         UserDefaults.standard.set(kind.rawValue, forKey: Self.modelDefaultsKey)
-        guard !loadState.isLoading else { return }
-        Task { await loadModel(kind) }
+        abortModelLoad()
+        loadTask = Task { await loadModel(kind) }
+    }
+
+    /// Cancels an in-flight model load. Wired to the Abort button shown while
+    /// `loadState.isLoading`. Resets state to idle so the user can retry.
+    func abortModelLoad() {
+        loadTask?.cancel()
+        loadTask = nil
+        if loadState.isLoading {
+            loadState = .idle
+            modelStatus = "Model load aborted"
+        }
     }
 
     /// Compiles + warms `kind` into memory, updating `loadState` so the UI can
@@ -226,9 +239,13 @@ final class AppModel: ObservableObject {
         modelStatus = "Loading \(kind.displayName) into memory…"
         do {
             try await engine.preload(modelKind: kind)
+            try Task.checkCancellation()
             guard activeModel == kind else { return }
             loadState = .ready
             modelStatus = "Ready"
+        } catch is CancellationError {
+            loadState = .idle
+            modelStatus = "Model load aborted"
         } catch {
             loadState = .failed(error.localizedDescription)
             modelStatus = "Model load failed: \(error.localizedDescription)"
