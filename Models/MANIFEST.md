@@ -56,12 +56,16 @@ Sizes are on-disk bytes.
 
 | Asset | Size | Origin |
 |---|---|---|
-| `Models/whisper-tiny.en.mlpackage` | 39.3 MB | `openai/whisper` via `convert.py whisper --variant tiny` |
-| `Models/whisper-base.en.mlpackage` | 39.3 MB | `openai/whisper` via `convert.py whisper --variant base` |
-| `Models/whisper-small.en.mlpackage` | 168.3 MB | `openai/whisper` via `convert.py whisper --variant small` |
-| `Models/whisper-medium.en.mlpackage` | 1.5 GB (approx) | `openai/whisper` via `convert.py whisper --variant medium` |
+| `Models/whisper-tiny.en.mlpackage` | 39.3 MB | encoder bundle |
+| `Models/whisper-tiny.en-decoder.mlpackage` | 56 MB | decoder half |
+| `Models/whisper-base.en.mlpackage` | 39.3 MB | encoder bundle |
+| `Models/whisper-base.en-decoder.mlpackage` | 99 MB | decoder half |
+| `Models/whisper-small.en.mlpackage` | 168.3 MB | encoder bundle (segmented path) |
+| `Models/whisper-small.en-decoder.mlpackage` | 293 MB | decoder half (segmented path) |
+| `Models/whisper-medium.en.mlpackage` | 1.5 GB (approx) | encoder bundle |
+| `Models/whisper-medium.en-decoder.mlpackage` | 871 MB | decoder half |
 | `Models/laya.mlpackage` | 808.5 MB | `convaiinnovations/laya` via `convert.py laya` |
-| `Models/whisperkit/` | 469.0 MB | HF `argmaxinc/whisperkit-coreml` folder `openai_whisper-small` |
+| `Models/whisperkit/` | 469.0 MB | HF `argmaxinc/whisperkit-coreml` folder `openai_whisper-small` (live path) |
 | **Total** | ~3.0 GB | |
 
 ## Verifying
