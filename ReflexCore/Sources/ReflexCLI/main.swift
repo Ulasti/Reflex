@@ -252,7 +252,7 @@ struct ReflexCLI {
         }
 
         if args.count >= 2, args[1] == "--diagnose" {
-            runDiagnose()
+            await runDiagnose()
             return
         }
 
@@ -511,7 +511,7 @@ struct ReflexCLI {
     /// `--diagnose`: probes permissions, models and browser automation before a
     /// single command is spoken, so TCC denials surface up front with fixes
     /// instead of failing mid-command at the moment of execution.
-    static func runDiagnose() {
+    static func runDiagnose() async {
         print("Reflex health check\n")
         let report = SystemDiagnostics.run(probeMic: true)
         for check in report.checks {
@@ -527,6 +527,20 @@ struct ReflexCLI {
             }
             if let fix = check.howToFix {
                 print("      → \(fix)")
+            }
+        }
+        // Fetch the WhisperKit live pack on demand if it is missing, so a
+        // diagnostic run repairs the live path instead of just reporting it.
+        let dir = defaultModelsDirectory()
+        if !ReflexWhisperKit.isInstalled(in: dir) {
+            print("\n  … WhisperKit live pack missing — attempting download…")
+            do {
+                let folder = ReflexWhisperKit.modelFolder(in: dir)
+                let live = try await LiveTranscriber(modelFolder: folder)
+                _ = live
+                print("  ✓ WhisperKit live pack downloaded")
+            } catch {
+                print("  ✗ WhisperKit live pack download failed: \(error.localizedDescription)")
             }
         }
         print("")

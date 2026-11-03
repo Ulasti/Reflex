@@ -30,16 +30,7 @@ struct SettingsView: View {
             }
 
             Section("Model") {
-                Picker("Model", selection: $appModel.activeModel) {
-                    ForEach(ReflexModelKind.allCases, id: \.self) { kind in
-                        Text(kind.displayName).tag(kind)
-                    }
-                }
-                .disabled(appModel.isBusy)
-                .onChange(of: appModel.activeModel) { _, kind in
-                    appModel.modelSelectionChanged(kind)
-                }
-
+                LabeledContent("Model", value: "Whisper Small (en)")
                 LabeledContent("Status", value: appModel.modelStatus)
 
                 if case .failed(let message) = appModel.loadState {

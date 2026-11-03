@@ -181,8 +181,8 @@ final class AppModel: ObservableObject {
             capabilityRegistry: capabilityRegistry
         )
 
-        let saved = UserDefaults.standard.string(forKey: Self.modelDefaultsKey)
-        activeModel = saved.flatMap(ReflexModelKind.init(rawValue:)) ?? .whisperSmallEn
+        // Locked to Whisper Small (en). No model picker; single supported variant.
+        activeModel = .whisperSmallEn
         verboseLogging = UserDefaults.standard.bool(forKey: Self.verboseKey)
         shouldPlayFeedbackSounds = UserDefaults.standard.object(forKey: Self.feedbackKey) == nil
             ? true : UserDefaults.standard.bool(forKey: Self.feedbackKey)

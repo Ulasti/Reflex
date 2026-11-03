@@ -42,16 +42,9 @@ struct ContentView: View {
                 }
             }
 
-            Picker("Model", selection: $appModel.activeModel) {
-                ForEach(ReflexModelKind.allCases, id: \.self) { kind in
-                    Text(kind.displayName).tag(kind)
-                }
-            }
-            .pickerStyle(.menu)
-            .disabled(appModel.isBusy)
-            .onChange(of: appModel.activeModel) { _, kind in
-                appModel.modelSelectionChanged(kind)
-            }
+            Text("Model: Whisper Small (en)")
+                .font(.caption)
+                .foregroundStyle(.secondary)
 
             Text("English only")
                 .font(.caption)
